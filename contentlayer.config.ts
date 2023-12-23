@@ -5,7 +5,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode, { Options as PrettyCodeOptions } from 'rehype-pretty-code';
 
-import { tags } from './constants/pages';
+import { authors, tags } from './constants/pages';
 
 export const Post = defineDocumentType(() => ({
   name: 'Post',
@@ -21,8 +21,9 @@ export const Post = defineDocumentType(() => ({
       required: true,
     },
     author: {
-      type: 'string',
+      type: 'enum',
       required: true,
+      options: authors,
     },
     date: {
       type: 'date',
@@ -32,7 +33,7 @@ export const Post = defineDocumentType(() => ({
       type: 'list',
       required: true,
       of: {
-        type: 'string',
+        type: 'enum',
         options: tags,
       },
     },

@@ -22,7 +22,7 @@ export const generateMetadata = async (
     openGraph: {
       title: ogTitle,
       description,
-      url: `/tag/${tagName}`,
+      url: `blog/tag/${tagName}`,
       siteName: defaultTitle,
       type: 'website',
       images: previousImages,

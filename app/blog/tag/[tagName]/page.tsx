@@ -10,11 +10,11 @@ interface Props {
 }
 
 export const generateStaticParams = async () => {
-  return tags.map((tagName) => ({ tagName }));
+  return tags.map((tag) => ({ tagName: tag.toLowerCase() }));
 };
 
 const TagPage = ({ params: { tagName } }: Props) => {
-  const posts = allPosts.filter((post) => post.tags.includes(tagName));
+  const posts = allPosts.filter((post) => post.tags.find((tag) => tag.toLowerCase() === tagName));
 
   return (
     <main>
