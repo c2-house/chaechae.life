@@ -7,7 +7,7 @@ const PostListItem = ({ post }: { post: Post }) => {
   return (
     <li>
       <article>
-        <Link href={`/${post.slug}`} className="overflow-hidden">
+        <Link href={`/blog/${post.slug}`} className="overflow-hidden">
           <Image
             src={post.image}
             alt={post.title}
@@ -18,18 +18,19 @@ const PostListItem = ({ post }: { post: Post }) => {
           />
         </Link>
         <div className="mt-4">
-          <Link href={`/${post.slug}`}>
-            <div className="mb-2 text-sm font-semibold uppercase text-gray-500">
-              {post.category}
-            </div>
+          <Link href={`/blog/${post.slug}`}>
+            <div className="mb-2 text-sm font-semibold uppercase text-gray-500">{post.tags}</div>
             <h2 className="text-2xl font-bold">{post.title}</h2>
             <p className="mt-3 line-clamp-3 text-gray-700">{post.description}</p>
           </Link>
           <div className="mt-3 text-sm text-gray-500">
-            <time dateTime={dayjs(post.date).format('YYYY-MM-DD')}>
+            <span>{post.author}</span>
+            <time
+              className="before:px-1.5 before:content-['·']"
+              dateTime={dayjs(post.date).format('YYYY-MM-DD')}
+            >
               {dayjs(post.date).format('MMM D, YYYY')}
             </time>
-            <span className="before:px-1.5 before:content-['·']">{post.readTime} min read</span>
           </div>
         </div>
       </article>

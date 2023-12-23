@@ -9,7 +9,7 @@ export async function GET() {
     title,
     description,
     site_url: host,
-    feed_url: `${host}/rss`,
+    feed_url: `${host}/blog/rss`,
     image_url: `${host}/favicon-32x32.png`,
     pubDate: new Date(),
   };
@@ -20,10 +20,10 @@ export async function GET() {
     feed.item({
       title: post.title,
       description: post.description,
-      url: `${host}/${post.slug}`,
+      url: `${host}/blog/${post.slug}`,
       date: post.date,
-      categories: [post.category],
-      author: 'My Name',
+      categories: post.tags,
+      author: post.author,
     });
   });
 

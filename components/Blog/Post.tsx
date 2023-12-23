@@ -9,18 +9,21 @@ const Post = ({ post }: { post: Post }) => {
       <header>
         <div className="mb-4">
           <Link
-            href={`/category/${post.category}`}
+            href={`/tag/${post.tags}`}
             className="font-semibold uppercase text-gray-500 no-underline"
           >
-            {post.category}
+            {post.tags}
           </Link>
         </div>
         <h1 className="!mb-6">{post.title}</h1>
         <div className="text-sm text-gray-500 lg:text-base">
-          <time dateTime={dayjs(post.date).format('YYYY-MM-DD')}>
+          <span>{post.author}</span>
+          <time
+            className="before:px-1.5 before:content-['·']"
+            dateTime={dayjs(post.date).format('YYYY-MM-DD')}
+          >
             {dayjs(post.date).format('MMM D, YYYY')}
           </time>
-          <span className="before:px-1.5 before:content-['·']">{post.readTime} min read</span>
         </div>
       </header>
       <hr className="not-prose my-8 lg:my-10" />

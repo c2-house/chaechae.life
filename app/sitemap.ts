@@ -1,25 +1,25 @@
 import { MetadataRoute } from 'next';
 import { allPosts } from 'contentlayer/generated';
-import { categories } from '@/constants/category';
+import { tags } from '@/constants/pages';
 
 const sitemap = (): MetadataRoute.Sitemap => {
   const posts = allPosts.map((post) => ({
-    url: `https://example.com/${post.slug}`,
+    url: `https://chaechae.life/blog/${post.slug}`,
     lastModified: new Date(post.date),
   }));
 
-  const categoryPages = categories.map((category) => ({
-    url: `https://example.com/category/${category}`,
+  const tagPages = tags.map((tag) => ({
+    url: `https://chaechae.life/tag/${tag}`,
     lastModified: new Date(),
   }));
 
   return [
     {
-      url: 'https://example.com',
+      url: 'https://chaechae.life',
       lastModified: new Date(),
     },
     ...posts,
-    ...categoryPages,
+    ...tagPages,
   ];
 };
 

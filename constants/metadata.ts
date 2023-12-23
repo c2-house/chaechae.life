@@ -1,5 +1,5 @@
 export const host =
-  process.env.NODE_ENV === 'production' ? 'https://example.com' : 'http://localhost:3000';
+  process.env.NODE_ENV === 'production' ? 'https://chaechae.life' : 'http://localhost:3000';
 
 export const defaultMetadata = {
   title: 'My Blog',

@@ -45,7 +45,7 @@ export const metadata: Metadata = {
       'application/rss+xml': [
         {
           title: `${title} - Feed`,
-          url: '/rss',
+          url: '/blog/rss',
         },
       ],
     },
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
-  <html lang="en">
+  <html lang="ko">
     <body className={clsx('text-gray-900', inter.className)}>
       <Header />
       {children}

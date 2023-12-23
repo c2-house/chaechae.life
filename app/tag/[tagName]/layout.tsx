@@ -3,16 +3,16 @@ import { defaultMetadata } from '@/constants/metadata';
 
 interface Props {
   params: {
-    categoryName: string;
+    tagName: string;
   };
 }
 
 export const generateMetadata = async (
-  { params: { categoryName } }: Props,
+  { params: { tagName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const { title: defaultTitle, description } = defaultMetadata;
-  const title = categoryName.charAt(0).toUpperCase() + categoryName.slice(1);
+  const title = tagName.charAt(0).toUpperCase() + tagName.slice(1);
   const ogTitle = `${title} | ${defaultTitle}`;
   const previousImages = (await parent).openGraph?.images || [];
 
@@ -22,7 +22,7 @@ export const generateMetadata = async (
     openGraph: {
       title: ogTitle,
       description,
-      url: `/category/${categoryName}`,
+      url: `/tag/${tagName}`,
       siteName: defaultTitle,
       type: 'website',
       images: previousImages,

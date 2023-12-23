@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import Link from 'next/link';
-import { categories } from '@/constants/category';
+import { navLinks } from '@/constants/pages';
 import { CloseIcon } from '@/public/icons';
 
 interface Props {
@@ -29,14 +29,14 @@ const Drawer = ({ isOpen, setIsOpen }: Props) => {
 
         <nav>
           <ul className="flex flex-col items-center">
-            {categories.map((category) => (
-              <li key={category} className="w-full">
+            {navLinks.map((link) => (
+              <li key={link.name} className="w-full">
                 <Link
-                  href={`/category/${category}`}
+                  href={link.path}
                   className="inline-block w-full p-2 text-center font-semibold uppercase transition-colors hover:text-slate-500"
                   onClick={() => setIsOpen(false)}
                 >
-                  {category}
+                  {link.name}
                 </Link>
               </li>
             ))}

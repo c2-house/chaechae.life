@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useState } from 'react';
 
-import { categories } from '@/constants/category';
+import { navLinks } from '@/constants/pages';
 import { MenuIcon } from '@/public/icons';
 import Drawer from './Drawer';
 
@@ -21,13 +21,13 @@ const Header = () => {
 
             <nav className="hidden lg:block">
               <ul className="flex items-center">
-                {categories.map((category) => (
-                  <li key={category}>
+                {navLinks.map((link) => (
+                  <li key={link.name}>
                     <Link
-                      href={`/category/${category}`}
+                      href={link.path}
                       className="px-4 py-2 font-semibold uppercase transition-colors hover:text-slate-500"
                     >
-                      {category}
+                      {link.name}
                     </Link>
                   </li>
                 ))}

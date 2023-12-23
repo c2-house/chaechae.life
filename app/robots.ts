@@ -6,8 +6,8 @@ const robots = (): MetadataRoute.Robots => {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://example.com/sitemap.xml',
-    host: 'https://example.com',
+    sitemap: 'https://chaechae.life/sitemap.xml',
+    host: 'https://chaechae.life',
   };
 };
 

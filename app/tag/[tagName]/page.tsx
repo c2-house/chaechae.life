@@ -1,20 +1,20 @@
 import Image from 'next/image';
 import { allPosts } from 'contentlayer/generated';
-import { categories } from '@/constants/category';
+import { tags } from '@/constants/pages';
 import PostList from '@/components/Blog/PostList';
 
 interface Props {
   params: {
-    categoryName: string;
+    tagName: string;
   };
 }
 
 export const generateStaticParams = async () => {
-  return categories.map((categoryName) => ({ categoryName }));
+  return tags.map((tagName) => ({ tagName }));
 };
 
-const CategoryPage = ({ params: { categoryName } }: Props) => {
-  const posts = allPosts.filter((post) => post.category === categoryName);
+const TagPage = ({ params: { tagName } }: Props) => {
+  const posts = allPosts.filter((post) => post.tags.includes(tagName));
 
   return (
     <main>
@@ -23,7 +23,7 @@ const CategoryPage = ({ params: { categoryName } }: Props) => {
           <div className="absolute inset-0 -z-10 overflow-hidden">
             <Image
               src={`/images/cover/main.jpg`}
-              alt={categoryName}
+              alt={tagName}
               width={1280}
               height={853}
               sizes="(max-width: 1280px) 100vw, 1216px"
@@ -32,7 +32,7 @@ const CategoryPage = ({ params: { categoryName } }: Props) => {
             />
           </div>
           <h1 className="px-6 text-center text-3xl font-semibold text-white md:text-4xl lg:text-5xl">
-            {categoryName.toUpperCase()}
+            {tagName.toUpperCase()}
           </h1>
         </div>
       </section>
@@ -44,4 +44,4 @@ const CategoryPage = ({ params: { categoryName } }: Props) => {
   );
 };
 
-export default CategoryPage;
+export default TagPage;
