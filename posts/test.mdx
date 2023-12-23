@@ -17,6 +17,31 @@ date: 2023-12-07
 <mark>오늘은 제네시스 GV70</mark> 전기차 정보를 준비했습니다. 화려한 디자인과 함께 합리적인 차량 사이즈로
 출시와 동시에 폭발적인 인기를 모으고 있는데요. 오늘은 GV70 가격과 함께 중고차 시세 정보를 전달해드리겠습니다.
 
+```tsx
+'use client';
+
+import clsx from 'clsx';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+const Header = () => {
+  const pathname = usePathname();
+  const isHome = pathname === '/';
+
+  return (
+    <header className={clsx({ 'absolute left-0 top-0 w-full': isHome })}>
+      <div className={clsx('container-xl py-3 md:py-5', { 'text-white': isHome })}>
+        <Link href="/" className="text-xl font-bold md:text-2xl">
+          ChaeChae Korea
+        </Link>
+      </div>
+    </header>
+  );
+};
+
+export default Header;
+```
+
 <Link url="https://github.com/" />
 <Link url="https://velog.io/@kec0130/Intersection-Observer-Page-Navigation" />
 <Link url="https://blog.naver.com/kec30/223225222018" />

@@ -3,6 +3,7 @@ import remarkGfm from 'remark-gfm';
 import remarkToc from 'remark-toc';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
+import rehypePrettyCode, { Options as PrettyCodeOptions } from 'rehype-pretty-code';
 
 import { tags } from './constants/pages';
 
@@ -53,6 +54,10 @@ export default makeSource({
   documentTypes: [Post],
   mdx: {
     remarkPlugins: [remarkGfm, remarkToc],
-    rehypePlugins: [rehypeSlug, rehypeAutolinkHeadings],
+    rehypePlugins: [
+      rehypeSlug,
+      rehypeAutolinkHeadings,
+      [rehypePrettyCode, { theme: 'one-dark-pro' } satisfies Partial<PrettyCodeOptions>],
+    ],
   },
 });
