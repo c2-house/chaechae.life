@@ -37,17 +37,15 @@ const LinkPreview = ({ url }: { url: string }) => {
   return (
     <LinkContainer url={url}>
       <div className="flex-1 overflow-hidden px-4 py-3 font-normal">
-        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-gray-900 sm:line-clamp-1 sm:h-6 md:text-base">
+        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-gray-900 sm:line-clamp-1 sm:h-auto md:text-base">
           {data.title}
         </div>
-        <div className="mb-1.5 line-clamp-2 hidden h-10 text-sm text-gray-500 sm:block">
+        <div className="mb-1.5 hidden h-10 text-sm text-gray-500 sm:line-clamp-2">
           {data.description}
         </div>
         <div className="flex items-center">
           <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
-          <div className="ml-1.5 overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-700">
-            {url}
-          </div>
+          <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-gray-700">{url}</div>
         </div>
       </div>
       {data.image && (
