@@ -1,0 +1,44 @@
+{
+  "name": "next-mdx-blog-template",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "clsx": "^2.0.0",
+    "contentlayer": "^0.3.4",
+    "dayjs": "^1.11.10",
+    "next": "^13.4.8",
+    "next-contentlayer": "^0.3.4",
+    "react": "^18",
+    "react-dom": "^18",
+    "rehype-autolink-headings": "^7.1.0",
+    "rehype-slug": "^6.0.0",
+    "remark-gfm": "^3.0.1",
+    "remark-toc": "^9.0.0",
+    "rss": "^1.2.2",
+    "swr": "^2.2.4"
+  },
+  "devDependencies": {
+    "@svgr/webpack": "^8.1.0",
+    "@tailwindcss/typography": "^0.5.10",
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/rss": "^0.0.32",
+    "autoprefixer": "^10.0.1",
+    "eslint": "^8",
+    "eslint-config-next": "^13.4.8",
+    "eslint-config-prettier": "^9.1.0",
+    "postcss": "^8",
+    "prettier": "^3.1.0",
+    "prettier-plugin-tailwindcss": "^0.5.9",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  mark {
+    @apply bg-yellow-100;
+  }
+}
+
+@layer components {
+  .container-xl {
+    @apply mx-auto max-w-screen-xl px-4 md:px-6 lg:px-8;
+  }
+}
+
+@layer utilities {
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
