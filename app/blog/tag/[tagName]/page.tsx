@@ -18,7 +18,7 @@ const TagPage = ({ params: { tagName } }: Props) => {
 
   return (
     <main>
-      <section className="container-xl p-0 lg:px-8">
+      <section className="container-lg p-0 lg:px-8">
         <div className="relative flex h-[30vh] items-center justify-center bg-black/60">
           <div className="absolute inset-0 -z-10 overflow-hidden">
             <Image
@@ -37,7 +37,7 @@ const TagPage = ({ params: { tagName } }: Props) => {
         </div>
       </section>
 
-      <section className="container-xl py-10">
+      <section className="container-lg py-10">
         <PostList posts={posts} />
       </section>
     </main>

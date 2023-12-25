@@ -6,11 +6,15 @@
   mark {
     @apply bg-yellow-100;
   }
+
+  p > code {
+    @apply rounded-md bg-slate-200/80 px-1.5 py-0.5 before:!content-[''] after:!content-[''];
+  }
 }
 
 @layer components {
-  .container-xl {
-    @apply mx-auto max-w-screen-xl px-4 md:px-6 lg:px-8;
+  .container-lg {
+    @apply mx-auto max-w-screen-lg px-4 md:px-6 lg:px-8;
   }
 }
 

@@ -8,7 +8,7 @@ const Tags = ({ tags }: { tags: Post['tags'] }) => {
         <Link
           key={tag}
           href={`/blog/tag/${tag.toLowerCase()}`}
-          className="not-prose rounded-full bg-gray-100 px-2 py-[2px] sm:px-3"
+          className="not-prose rounded-full bg-slate-200/60 px-2 py-[2px] sm:px-3"
         >
           {tag}
         </Link>

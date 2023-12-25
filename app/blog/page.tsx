@@ -7,15 +7,15 @@ const BlogPage = () => {
 
   return (
     <main>
-      <section className="container-xl p-0 lg:px-8">
+      <section className="container-lg p-0 lg:px-8">
         <div className="relative flex h-[30vh] items-center justify-center bg-black/60">
           <div className="absolute inset-0 -z-10 overflow-hidden">
             <Image
               src={`/images/cover/main.jpg`}
               alt="Welcome to my blog!"
-              width={1280}
-              height={853}
-              sizes="(max-width: 1280px) 100vw, 1216px"
+              width={960}
+              height={400}
+              sizes="(min-width: 1024px) 960px, 100vw"
               className="h-full w-full object-cover"
               priority
             />
@@ -31,7 +31,7 @@ const BlogPage = () => {
         </div>
       </section>
 
-      <section className="container-xl py-10">
+      <section className="container-lg py-10">
         <PostList posts={posts} />
       </section>
     </main>

@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 const NotFound = () => {
   return (
-    <div className="container-xl flex h-[80dvh] flex-col items-center justify-center">
+    <div className="container-lg flex h-[80dvh] flex-col items-center justify-center">
       <h2 className="text-2xl font-bold">Not Found</h2>
       <p className="mb-6 mt-4">Could not find requested resource</p>
       <Link

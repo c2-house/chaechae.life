@@ -18,7 +18,7 @@ const PostPage = ({ params }: Props) => {
   if (!post) notFound();
 
   return (
-    <main className="container-xl">
+    <main className="container-lg">
       <Post post={post} />
     </main>
   );
