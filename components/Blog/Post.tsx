@@ -1,6 +1,6 @@
 import { Post } from 'contentlayer/generated';
 import Mdx from '../Mdx';
-import Tags from './Tags';
+import { Tags } from './Tags';
 import Author from './Author';
 
 const Post = ({ post }: { post: Post }) => {
