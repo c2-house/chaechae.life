@@ -5,4 +5,4 @@ export const navLinks = [
 
 export const tags = ['React', 'Next.js', 'Python', 'FastAPI'] as const;
 
-export const authors = ['Eunchae Ko', 'mingke'] as const;
+export const authors = ['EunchaeKo', 'mingke'] as const;

@@ -1,8 +1,8 @@
-import dayjs from 'dayjs';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Post } from 'contentlayer/generated';
 import Tags from './Tags';
+import Author from './Author';
 
 const PostListItem = ({ post }: { post: Post }) => {
   return (
@@ -27,14 +27,8 @@ const PostListItem = ({ post }: { post: Post }) => {
             </h2>
             <p className="mt-3 hidden text-gray-700 md:line-clamp-2">{post.description}</p>
           </Link>
-          <div className="my-2 text-xs text-gray-500 sm:my-3 sm:text-sm">
-            <span>{post.author}</span>
-            <time
-              className="before:px-1.5 before:content-['·']"
-              dateTime={dayjs(post.date).format('YYYY-MM-DD')}
-            >
-              {dayjs(post.date).format('MMM D, YYYY')}
-            </time>
+          <div className="my-2 text-xs sm:my-3 sm:text-sm">
+            <Author author={post.author} date={post.date} />
           </div>
           <Tags tags={post.tags} />
         </div>
