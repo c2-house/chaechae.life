@@ -37,6 +37,10 @@ export const Post = defineDocumentType(() => ({
         options: tags,
       },
     },
+    thumbnail: {
+      type: 'string',
+      required: true,
+    },
   },
   computedFields: {
     slug: {
@@ -45,7 +49,7 @@ export const Post = defineDocumentType(() => ({
     },
     image: {
       type: 'string',
-      resolve: (doc) => `/images/blog/${doc._raw.flattenedPath}/01.jpg`,
+      resolve: (doc) => `/images/blog${doc.thumbnail}`,
     },
   },
 }));

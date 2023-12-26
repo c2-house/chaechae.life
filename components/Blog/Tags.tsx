@@ -28,12 +28,9 @@ export const TagTabs = ({ currentTab }: { currentTab: string }) => {
         <li key={tag}>
           <Link
             href={tag === 'All' ? `/blog` : `/blog/tag/${tag.toLowerCase()}`}
-            className={clsx(
-              'inline-flex rounded-full bg-slate-200/60 px-3 py-0.5 md:px-4 md:py-1',
-              {
-                'bg-slate-800 text-white': currentTab === tag.toLowerCase(),
-              },
-            )}
+            className={clsx('inline-flex rounded-full border border-slate-200 px-3 py-0.5', {
+              'border-slate-800 bg-slate-800 text-white': currentTab === tag.toLowerCase(),
+            })}
           >
             {tag}
           </Link>
