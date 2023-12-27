@@ -1,0 +1,56 @@
+---
+title: FastAPI - Swagger에 Authorize 생성하기
+description: 최근에 FastAPI로 API를 개발하던 중에 Authentication을 middleware로 구현하여 추가를 하였습니다. 그리고나서 생각해보니 Swagger에서 API를 실행해 볼 때도 인증이 들어가야 했습니다. FastAPI Swagger에서 Authorize 버튼을 만들어 Header에 key를 담아 실행할 수 있는 방법에 대해 알아보겠습니다.
+tags: [FastAPI, Swagger]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/11/20
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+최근에 FastAPI로 API를 개발하던 중에 Authentication을 middleware로 구현하여 추가를 하였습니다. 그리고나서 생각해보니 Swagger에서 API를 실행해 볼 때도 인증이 들어가야 했습니다. FastAPI 기본적으로 Swagger를 제공해줘서 아주 편리한데요. 하지만 `Authorize` 버튼은 추가해줘야 합니다. FastAPI Swagger에서 Authorize 버튼을 만들어 Header에 key를 담아 실행할 수 있는 방법에 대해 알아보겠습니다.
+
+## 구현 방법
+
+다음과 같이 아주 간단한 방법으로 구현할 수 있습니다.
+
+```python
+from fastapi import FastAPI, Depends
+from fastapi.security.api_key import APIKeyHeader
+
+auth_header = APIKeyHeader(name="Authorization", auto_error=False)
+app = FastAPI(
+		...
+    dependencies=[Depends(auth_header)],
+		...
+)
+
+```
+
+APIKeyHeader 클래스를 이용해서 위와 같이 구현하여 dependency로 주입하면 Swagger에 Authorize 버튼이 생성됩니다. `auto_error=False`로 설정하면 header가 없어도 에러가 발생하지 않도록 하기 위함입니다.
+
+FastAPI의 Swagger문서는 /docs 경로로 생성이 되는데 auto_error를 False로 하지 않으면 /docs에 접속할 때도 Authorization이 없으면 접근이 불가능합니다.
+
+만약 Header가 아닌 Cookie를 사용하고 싶다하면 APIKeyCookie를 사용할 수 도 있습니다.
+
+`from fastapi.security.api_key import APIKeyCookie`
+
+## 결과
+
+다음과 같은 Swagger화면을 얻을 수 있습니다.
+
+<Image src="/fastapi-swagger-authorize/01.png" alt="FastAPI 스웨거 Authorize 버튼 추가 이미지" />
+
+Authorize 버튼을 클릭하면 아래와 같은 화면이 나오는데 value를 넣고 Authorize하면 API요청 마다 Header에 Value가 담겨져서 요청이 전달됩니다.  
+예를들어 `Bearer {token}` 형태로 입력하면 Swagger에서 API를 실행할 때마다 Header에 `Authorization: Bearer {token}`이 담겨서 요청이 전달됩니다.
+
+<Image src="/fastapi-swagger-authorize/02.png" alt="FastAPI 스웨거 Authorize 버튼 추가 이미지" />
+
+FastAPI를 좀 사용해본 분들을 알겠지만, app이아니라 router단위로 또는 endpoint 단위로 dependency를 주입해서 위 기능을 사용할 수 있습니다. 특정 endpoint에만 주입을 해도 버튼이 생성됩니다. 간단한 기능이지만 때때로 유용하게 사용될 것 같아 포스팅을 남겨봅니다.
+
+이상으로 FastAPI - Swagger에 Authorize 생성하기 포스팅을 마치겠습니다.
