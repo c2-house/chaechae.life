@@ -16,7 +16,7 @@ const Header = () => {
         <div className="container-lg py-3 md:py-5">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-xl font-bold md:text-2xl">
-              My Blog
+              CHAECHAE LIFE
             </Link>
 
             <nav className="hidden lg:block">
