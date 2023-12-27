@@ -1,29 +1,18 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { defaultMetadata } from '@/constants/metadata';
-import { tags } from '@/constants/pages';
 
-interface Props {
-  params: {
-    tagName: string;
-  };
-}
-
-export const generateMetadata = async (
-  { params: { tagName } }: Props,
-  parent: ResolvingMetadata,
-): Promise<Metadata> => {
+export const generateMetadata = async (parent: ResolvingMetadata): Promise<Metadata> => {
   const { title: siteName, description } = defaultMetadata;
-  const tag = tags.find((tag) => tag.toLowerCase() === tagName);
-  const ogTitle = `${tag} 관련 글 - ${siteName}`;
+  const ogTitle = `블로그 - ${siteName}`;
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: `${tag} 관련 글`,
+    title: '블로그',
     description,
     openGraph: {
       title: ogTitle,
       description,
-      url: `/blog/tag/${tagName}`,
+      url: '/blog',
       siteName,
       type: 'website',
       images: previousImages,

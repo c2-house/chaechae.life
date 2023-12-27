@@ -13,11 +13,10 @@ export const generateMetadata = async (
 ): Promise<Metadata> => {
   const post = allPosts.find((post) => post.slug === params.slug);
 
-  const previousImages = (await parent).openGraph?.images || [];
-
   if (!post) return {};
 
   const { title, description, slug, date, image } = post;
+  const previousImages = (await parent).openGraph?.images || [];
 
   return {
     title,
@@ -26,7 +25,7 @@ export const generateMetadata = async (
       title,
       description,
       url: `/blog/${slug}`,
-      siteName: title,
+      siteName: '채채라이프',
       type: 'article',
       publishedTime: date,
       tags: post.tags,

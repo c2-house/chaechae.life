@@ -10,22 +10,23 @@ import Footer from '@/components/Layout/Footer';
 const inter = Inter({ subsets: ['latin'] });
 
 const { title, description } = defaultMetadata;
+const rootTitle = `${title} - 개발자 부부 채채`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(host),
   title: {
     default: title,
-    template: `%s | ${title}`,
-    absolute: `${title} - Welcome to my blog!`,
+    template: `%s - ${title}`,
+    absolute: rootTitle,
   },
   description,
   openGraph: {
-    title,
+    title: rootTitle,
     description,
     url: '/',
     siteName: title,
     type: 'website',
-    locale: 'en_US',
+    locale: 'ko_KR',
     images: [
       {
         url: '/og-image.png',
@@ -36,7 +37,7 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
-    title,
+    title: rootTitle,
     description,
     card: 'summary_large_image',
   },
