@@ -1,0 +1,67 @@
+---
+title: FastAPI lifespan사용하기
+description: FastAPI lifespan은 Application 시작과 종료까지의 기간을 의미합니다. 시작 이벤트와 종료 이벤트가 발생할 때  동작하는 로직을 구현하여 실행할 수 있으며, 시작 이벤트에서 발생한 리소스를 계속 유지할 수 있습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/11/16
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI lifespan은 Application 시작과 종료까지의 기간을 의미합니다. 시작 이벤트와 종료 이벤트가 발생할 때 동작하는 로직을 구현하여 실행할 수 있으며, 시작 이벤트에서 발생한 리소스를 계속 유지할 수 있습니다.
+공식문서에는 ML 모델을 로드하는 예시로 나와있습니다. ML 모델 같은 경우는 서버가 시작할 때 한 번만 로드하면 되기 때문에 lifespan을 사용하면 좋습니다.
+gunicorn으로 배포시 주의해야할 점은 work의 수만큼 lifespan이 실행되기 때문에 이 점을 고려하여 필요한 리소스를 생성해야합니다.
+
+## 구현
+
+lifespan은 비동기 함수를 생성해서 사용해야하며, 몇가지 특징이 있습니다.
+
+- asynccontextmanager
+- yield를 반드시 사용해야합니다.
+- yield 한 객체는 API 요청시 Request.state에 담깁니다. App.state 아닙니다.
+- yield 다음에 구현되는 로직은 앱이 종료될 때 실행됩니다.
+
+간단한 예시로 알아보겠습니다.
+
+```python
+from fastapi import FastAPI, Request
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    try:
+		# 앱 실행시 토큰을 가져오는 함수가 있다고 가정
+		token = await get_access_token()
+		...
+        yield {"token": token, ...}
+		print("application end")
+    except Exception as e:
+        raise e
+
+...
+
+app = FastAPI(lifespan=lifespan)
+
+@app.get("/")
+async def temp_api(request: Request):
+	# token은 request.state.token에 담깁니다.
+	token = request.state.token
+	...
+
+	# 만약 token을 변경하고 싶어서 다음과 같이 코드를 실행해도 변경되지 않습니다.
+	request.state.token = "1234"
+
+```
+
+lifespan에서 yield되면 API호출시 값을 변경한다고해도 다른 API를 호출할 때 변경되지 않습니다.
+변경되야하는 리소스라면 lifespan에서 yield하지 말아야합니다. 만약, 위 예시의 토큰이 유효기간이 있어 변경되어야한다면 위와 같은 방법은 사용하지 않는 것이 좋습니다.
+token값이 변경이 안됩니다. 그럴경우 state를 따로 관리하는게 좋습니다.
+
+## 마무리
+
+FastAPI를 좀 이전부터 사용했으면 알만한 on_event(”start_up”), on_event("shutdown”)과 기능적으로 동일합니다. 이것은 deprecated 될 것이니 lifespan을 사용하는 것이 좋겠습니다.
