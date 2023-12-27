@@ -1,0 +1,64 @@
+---
+title: Gitbhub Actions에서  S3를 활용해서 Crendential 파일 관리하기
+description: 어느 날 파이프라인 구축하던 중에 한 가지 고민이 생겼습니다. Github workflow에서 이미지를 build하는데 꼭 필요한 파일이지만, .gitignore에 있어서 원격 저장소에는 push되지 않는 파일들을 어떻게 처리할까하는 고민이었습니다
+tags: [AWS, GithubActions]
+author: mingke
+thumbnail: /thumbnails/github-actions.png
+date: 2023/11/25
+---
+
+<Image src="/thumbnails/github-actions.png" alt="Github Actions Logo" />
+
+### Table of Contents
+
+## 소개
+
+CI/CD 파이프라인으로 Github Actions를 애용하고 있습니다.
+
+어느 날 파이프라인 구축하던 중에 한 가지 고민이 생겼습니다. Github workflow에서 이미지를 build하는데 꼭 필요한 파일이지만, .gitignore에 있어서 원격 저장소에는 push되지 않는 파일들을 어떻게 처리할까하는 고민이었습니다. 단순한 key값이면 Github Secret에 저장하겠지만 파일형태로 되어있다면 얘기가 달라집니다.
+
+예를들면 Google의 API들을 사용한다거나 할 때 주어지는 Credential 파일들 같은 것 말입니다.
+또 github actions secret으로 관리하기에 환경변수가 너무 많다면 파일로 관리하는 것이 더 편할 수 있습니다.
+
+## S3를 활용하기
+
+다양한 문제 해결방법을 고민해봤습니다만 제가 선택한 방법은 S3에 저장 후 build시에 s3에서 파일들을 가져오는 것입니다. 이 방법을 선택한 이유는 다음과 같습니다.
+
+- AWS KEY만 도난당하지 않는다면 나름 안전한 방법이라고 생각했습니다. KEY만 잘지키고 AWS에서 보안 셋팅만 잘 해놓으면 된다고 생각했기 때문입니다.
+- AWS CLI로 편리하게 다운받을 수 있습니다.
+- Github Actions에서도 편리하게 사용할 수 있다. AWS CLI가 설치가능함.
+
+### 코드
+
+- 다음은 참고 코드입니다.
+- ECR로 빌드하기 전에 S3에서 파일을 당겨옵니다.
+
+```yaml
+# ci.yml
+---
+- name: Configure AWS credentials
+  uses: aws-actions/configure-aws-credentials@v2
+  with:
+    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    aws-region: ${{ secrets.AWS_REGION_NAME }}
+
+- name: Download Firebase credentials from S3
+  run: |
+    aws s3 cp s3://s3_path/credential.json ./app/credential.json
+
+- name: Login to Amazon ECR
+  id: login-ecr
+  uses: aws-actions/amazon-ecr-login@v1
+  with:
+    mask-password: 'true'
+---
+```
+
+## 마무리
+
+위와 같은 방법으로 github에 push 할 수 없는 파일들을 build할 때 가져와서 사용할 수 있습니다.
+프로젝트를 private repository로 관리하더라도 Credential한 파일들은 같이 push하지 않는것이 좋기 때문에(실수로 계정이 노출되 버리면...) 그 방법은 사용하지 않았습니다.
+github actions 정말 편리한 것 같습니다. 더 많은 공부가 필요합니다.
+
+이상으로 Github Actions에서 S3를 활용해서 Crendential 파일 관리하기 포스팅을 마치겠습니다.
