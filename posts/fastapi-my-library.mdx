@@ -1,0 +1,317 @@
+---
+title: FastAPI - 나만의 FastAPI 라이브러리만들기
+description: FastAPI는 microframework라서 개발하다보면 자유도가 참 높다고 느껴지는것 같습니다. 백엔드를 개발하는데 정말 필수적인 것들만 있고 나머지는 원하는 대로 만들어서 쓰면 되는것 같습니다.
+tags: [FastAPI, Python]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/12/22
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI는 microframework라서 개발하다보면 자유도가 참 높다고 느껴지는것 같습니다. 백엔드를 개발하는데 정말 필수적인 것들만 있고 나머지는 원하는 대로 만들어서 쓰면 되는것 같습니다. 1년 넘게 FastAPI로 이것저것 개발하다보니 자주쓰게 되는 코드들이 생겼습니다.
+
+이 참에 복붙말고 라이브러리로 만들어볼까 하는 생각이 들었습니다. 그래서 도구함을 만들듯 라이브러리를 만들었는데 관련 내용을 공유하려고 합니다.
+
+<Link url="https://github.com/c2-house/fastapi-mctools" />
+
+## 라이브러리 소개
+
+fastapi-mctools라는 이름으로 FastAPI 개발할 때 쓰는 도구함 같은 느낌입니다. 앞으로 계속 업데이트 해가면서 사용할 것이지만 현재 23년12월 0.0.1 버젼에는 다음과 같은 주요 기능들이 있습니다.
+
+- cli
+  - 프로젝트 생성
+    - django 처럼 프로젝트를 생성해주는 cli가 있으면 좋겠다는 생각이 들어서 만들었습니다.
+    - mct startproject 명령어로 프로젝트의 기본 프레임을 만들 수 있습니다.
+  - uvicorn
+    - 로컬에서 실행할 때 uvicorn 명령어로 실행하는데 copilot에 길들여져서 그런가 uvicorn 블라블라 타자치는게 귀찮아서 uvicorn 명령어를 터미널에 띄워주는 명령어를 만들었습니다.
+    - mct uvicorn으로 실행합니다.
+  - gunicorn config 생성
+    - gunicorn 기본 config를 생성해줍니다. 배포할 때 보통 gunicorn을 사용하는 편인데 config를 만들어줍니다.
+    - mct gunicorn 입니다.
+- db
+
+  - FastAPI 공식문서를 보면 get_db 함수를 만들어 dependency로 사용합니다. db session은 크게 변동될 일이 없어 미리 만들어놨습니다.
+  - 동기 session 비동기 session을 모두 만들었습니다.
+
+    ```python
+    from fastapi_mctools.db.sqlalchemy import DB, AsyncDB
+
+    get_db = DB(db_url)
+    get_db = AsyncDB(db_url)
+    ```
+
+- middlewares
+
+  - RequestLoggingMiddleware
+
+    - Request 로그를 찍을 수 있는 미들웨어를 만들었습니다. 로컬에서 개발하더라도 uvicorn 로그는 뭔가 너무 부실한 느낌이 들어서 말입니다.
+
+    ```python
+    import logging
+    from fastapi import FastAPI
+    from fastapi_mctools.middlewares.logging import RequestLoggingMiddleware
+
+    app = FastAPI()
+    # ex
+    logger = logging.getLogger("request")
+    app.add_middleware(
+        RequestLoggingMiddleware,
+        logger=logger,
+    )
+    ```
+
+  - TrustedHostMiddleware
+    - AWS로 배포했을 때 ALB를 사용하면 Target Group에서 HealthCheck를 하는데 요청이 VPC 사설IP로 오다보니 VPC의 앞 2자리를 넣어서 미들웨어를 통과할 수 있도록 만들었습니다.
+    - 다른 방법이 있을것도 같은데 흠
+
+- orms
+
+  - 일반적으로 자주 사용하는 ORM 코드를 몇개 적어서 만들어놨습니다.
+  - BaseRepository를 만든거 같네요.
+  - async를 거의 사용하지만 sync도 함께 만들었습니다.
+
+  ```python
+  # ex
+  class ACreateBase(ORMBase):
+      """
+      CreateBase는 일반적인 Create를 미리 구현해놓은 클래스입니다.
+      """
+
+      async def create(self, db: AsyncSession, **kwargs) -> T:
+          """
+          INSERT INTO {table_name(self.model)} ({key1}, {key2}, ...) VALUES ({value1}, {value2}, ...)
+          """
+          db_obj = self.model(**kwargs)
+          db.add(db_obj)
+          await db.commit()
+          await db.refresh(db_obj)
+          return db_obj
+
+      async def bulk_create(self, db: AsyncSession, data_list: list[dict]) -> None:
+          """
+          INSERT INTO {table_name(self.model)} ({key1}, {key2}, ...) VALUES ({value1}, {value2}, ...), ({value1}, {value2}, ...)
+          """
+          query = insert(self.model).values(data_list)
+          await db.execute(query)
+          await db.commit()
+  ```
+
+- test_tools
+
+  - db_manager를 만들어서 pytest로 test코드를 작성할 때 test db 연결하는 session fixture를 만들때, 이 또한 자주 바뀌는 코드가 아니어서 미리 만들어둔 것입니다.
+
+  ```python
+  class TestConfDBManager:
+      """
+      conftest.py에서 사용할 DBManager
+      테스트에 사용할 동기 DB, 비동기 DB를 생성합니다.
+      """
+
+      __test__ = False
+
+      def __init__(self, db_url: str) -> None:
+          self.db_url = db_url
+
+      def get_db_session(self, is_meta: bool = False) -> Session:
+          """
+          사용:
+
+          @pytest.fixture
+          def db():
+              yield from test_db_manager.get_db_session()
+          """
+          engine = create_engine(self.db_url)
+
+          if is_meta:
+              meta = MetaData()
+              meta.create_all(engine)
+
+          connection = engine.connect()
+          connection.begin()
+
+          session = Session(bind=connection, autoflush=False, autocommit=False)
+
+          yield session
+
+          session.rollback()
+          connection.close()
+          engine.dispose()
+
+      async def get_async_db_session(self, is_meta: bool = False) -> AsyncSession:
+          """
+          사용:
+
+          @pytest.fixture
+          async def async_db():
+              async for session in test_db_manager.get_async_db_session():
+                  yield session
+          """
+          engine = create_async_engine(self.db_url)
+          if is_meta:
+              meta = MetaData()
+              async with engine.begin() as connection:
+                  await connection.run_sync(meta.create_all)
+
+          async with engine.begin() as connection:
+              transaction = await connection.begin()
+              async_session = async_sessionmaker(
+                  connection, autoflush=False, autocommit=False, expire_on_commit=False
+              )
+              async with async_session() as session:
+                  await session.begin()
+
+                  yield session
+
+                  await transaction.rollback()
+  ```
+
+- utils
+
+  - requests
+
+    - 외부 API를 호출할 때 Session을 유지할 수 있도록 APIClient를 따로 만들었습니다.
+    - 이런 느낌으로 사용할 수 있도록 말이죠
+
+    ```python
+    api_client = APIClient()
+    await api_client.start()
+    async def get_example_1(api_client: APIClient):
+        response = await api_client.get("https://example.com")
+        return response
+
+    async def get_example_2(api_client: APIClient):
+        response = await api_client.get("https://example.com")
+        return response
+
+    response_1, response_2 = await asyncio.gather(
+        get_example_1(api_client),
+        get_example_2(api_client)
+    )
+    await api_client.close()
+    ```
+
+  - responses
+
+    - 저는 FastAPI로 API를 만들다보면 응답을 dict로 쓰는 경우가 많았습니다. 그래서 하다보니 Response 스키마가 통일감이 없어서 통일감을 주기위한 인터페이스를 만들었습니다.
+
+    ```python
+    class ResponseInterFace:
+        """
+        Response 통일을 위한 인터페이스입니다.
+        """
+
+        def __init__(self, result: ResultType, **kwargs) -> None:
+            self.result = result
+            self.kwargs = kwargs
+
+        def to_dict(self) -> dict:
+            return {**self.kwargs, "result": self.result}
+
+        def to_str(self) -> str:
+            return json.dumps(self.to_dict(), ensure_ascii=False)
+
+    response = ResponseInterFace(result={"a": 1, "b":2"})
+    ```
+
+- dependencies
+
+  - dependency를 한 곳에 모아서 관리할 수 있는 클래스를 만들었습니다.
+  - API가 많고 dependency를 여러개 만들면 dependency를 사용하는 모듈에서 import가 많아졌는데그게 더러워 보이고 싫어서 만들었습니다.
+  - 요런 느낌으로 사용합니다.
+
+  ```python
+  # dependency.py
+  async def get_user(db: DB) -> User:
+          ...
+        return user
+
+  async def get_some_things_of_user(db: DB) -> Some:
+      ...
+      return some
+
+  user_dependency = Dependency(
+      GetUser=get_user,
+      GetSomeThingsOfUser=get_some_things_of_user,
+  )
+
+  # endpoint.py
+  from dependecy import user_dependency
+
+  @router.get("/users/{user_id}")
+  async def run_something_about_user(user: user_dependency.GetUser, some: user_dependency.GetSomeThingsOfUser):
+      ...
+      return
+  ```
+
+- exceptions
+
+  - fastapi에 있는 기본 HTTPException은 **status_code, detail, headers** 밖에 없습니다. 추가로 다른 요소들도 추가할 수 있도록 만들었습니다.
+  - app에 exception handler도 추가해주어야 합니다.
+
+  ```python
+  from fastapi import FastAPI
+  from fastapi_mctools.exceptions import HTTPException, handle_http_exception
+
+  app = FastAPI()
+  app.add_exception_handler(HTTPException, handle_http_exception)
+
+  # ex
+  @app.get("/")
+  async def test():
+      raise HTTPException(
+        status_code=404,
+        detail="Item not found",
+        code="NOT_FOOUND",
+        good="GOOD!!!"
+  	)
+
+  ```
+
+## 라이브러리 배포
+
+- 라이브러리를 배포하는데 poetry를 사용했습니다.
+- 다음 명령어만 사용하면 배포가 끝납니다. 참 쉽쥬?
+  ```python
+  poetry build
+  poetry publish
+  ```
+
+그런데 매번 귀찮게 업데이트할 때 마다 수동으로 할 순 없는법. github actions를 만들어 release가 생성되면 자동배포 되도록 만들어 줍니다. pyproject.toml에서 version 업데이트는 반드시 해줘야 합니다.
+
+```yaml
+name: Publish Python 🐍 distributions 📦 to PyPI
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          pip install poetry
+          poetry config pypi-token.pypi ${{ secrets.PYPI_API }}
+
+      - name: Build and publish
+        run: |
+          poetry build
+          poetry publish
+```
+
+PYPI_API는 pypi에 로그인하고 계정 설정에 가면 API를 발급받을 수 있습니다. Account settings 에 들어가면 됩니다. 스크롤을 조금만 내리면 아래 이미지와 같이 API tokens가 있습니다.
+
+<Image src="/fastapi-my-library/01.png" alt="pypi에서 엑세스 키 얻기" caption="pypi 화면" />
+
+간단하지만 FastAPI 라이브러리를 만들어보니 정말 재미었습니다. 뭔가 오픈소스 개발자가 된 기분이랄까요. 정말 간단한 기능들 밖엔 없는데 나중에는 좀 복잡하고 유용한 라이브러리를 다른 개발자들과 함께 만들고 사용해보고 싶은 마음이 들더군요. FastAPI 컨트리뷰터도 되고 싶은데 거기에 얼굴을 넣는 그날까지 더욱 정진해야겠습니다.
