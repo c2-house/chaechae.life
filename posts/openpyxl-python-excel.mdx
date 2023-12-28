@@ -1,0 +1,194 @@
+---
+title: Openpyxl으로 엑셀 파일 Python으로 쉽게 다루기
+description: Python에는 Pandas라는 강력한 데이터분석 라이브러리가 있습니다. Excel역시 pandas를 이용하면 쉽게 읽고 데이터를 가져올 수 있습니다. 하지만 pandas는 사이즈가 큰 라이브러리이기 때문에 Excel만 읽고 쓰고 하려 한다면 pandas를 설치하는것은 낭비일 수 있습니다. 오늘은 openpyxl을 이용하여 python으로 excel을 다루는 것을 익혀보려고 합니다. openpyxl은 xlsx확장자 파일의 엑셀을 읽고 쓸수있는 라이브러리입니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python.png
+date: 2023/12/13
+---
+
+<Image src="/thumbnails/python_logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+Python에는 Pandas라는 강력한 데이터분석 라이브러리가 있습니다. Excel역시 pandas를 이용하면 쉽게 읽고 데이터를 가져올 수 있습니다. 하지만 pandas는 사이즈가 큰 라이브러리이기 때문에 Excel만 읽고 쓰고 하려 한다면 pandas를 설치하는것은 낭비일 수 있습니다.
+
+오늘은 openpyxl을 이용하여 python으로 excel을 다루는 것을 익혀보려고 합니다. openpyxl은 xlsx확장자 파일의 엑셀을 읽고 쓸수있는 라이브러리입니다.
+
+## openpyxl 설치
+
+openpyxl은 python 기본라이브러리가 아니기 때문에 직접 설치해야합니다.
+
+```python
+pip install openpyxl
+poetry add openpyxl
+```
+
+## openpyxl을 이용한 기본 작업
+
+openpyxl을 사용하여 Excel 파일을 읽고 쓰는 기본적인 방법은 다음과 같습니다.
+
+### 1. 엑셀파일 읽기
+
+openpyxl을 임포트하고, **load_workbook** 함수를 사용하여 엑셀 파일을 로드합니다.
+
+```python
+from openpyxl import load_workbook
+
+# Excel 파일 로드
+workbook = load_workbook('sample.xlsx')
+sheet = workbook.active# 엑셀의 첫번째 sheet가 로드됩니다.
+```
+
+### **2. 셀 데이터 읽기**
+
+특정 셀의 데이터를 읽기 위해 **cell** 메서드나 셀의 주소를 사용할 수 있습니다.
+
+```python
+# 특정 셀 데이터 읽기
+cell_value = sheet['A1'].value
+print(cell_value)
+
+# 또 다른 방법으로 셀 데이터 읽기
+cell_value = sheet.cell(row=1, column=1).value
+print(cell_value)
+
+```
+
+### **3. 엑셀 파일 쓰기**
+
+새로운 데이터를 셀에 쓰기 위해서는 먼저 셀을 선택하고, 값을 할당한 다음 파일을 저장합니다.
+
+```python
+# 셀에 데이터 쓰기
+sheet['B1'] = '값2'
+workbook.save('sample2.xlsx')
+
+```
+
+1. 셀스타일 변경
+
+엑셀의 각셀의 스타일을 변경할 수도 있습니다. 약간의 고급기능으로 생각하면 되겠습니다.
+
+```python
+from openpyxl import Workbook
+from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
+
+# 새 워크북과 시트 생성
+wb = Workbook()
+sheet = wb.active
+
+# 스타일을 적용할 셀 선택
+cell = sheet['A1']
+cell.value = "Hello World"
+
+```
+
+2. 폰트 스타일 변경
+
+```python
+cell.font = Font(name='Calibri', size=12, bold=True, italic=False, vertAlign=None, underline='none', strike=False, color='FF0000')
+
+```
+
+3. 셀 배경색 변경 (패턴 채우기)
+
+```python
+cell.fill = PatternFill(fill_type='solid', start_color='FFFF00', end_color='FFFF00')
+
+```
+
+4. 셀 테두리 스타일 적용
+
+```python
+thin_border = Border(left=Side(style='thin'),
+                     right=Side(style='thin'),
+                     top=Side(style='thin'),
+                     bottom=Side(style='thin'))
+cell.border = thin_border
+
+```
+
+5. 셀 정렬 설정
+
+```python
+cell.alignment = Alignment(horizontal='center', vertical='center')
+
+```
+
+위 설정들을 모두 적용한뒤 저장하면 다음과 같이 적용되는 것을 볼 수 있습니다.
+
+<Image src="/openpyxl-python-excel/01.png" alt="파이썬 엑셀 결과물" caption="엑셀 결과물" />
+
+6. 엑셀이미지 삽입
+
+```python
+from openpyxl.drawing.image import Image
+
+img = Image('sample_image.png')
+sheet.add_image(img, 'A1')  # 'A1'은 이미지를 삽입할 위치입니다.
+```
+
+아래와 같이 매우 거대한 이미지가 삽입되었습니다.
+
+<Image
+  src="/openpyxl-python-excel/02.jpg"
+  alt="파이썬 엑셀 이미지 삽입 결과물"
+  caption="엑셀 이미지 삽입 결과물"
+/>
+
+## 응용하기
+
+아래와 같이 특정 컬럼의 데이터를 가져올 수 있는 클래스를 만들어봤습니다.
+
+```python
+import openpyxl
+from openpyxl.utils import column_index_from_string
+
+class Excel:
+    def __init__(self, workbook: openpyxl.Workbook, sheet_name: str | None = None):
+        self.workbook = workbook
+        self.sheet_name = workbook.active.title if not sheet_name else sheet_name
+
+    @property
+    def columns(self):
+        column_names = []
+        for cell in self.workbook[self.sheet_name][1]:
+            column_names.append(cell.value)
+        return column_names
+
+    def get_column_data_by_name(self, column_name: str):
+        excel = self.workbook[self.sheet_name]
+        column_index = None
+
+        for cell in excel[1]:
+            if cell.value == column_name:
+                column_index = column_index_from_string(cell.column_letter)
+                break
+
+        if column_index is None:
+            raise ValueError(f"{column_name} 컬럼이 존재하지 않습니다.")
+
+        column_data = []
+        null_count = 0
+        for row in excel.iter_rows(
+            min_row=2, min_col=column_index, max_col=column_index, max_row=excel.max_row
+        ):
+            cell = row[0]
+            if not cell.value:
+                null_count += 1
+                if null_count > 2:
+                    raise ValueError(f"{column_name} 컬럼에 빈 셀이 존재합니다. 데이터를 확인해주세요.")
+            column_data.append(cell.value)
+        return column_data
+```
+
+- column_index_from_string는 알파벳으로 되어있는 엑셀의 열을 index 숫자로 가져올 수 있도록 도와주는 함수입니다.
+- Excel 클래스의 columns는 엑셀의 첫번째 row를 가져와서 컬럼명을 리스트로 반환합니다.
+- get_column_data_by_name은 컬럼명을 입력받아 해당 컬럼의 데이터를 리스트로 반환합니다. 빈셀이 2개 이상이면 ValueError를 발생시킵니다.
+
+openpyxl을 공부하고 응용해보았습니다. openpyxl은 pandas에 비해 기능이 많이 부족하지만, 엑셀을 다루는데 필요한 기능은 대부분 제공하고 있습니다. pandas에서도 openpyxl을 사용하고 있습니다.
+서버단에 간단한 입출력 작업이라면 openpyxl만 사용해도 괜찮을 것 같습니다.
+이상으로 openpyxl을 이용한 엑셀 다루기를 마치겠습니다.
