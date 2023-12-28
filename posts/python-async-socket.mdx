@@ -1,0 +1,52 @@
+---
+title: 파이썬 비동기 소켓통신 연결 방법
+description: 오늘은 비동기 소켓통신의 구현 방법을 알아보겠습니다. 동기적으로 소켓 통신을 구현 하면, 외부 통신 시 I/O 바운드 작업으로 인해 블로킹이 발생하여 지연이 생길 수 있습니다. 그러나 비동기 방식을 사용하면 동시성이 향상되어 좀 더 빠르고 효율적으로 실행할 수 있게 됩니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python_logo.png
+date: 2023/11/30
+---
+
+<Image src="/thumbnails/python_logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI로 개발을 하다보면 비동기로 코드를 많이 작성하게 되는 것 같습니다. 오늘은 비동기 소켓통신의 구현 방법을 알아보겠습니다. 동기적으로 소켓 통신을 구현 하면, 외부 통신 시 I/O 바운드 작업으로 인해 블로킹이 발생하여 지연이 생길 수 있습니다. 그러나 비동기 방식을 사용하면 동시성이 향상되어 좀 더 빠르고 효율적으로 실행할 수 있게 됩니다. 소켓통신은 TCP/IP 통신을 기준으로 작성하였습니다. websocket은 다음에 포스팅하겠습니다.
+
+## 구현
+
+**asyncio** 라이브러리만 있으면 간단하게 구현할 수 있습니다.
+
+```python
+import asyncio
+
+data = "hello world"
+
+reader, writer = await asyncio.open_connection("IP", "PORT")
+writer.write(data.encode())
+await writer.drain()
+
+response = await reader.read(512)
+
+writer.close()
+await writer.wait_closed()
+```
+
+한 줄 한 줄 살펴보겠습니다.
+
+- asyncio.open_connection 은 데이터 수신, 전송 객체를 반환합니다.
+- write는 byte타입만 전송하기 때문에 문자열을 반드시 encode() 해주어야 합니다.
+- await writer.drain()은 현제 버퍼에 있는 데이터가 전송될 때까지 기다립니다.
+- await reader.read(512)는 데이터를 읽어옵니다. 최대 512byte까지 읽을 수 있습니다. 512가 아니고 필요에따라 값을 변경할 수 있습니다.
+- writer.close() 데이터 전송이 완료되면 소켓 연결을 닫습니다.
+- await writer.wait_closed() 연결이 완전히 종료될때까지 대기합니다 .
+
+파이썬 내장 라이브러리를 사용하는 경우는 공식문서를 참고하면 더 자세한 내용을 알 수 있습니다.
+
+<Link url="https://docs.python.org/ko/3/library/asyncio-stream.html" />
+
+## 마무리
+
+동기방식의 socket 통신은 python의 socket 라이브러리를 사용하면 됩니다. 오늘은 파이썬 비동기 TCP/IP 소켓통신 연결 방법에 대해서 알아봤습니다.

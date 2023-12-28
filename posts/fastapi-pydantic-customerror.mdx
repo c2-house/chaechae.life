@@ -1,0 +1,120 @@
+---
+title: FastAPI - PydanticCustomError 사용법
+description: FastAPI에서 Pydantic을 사용하면 기본적으로 유효성 검사에 실패했을 때 422에러를 발생시키고 정해진 응답을 반환합니다. 하지만 PydanticCustomError를 사용해서 Error를 커스텀 할 수 있습니다.
+tags: [FastAPI, Pydantic]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/12/01
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI에서 Pydantic을 사용하면 기본적으로 유효성 검사에 실패했을 때 422에러를 발생시키고 정해진 응답을 반환합니다.
+
+하지만 `PydanticCustomError`를 사용해서 Error를 커스텀 할 수 있습니다.
+
+## ValueError
+
+기존 방식대로 했을 때 예시입니다.
+
+```python
+from pydantic import BaseModel, field_validator
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def email_validator(cls, v):
+        _, domain = v.split("@")
+        if domain != "test.com":
+            raise ValueError("Email must be test.com")
+        return v
+
+```
+
+422 에러가 발생하면 다음과 같습니다.
+
+```json
+{
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": ["body", "email"],
+      "msg": "Value error, Email must be test.com",
+      "input": "admin@test.kr",
+      "ctx": {
+        "error": {}
+      },
+      "url": "https://errors.pydantic.dev/2.1/v/value_error"
+    }
+  ]
+}
+```
+
+## PydanticCustomError 사용법
+
+다음과 같은 요소들을 커스텀 할 수 있습니다.
+
+- error_type
+- message_template
+- context
+
+다음과 같이 수정해보겠습니다.
+
+1. 위 예시에서 type을 “value_error” 가 아닌 “EMAIL_VALIDATION_ERROR”로 바꾸려고 합니다.
+2. msg에서 input domain을 지적해주겠습니다.
+3. ctx에 domain을 잘못된 domain과 올바른 domain을 담아 보내겠습니다.
+
+코드는 다음과 같습니다.
+
+```python
+from pydantic import BaseModel, field_validator
+from pydantic_core import PydanticCustomError
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+    @field_validator("email")
+    @classmethod
+    def email_validator(cls, v):
+        _, domain = v.split("@")
+        if domain != "test.com":
+            raise PydanticCustomError(
+                "email_validation_error",
+                "email must be a test.com domain, input domain: {domain}",
+                {
+                    "wrong_domain": domain,
+                    "right_domain": "test.com"
+                },
+            )
+        return v
+```
+
+코드를 수정하면 에러가 다음과 같이 변경됩니다. status_code는 여전히 422입니다.
+
+```json
+{
+  "detail": [
+    {
+      "type": "email_validation_error",
+      "loc": ["body", "email"],
+      "msg": "email must be a test.com domain, input domain: {domain}",
+      "input": "admin@test.kr",
+      "ctx": {
+        "wrong_domain": "test.kr",
+        "right_domain": "test.com"
+      }
+    }
+  ]
+}
+```
+
+오늘은 pydantic 에러를 커스텀하는 방법을 알아봤습니다. 프론트엔드에서 처리하기 좋은 방식으로 협의하여 에러를 커스텀하면 되겠습니다.  
+이상으로 FastAPI - PydanticCustomError 사용법 포스팅을 마치겠습니다.

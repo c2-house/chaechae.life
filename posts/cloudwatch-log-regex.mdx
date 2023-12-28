@@ -1,0 +1,47 @@
+---
+title: CloudWatch 로그 정규 표현식으로 검색하기
+description: 최근 간단한 프로젝트를 ECS로 배포한 뒤 CloudWatch에 로그를 기록했습니다. CloudWatch에서 Log를 검색할 수 있도록 제공해줍니다. AWS CloudWatch에서 로그를 검색하는 방법에 대해서 알아보겠습니다. 그리고 실수했던 경험을 공유하도록 하겠습니다.
+tags: [AWS]
+author: mingke
+thumbnail: /thumbnails/aws.png
+date: 2023/11/17
+---
+
+<Image src="/thumbnails/aws.png" alt="AWS Logo" />
+
+### Table of Contents
+
+## 소개
+
+최근 간단한 프로젝트를 ECS로 배포한 뒤 CloudWatch에 로그를 기록했습니다. CloudWatch에서 Log를 검색할 수 있도록 제공해줍니다. AWS CloudWatch에서 로그를 검색하는 방법에 대해서 알아보겠습니다. 그리고 실수했던 경험을 공유하도록 하겠습니다.
+
+## CloudWatch 로그 검색
+
+AWS를 사용해서 프로젝트를 배포하고 CloudWatch에 로깅을 할 수 있습니다. ECS같은 서비스를 이용한다면 별도의 어려운 셋팅없이 간단한 로그를 쌓을 수 있습니다. 그리고 아래 이미지에서 보시는바와 같이 검색을 할 수 있습니다. 로그에 포함된 키워드로 검색할 수 있습니다.
+
+<Image src="/cloudwatch-log-regex/01.png" alt="AWS 클라우드와치 로그 검색창" />
+
+## 정규표현식 가능
+
+<Link url="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/FilterAndPatternSyntax.html#matching-terms-events" />
+
+정규표현식을 이용한 검색도 가능합니다. 공식문서에 나와있으니 참고하여 로그 검색에 활용할 수 있겠습니다. 우리가 익히 알던 모든 정규표현식을 다 제공하는 것은 아닙니다. 외워서 쓰긴 어려우니 공식문서를 보고 사용하면 될 것 같습니다.
+
+- **%%로 감싸서 사용할수 있습니다.**
+
+만약 Error 로그가 있고 400 또는 500번대 에러 로그만 찾고 싶다면 다음과 같이 사용해 볼 수 있습니다.
+
+```python
+%Error [45]\d\d%
+```
+
+Error 다음 4 또는 5로 시작하고 뒤에 숫자가 있는 로그를 찾습니다.
+
+## 실수 공유
+
+저는 거의 어지간하면 한글을 거의 쓰지 않는데요, 이번에 작은 프로젝트를 하다가 무슨생각이 었는지 한글 로깅을 좀 했습니다. 그래서 이번에 알게된 사실이 있습니다. **CloudWatch 로그 정규표현식은 한글을 지원하지 않습니다**. 한글로 입력하면 다음과 같은 에러를 발생시킵니다.
+
+<Image src="/cloudwatch-log-regex/02.png" alt="AWS 클라우드와치 한글 정규표현식 불가" />
+
+CloudWatch를 로깅에 이용할 목적이라면 한글 로그를 작성하지 않는게 좋은것 같습니다. 물론 정규표현식을 사용하는게 아니라면 한글 검색도 잘 동작합니다.
+이상으로 CloudWatch 로그 정규표현식으로 검색하기를 마치겠습니다.

@@ -1,0 +1,66 @@
+---
+title: FastAPI - Redis 캐시 사용하기
+description: FastAPI에서 Redis를 사용하는 방법에 대해서 간단하게 알아보겠습니다. 운영하고 있는 서비스 중에 전기차G - 전기차 충전소 찾기 가 있습니다. 공공API를 사용해서 전기차 충전소 위치와 충전기 정보를 제공하는 서비스 입니다.
+tags: [FastAPI, Redis]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/11/22
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI에서 Redis를 사용하는 방법에 대해서 간단하게 알아보겠습니다. 운영하고 있는 서비스 중에 **전기차G - 전기차 충전소 찾기** 가 있습니다. 공공API를 사용해서 전기차 충전소 위치와 충전기 정보를 제공하는 서비스 입니다.
+
+기존에 Nextjs에서 공공API를 직접 호출하여 데이터를 받아온 뒤 지도에 마커를 랜더링하는 방식으로 개발했었습니다. 그런데 Next API의 cold start문제도 있고 굳이 실시간으로 계속 공공API를 요청할 필요가 없다고 판단했습니다.
+
+caching을 사용하면 공공API 요청을 줄일 수 있고 사용자에게 더 빠른 서비스를 제공할 수 있을 것으로 판단, 그리고 공공 API는 1일 요청의 제한이 있기 때문에 요청을 줄이는 것도 나름 중요했습니다.
+그래서 FastAPI로 API를 이전하고 Redis를 이용해서 cache를 구현하고 지도서비스 사용성을 개선했습니다.
+
+이글은 Redis에 대해서 설명하는 글은 아니니 바로 구현으로 넘어가 보겠습니다.
+
+## 구현
+
+과거에 Redis를 비동기로 사용하기 위해 aioredis 라이브러리를 이용했었는데 이젠 redis 로 통합되어 aioredis를 사용하지 않습니다. 아래와 같이 간단하게 FastAPI DI로 사용할 수 있습니다.
+
+```python
+from typing import Annotated
+from fastapi import Depends
+from redis import asyncio as aioredis
+
+async def get_redis_pool():
+		# 예시에서는 docker-compose를 이용해서redis 컨테이너에 연결함
+    return await aioredis.from_url("redis://redis:6379/0")
+
+Redis = Annotated[aioredis.Redis, Depends(get_redis_pool)]
+...
+
+# dependency로 주입해서 사용할 수 있습니다.
+# 실제 사용한 코드의 일부분을 발췌
+async def get_organized_chargers(redis: Redis, districtCode: str, lat: str, lng: str):
+    data_handler = PublicEvChagerDataHandler()
+    cached_data = await check_cache(redis, districtCode)
+    if cached_data:
+        cached_data = json.loads(cached_data)
+        current_lat_lng = data_handler.convert_to_coord(lat, lng)
+		...
+
+    # 캐시 유효시간 5분 설정
+		await redis.setex(districtCode, 60 * 5, json.dumps(result))
+
+async def check_cache(redis: aioredis.Redis, districtCode: str):
+    if await redis.exists(districtCode):
+        return await redis.get(districtCode)
+    return None
+```
+
+아래 링크의 첫 화면에서 현 위치를 찾은 뒤 사용자가 2~3초 기다려야 충전소 위치가 랜더링 되었는데, 변경 후 1초이내에 완료됩니다. 오늘은 FastAPI에서 redis 사용법 공유 겸 전기차G 서비스 개선한 경험 공유를 해보았습니다. 비록 하루 평균 10명이 사용하는 서비스지만 이용해주는 사람들이 있어 뿌듯하고 소유권을 가진 서비스라 더욱 애정이 가는것 같습니다. 나름 구글과 네이버에서 검색도 되는 서비스입니다ㅎㅎ.
+
+<Link url="https://ev-charge.kr" />
+
+## 코드
+
+<Link url="https://github.com/c2-house/ev-charge-backend" />

@@ -1,0 +1,94 @@
+---
+title: Async SQLALCHEMY 테스트 환경 구축하기
+description: 테스트 코드의 중요성은 두 말하면 입이 아픈데요. SQLAlchemy를 비동기로 사용하면 테스트 환경을 구축하는 방법도 달라집니다. 오늘은 Pytest를 이용해서 SQLAlchemy를 비동기로 테스트하는 환경 구축을 공부해보겠습니다.
+tags: [FastAPI, Pytest, SQLAlchemy]
+author: mingke
+thumbnail: /thumbnails/fastapi_logo.png
+date: 2023/11/12
+---
+
+<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 비동기 테스트 환경 구축하기
+
+테스트 코드의 중요성은 두 말하면 입이 아픈데요. SQLAlchemy를 비동기로 사용하면 테스트 환경을 구축하는 방법도 달라집니다. 오늘은 Pytest를 이용해서 SQLAlchemy를 비동기로 테스트하는 환경 구축을 공부해보겠습니다.
+
+중요한 포인트는 **event_loop**를 fixture를 선언해준다는 것입니다. 테스트가 비동기로 실행될 때 이벤트 루프를 설정해준다고 생각하면 됩니다. 그 밖에는 동기 SQLALCHEMY 테스트 환경과 크게 다르지 않습니다.
+
+## Conftest.py 작성하기
+
+conftest.py를 작성하며 코드로 알아보겠습니다. 이번 예제에서도 mysql을 사용합니다.
+
+- sqlalchemy 버젼 2.0.20
+- pytest 버젼 7.4.0
+
+```python
+# conftest.py
+import asyncio
+import pytest
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+
+# async_engine을 먼저 생성합니다.
+async_engine = create_async_engine("mysql+aiomysql://root:root@127.0.0.1:3306/tests")
+
+@pytest.fixture
+async def async_db():
+		# 데이터 베이스와 연결합니다.
+    async with async_engine.connect() as connection:
+				# 연결이 되면 새로운 트랜잭션을 시작합니다.
+        transaction = await connection.begin()
+				# 테스트에 사용될 비동기 세션을 생성합니다.
+        async_session = async_sessionmaker(
+            connection, autoflush=False, autocommit=False, expire_on_commit=False
+        )
+        async with async_session() as session:
+						# 세션을 시작하고
+            await session.begin()
+						# 세션을 호출자에게 넘깁니다. 테스트 코드에서 async_db로 사용됩니다.
+            yield session
+						# 테스트가 끝나면 transaction을 롤백하여 DB를 rollback전으로 돌립니다.
+            await transaction.rollback()
+
+# 비동기 코드를 테스트하기 위한 이벤트 루프를 정의합니다.
+@pytest.fixture(scope="session")
+def event_loop():
+    policy = asyncio.get_event_loop_policy()
+    loop = policy.new_event_loop()
+    yield loop
+    loop.close()
+```
+
+conftest.py에 작성된 것 뿐만 아니라 pytest에서 비동기 테스트를 하기 위해 pytest-asyncio를 많이 사용합니다. 설치를 잊지 말아주세요
+
+```bash
+pip install pytest-asyncio
+```
+
+아래 pytest-asyncio설정을 pytest.ini와 같은 설정파일에 넣어야합니다.
+
+```bash
+[pytest]
+asyncio_mode = auto
+
+# pyproject.toml을 사용할 경우
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+```
+
+설정이 끝났다면 다음과 같이 테스트에 활용해 볼 수 있겠습니다.
+
+```python
+import pytest
+from sqlalchemy import insert
+from sqlalchemy.ext.asyncio import AsyncSession
+
+@pytest.mark.asyncio
+async def test_something(async_db: AsyncSession) -> None:
+		query = insert(Model).value({'id':1})
+    await async_db.excute(query)
+    await db.commit()
+```
+
+지금까지 비동기 SQLAlchemy를 사용할 때 테스트하는 방법에 대해서 알아봤습니다. 다들 테스트 열심히 작성하시고 안정적인 소프트웨어 개발하시기 바랍니다.
