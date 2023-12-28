@@ -23,8 +23,13 @@ const sitemap = (): MetadataRoute.Sitemap => {
       url: 'https://chaechae.life',
       lastModified: new Date(),
     },
+    {
+      url: 'https://chaechae.life/blog',
+      lastModified: new Date(),
+    },
     ...posts,
     ...tagPages,
+    ...authorPages,
   ];
 };
 

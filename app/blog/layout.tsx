@@ -1,28 +1,24 @@
-import { Metadata, ResolvingMetadata } from 'next';
-import { defaultMetadata } from '@/constants/metadata';
+import { Metadata } from 'next';
+import { title, openGraph } from '@/app/shared-metadata';
 
-export const generateMetadata = async (parent: ResolvingMetadata): Promise<Metadata> => {
-  const { title: siteName, description } = defaultMetadata;
-  const ogTitle = `블로그 - ${siteName}`;
-  const previousImages = (await parent).openGraph?.images || [];
+const ogTitle = `블로그 - ${title}`;
+const description =
+  '프론트엔드, 백엔드 개발자 부부 채채의 개발 경험과 개발자로서의 삶을 공유하는 블로그입니다.';
 
-  return {
-    title: '블로그',
+export const metadata: Metadata = {
+  title: '블로그',
+  description,
+  openGraph: {
+    ...openGraph,
+    title: ogTitle,
     description,
-    openGraph: {
-      title: ogTitle,
-      description,
-      url: '/blog',
-      siteName,
-      type: 'website',
-      images: previousImages,
-    },
-    twitter: {
-      title: ogTitle,
-      description,
-      card: 'summary_large_image',
-    },
-  };
+    url: '/blog',
+  },
+  twitter: {
+    title: ogTitle,
+    description,
+    card: 'summary_large_image',
+  },
 };
 
 const Layout = ({ children }: { children: React.ReactNode }) => children;

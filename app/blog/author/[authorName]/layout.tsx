@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { defaultMetadata } from '@/constants/metadata';
+import { openGraph } from '@/app/shared-metadata';
 
 interface Props {
   params: {
@@ -11,23 +11,20 @@ export const generateMetadata = async (
   { params: { authorName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const { title: siteName, description } = defaultMetadata;
-  const ogTitle = `${authorName}의 글 - ${siteName}`;
-  const previousImages = (await parent).openGraph?.images || [];
+  const title = `블로그 - ${authorName}`;
+  const description = (await parent).description || '';
 
   return {
-    title: `${authorName}의 글`,
+    title,
     description,
     openGraph: {
-      title: ogTitle,
+      ...openGraph,
+      title,
       description,
       url: `/blog/author/${authorName}`,
-      siteName,
-      type: 'website',
-      images: previousImages,
     },
     twitter: {
-      title: ogTitle,
+      title,
       description,
       card: 'summary_large_image',
     },

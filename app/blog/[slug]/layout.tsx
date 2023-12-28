@@ -1,4 +1,4 @@
-import { Metadata, ResolvingMetadata } from 'next';
+import { Metadata } from 'next';
 import { allPosts } from 'contentlayer/generated';
 
 interface Props {
@@ -7,16 +7,12 @@ interface Props {
   };
 }
 
-export const generateMetadata = async (
-  { params }: Props,
-  parent: ResolvingMetadata,
-): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
   const post = allPosts.find((post) => post.slug === params.slug);
 
   if (!post) return {};
 
-  const { title, description, slug, date, image } = post;
-  const previousImages = (await parent).openGraph?.images || [];
+  const { title, description, slug, date, author, tags, image } = post;
 
   return {
     title,
@@ -26,11 +22,12 @@ export const generateMetadata = async (
       description,
       url: `/blog/${slug}`,
       siteName: '채채라이프',
+      locale: 'ko_KR',
       type: 'article',
       publishedTime: date,
-      tags: post.tags,
-      authors: post.author,
-      images: [image, ...previousImages],
+      authors: author,
+      tags,
+      images: image,
     },
     twitter: {
       title,

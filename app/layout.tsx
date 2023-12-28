@@ -3,17 +3,16 @@ import { Inter } from 'next/font/google';
 import clsx from 'clsx';
 import './globals.css';
 
-import { defaultMetadata, host } from '@/constants/metadata';
+import { title, description, openGraph } from '@/app/shared-metadata';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const { title, description } = defaultMetadata;
 const rootTitle = `${title} - 개발자 부부 채채`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(host),
+  metadataBase: new URL('https://chaechae.life'),
   title: {
     default: title,
     template: `%s - ${title}`,
@@ -21,20 +20,10 @@ export const metadata: Metadata = {
   },
   description,
   openGraph: {
+    ...openGraph,
     title: rootTitle,
     description,
     url: '/',
-    siteName: title,
-    type: 'website',
-    locale: 'ko_KR',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: title,
-      },
-    ],
   },
   twitter: {
     title: rootTitle,
