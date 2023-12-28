@@ -3,7 +3,7 @@ export const navLinks = [
   { name: 'Blog', path: '/blog' },
 ] as const;
 
-export const authors = ['EunchaeKo', 'mingke'] as const;
+export const authors = ['EKO', 'mingke'] as const;
 
 export const tags = [
   'Python',

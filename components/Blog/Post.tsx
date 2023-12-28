@@ -7,8 +7,8 @@ const Post = ({ post }: { post: Post }) => {
   return (
     <article className="prose mx-auto py-10 lg:prose-lg prose-figcaption:text-sm">
       <header>
-        <h1 className="!mb-6">{post.title}</h1>
-        <div className="mb-4 text-sm lg:text-base">
+        <h1 className="!mb-4 md:!mb-6">{post.title}</h1>
+        <div className="mb-4 text-sm md:mb-6 lg:text-base">
           <Author author={post.author} date={post.date} />
         </div>
         <Tags tags={post.tags} />
