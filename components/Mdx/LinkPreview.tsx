@@ -2,18 +2,19 @@
 'use client';
 
 import useSWR from 'swr';
+import { GlobeIcon } from '@/public/icons';
 
-interface PreviewData {
+interface LinkData {
   title: string;
   description?: string;
   image?: string;
-  favicon: string;
+  favicon?: string;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const LinkPreview = ({ url }: { url: string }) => {
-  const { data, error, isLoading } = useSWR<PreviewData>(
+  const { data, error, isLoading } = useSWR<LinkData>(
     `/api/og?url=${encodeURIComponent(url)}`,
     fetcher,
     {
@@ -44,7 +45,11 @@ const LinkPreview = ({ url }: { url: string }) => {
           {data.description}
         </div>
         <div className="flex items-center">
-          <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
+          {data.favicon ? (
+            <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
+          ) : (
+            <GlobeIcon className="h-4 w-4 fill-slate-400" />
+          )}
           <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-gray-700">{url}</div>
         </div>
       </div>
@@ -68,7 +73,7 @@ const LinkContainer = ({ url, children }: { url: string; children: React.ReactNo
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex overflow-hidden rounded-[4px] border border-slate-200 no-underline transition-colors hover:bg-gray-100"
+        className="flex overflow-hidden rounded-[4px] border border-slate-200 no-underline transition-colors hover:bg-slate-100"
       >
         {children}
       </a>

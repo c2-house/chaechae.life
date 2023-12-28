@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
   const data = await response.text();
 
   const $ = cheerio.load(data);
-  const title = $('meta[property="og:title"]').attr('content') || $('title').text();
+  const title = $('meta[property="og:title"]').attr('content') || $('title').first().text();
 
   const description =
     $('meta[property="og:description"]').attr('content') ||
@@ -25,9 +25,7 @@ export async function GET(request: NextRequest) {
   }
 
   let favicon = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href');
-  if (!favicon) {
-    favicon = `${new URL(url).origin}/favicon.ico`;
-  } else if (!favicon.startsWith('http')) {
+  if (favicon && !favicon.startsWith('http')) {
     favicon = new URL(favicon, url).href;
   }
 
