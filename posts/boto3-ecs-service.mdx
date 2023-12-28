@@ -1,0 +1,121 @@
+---
+title: Boto3 - ECS 서비스 실행 및 종료하기
+description: AWS 콘솔에 들어가서 서비스를 삭제할 수도 있고 AWS CLI 를 통해서 할 수도 있고 다양한 방법이 있겠지만 Boto3를 이용해서 실행 및 종료하는 어드민 API를 만들기로 결정했습니다. 개발자가 아니더라도 권한이 있는 사람이라면 쉽게 가능할 수 있도록 하기 위해서 내린 결정이었습니다.
+tags: [AWS, Python]
+author: mingke
+thumbnail: /thumbnails/aws.png
+date: 2023/12/06
+---
+
+<Image src="/thumbnails/aws.png" alt="AWS Logo" />
+
+### Table of Contents
+
+## 소개
+
+몇 개의 API와 1개의 job scheduling이 돌아가고 있는 FastAPI로 개발된 서버가 있었습니다. 그 서버는 ECS EC2에서 돌아가고 있는데, 스케쥴링 돌다가 혹시 모를 문제가 생긴다면 긴급하게 종료해야 하니 즉시 종료할 수 있는 기능을 만들어 달라는 요청을 받았습니다.
+
+AWS 콘솔에 들어가서 서비스를 삭제할 수도 있고 AWS CLI 를 통해서 할 수도 있고 다양한 방법이 있겠지만 **Boto3를 이용해서 실행 및 종료하는 어드민 API**를 만들기로 결정했습니다. 개발자가 아니더라도 권한이 있는 사람이라면 쉽게 가능할 수 있도록 하기 위해서 내린 결정이었습니다. **이 문제를 해결한 과정을 공유하고 Boto3를 사용해서 ECS 서비스를 실행 및 종료하는 방법에 대해 알아보겠습니다.**
+
+## Boto3
+
+Boto3는 AWS Software Development Kit(SDK)의 파이썬 버전입니다. SDK를 사용하여 AWS 리소스를 프로그래밍 방식으로 제어할 수 있습니다. Boto3를 사용하여 ECS 서비스를 실행하고 종료하는 어드민 API를 개발할 수 있습니다. 이를 통해 서버를 즉시 종료하는 기능을 구현할 수 있습니다.
+
+## 구현방법
+
+- boto3의 ecs client에서는 create_service와 delete_service 메소드를 제공합니다. 이 2개의 메소드를 이용해서 서비스를 종료하고 실행할 수 있습니다.
+- 기존에 이미 돌아가고 있던 서비스를 삭제 및 재실행하는 목적이기 때문에 ECS task definition은 정의되어 있다고 가정합니다.
+
+```python
+class ECS:
+    def __init__(self, access_key, secret_key, region):
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.region = region
+        self.ecs = boto3.client(
+            "ecs",
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            region_name=self.region,
+        )
+
+    def stop_ecs_service(self, cluster, service):
+        try:
+            self.ecs.update_service(
+                cluster=cluster,
+                service=service,
+                desiredCount=0,
+            )
+        except ClientError as e:
+            logger.error(e)
+        else:
+            self.ecs.delete_service(
+                cluster=cluster,
+                service=service,
+            )
+            logger.info(f"ECS service {service} 를 종료했습니다.")
+
+    def start_ecs_service(
+        self,
+        cluster,
+        service,
+        task_definition,
+        target_group_arn,
+        container_name,
+        container_port,
+    ):
+        services = self.ecs.list_services(cluster=cluster)
+        if service in services["serviceArns"]:
+            response = self.ecs.update_service(
+                cluster=cluster, service=service, taskDefinition=task_definition
+            )
+        else:
+            response = self.ecs.create_service(
+                cluster=cluster,
+                serviceName=service,
+                taskDefinition=task_definition,
+				# Loadbalancer를 쓰지않는 경우 아래 로드밸런서를 부분을 지워줍니다.
+                loadBalancers=[
+                    {
+                        "targetGroupArn": target_group_arn,
+                        "containerName": container_name,
+                        "containerPort": container_port,
+                    }
+                ],
+                desiredCount=1,
+                launchType="EC2",
+                deploymentConfiguration={
+                    "maximumPercent": 200,
+                    "minimumHealthyPercent": 100,
+                },
+                schedulingStrategy="REPLICA",
+            )
+        return response
+```
+
+## stop_ecs_service
+
+서비스 삭제는 아주 간단합니다.
+
+우선 `update_service`로 desiredCount를 0으로 만듭니다. 그리고 나서 문제가 없으면 서비스를 삭제합니다.
+
+## start_ecs_service
+
+`list_services` 로 서비스를 조회한 다음, 입력받은 서비스 명이 있으면 업데이트 합니다. 거의 사용될 일은 없을 것 같습니다만 일단 구현은 했습니다. 서비스 명이 없는 경우 서비스를 생성합니다. `create_service` 로 생성하는데 넣어야할 인자값들이 좀 많습니다.
+
+- cluster : 클러스터명
+- service: 서비스 이름
+- taskDefinition: task정의 ex) taskDefinition:1 과 같이 작성
+- loadBalancers: 로드밸런서를 사용할 경우 위 예시와 같이 입력해줍니다. 사용하지 않는다면 빼면 됩니다.
+- desiredCount: 실행시킬 task의 숫자인데 1 이상 넣으면 넣은 개수만큼 컨테이너가 실행됩니다.
+- deploymentConfiguration:
+- launchType: EC2 또는 FARGATE 또는 EXTERNAL 입니다.
+- schedulingStrategy: 예시에서 EC2를 사용했는데 REPLICA 또는 DAEMON 입니다.
+  - 이 2타입에 대해서도 추후 다뤄보도록 하겠습니다.
+
+위에서 설명된 인자값 말고도 더 많은 값들을 상황에 맞게 넣을 수 있습니다.
+
+작성한 코드를 API 코드에 넣어 실행시키면 ECS를 실행, 종료 시킬 수 있습니다. ECS client에서 더 많은 기능을 제공해 주기 때문에 다른 기능을 쓰고 싶다면 역시, 공식문서를 보는게 제일 좋겠습니다. boto3로 AWS 다양한 서비스를 제어할 수 있다는 것이 재밌기도 하고 참 편리한 것 같습니다.
+boto3 ECS client의 공식문서를 남기면서 포스팅을 마치겠습니다.
+
+<Link url="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ecs.html#ecs" />
