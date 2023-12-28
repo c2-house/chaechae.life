@@ -1,19 +1,17 @@
 import { Metadata, ResolvingMetadata } from 'next';
 import { openGraph } from '@/app/shared-metadata';
-import { tags } from '@/constants/pages';
 
 interface Props {
   params: {
-    tagName: string;
+    authorName: string;
   };
 }
 
 export const generateMetadata = async (
-  { params: { tagName } }: Props,
+  { params: { authorName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const tag = tags.find((tag) => tag.toLowerCase() === tagName);
-  const title = `블로그 - ${tag}`;
+  const title = `블로그 - ${authorName}`;
   const description = (await parent).description || '';
 
   return {
@@ -23,7 +21,7 @@ export const generateMetadata = async (
       ...openGraph,
       title,
       description,
-      url: `/blog/tag/${tagName}`,
+      url: `/blog/author/${authorName}`,
     },
     twitter: {
       title,

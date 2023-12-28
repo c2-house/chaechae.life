@@ -2,18 +2,19 @@
 'use client';
 
 import useSWR from 'swr';
+import { GlobeIcon } from '@/public/icons';
 
-interface PreviewData {
+interface LinkData {
   title: string;
   description?: string;
   image?: string;
-  favicon: string;
+  favicon?: string;
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const LinkPreview = ({ url }: { url: string }) => {
-  const { data, error, isLoading } = useSWR<PreviewData>(
+  const { data, error, isLoading } = useSWR<LinkData>(
     `/api/og?url=${encodeURIComponent(url)}`,
     fetcher,
     {
@@ -28,7 +29,7 @@ const LinkPreview = ({ url }: { url: string }) => {
   if (error || !data)
     return (
       <LinkContainer url={url}>
-        <div className="flex-1 overflow-hidden px-4 py-3 text-sm font-normal text-gray-700">
+        <div className="flex-1 overflow-hidden px-4 py-3 text-sm font-normal text-slate-700">
           {url}
         </div>
       </LinkContainer>
@@ -37,19 +38,23 @@ const LinkPreview = ({ url }: { url: string }) => {
   return (
     <LinkContainer url={url}>
       <div className="flex-1 overflow-hidden px-4 py-3 font-normal">
-        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-gray-900 sm:line-clamp-1 sm:h-auto md:text-base">
+        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-slate-900 sm:line-clamp-1 sm:h-auto md:text-base">
           {data.title}
         </div>
-        <div className="mb-1.5 hidden h-10 text-sm text-gray-500 sm:line-clamp-2">
+        <div className="mb-1.5 hidden h-10 text-sm text-slate-500 sm:line-clamp-2">
           {data.description}
         </div>
         <div className="flex items-center">
-          <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
-          <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-gray-700">{url}</div>
+          {data.favicon ? (
+            <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
+          ) : (
+            <GlobeIcon className="h-4 w-4 fill-slate-400" />
+          )}
+          <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-slate-700">{url}</div>
         </div>
       </div>
       {data.image && (
-        <div className="relative w-[120px] sm:w-[200px]">
+        <div className="relative w-[120px] border-l border-slate-200 sm:w-[200px]">
           <div className="absolute inset-0">
             <img src={data.image} alt={data.title} className="!m-0 h-full w-full object-cover" />
           </div>
@@ -68,7 +73,7 @@ const LinkContainer = ({ url, children }: { url: string; children: React.ReactNo
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex overflow-hidden rounded-[4px] border border-gray-200 no-underline transition-colors hover:bg-gray-100"
+        className="flex overflow-hidden rounded-[4px] border border-slate-200 no-underline transition-colors hover:bg-slate-100"
       >
         {children}
       </a>
@@ -78,7 +83,7 @@ const LinkContainer = ({ url, children }: { url: string; children: React.ReactNo
 
 const Loading = () => {
   return (
-    <div className="my-5 flex h-[88px] w-full items-center justify-center space-x-2 rounded-[4px] border border-gray-200 sm:h-[116px] lg:my-6">
+    <div className="my-5 flex h-[88px] w-full items-center justify-center space-x-2 rounded-[4px] border border-slate-200 sm:h-[116px] lg:my-6">
       <div aria-label="loading" role="status">
         <svg
           width="24"

@@ -16,10 +16,10 @@ const Header = () => {
         <div className="container-lg py-3 md:py-5">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-xl font-bold md:text-2xl">
-              My Blog
+              CHAECHAE LIFE
             </Link>
 
-            <nav className="hidden lg:block">
+            <nav className="hidden md:block">
               <ul className="flex items-center">
                 {navLinks.map((link) => (
                   <li key={link.name}>
@@ -34,7 +34,7 @@ const Header = () => {
               </ul>
             </nav>
 
-            <div className="flex items-center lg:hidden">
+            <div className="flex items-center md:hidden">
               <button
                 aria-label="open sidebar"
                 className="p-1"

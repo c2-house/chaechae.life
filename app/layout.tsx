@@ -3,40 +3,30 @@ import { Inter } from 'next/font/google';
 import clsx from 'clsx';
 import './globals.css';
 
-import { defaultMetadata, host } from '@/constants/metadata';
+import { title, description, openGraph } from '@/app/shared-metadata';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const { title, description } = defaultMetadata;
+const rootTitle = `${title} - 개발자 부부 채채`;
 
 export const metadata: Metadata = {
-  metadataBase: new URL(host),
+  metadataBase: new URL('https://chaechae.life'),
   title: {
     default: title,
-    template: `%s | ${title}`,
-    absolute: `${title} - Welcome to my blog!`,
+    template: `%s - ${title}`,
+    absolute: rootTitle,
   },
   description,
   openGraph: {
-    title,
+    ...openGraph,
+    title: rootTitle,
     description,
     url: '/',
-    siteName: title,
-    type: 'website',
-    locale: 'en_US',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: title,
-      },
-    ],
   },
   twitter: {
-    title,
+    title: rootTitle,
     description,
     card: 'summary_large_image',
   },
@@ -65,7 +55,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="ko">
-    <body className={clsx('text-gray-900', inter.className)}>
+    <body className={clsx('text-slate-900', inter.className)}>
       <Header />
       {children}
       <Footer />
