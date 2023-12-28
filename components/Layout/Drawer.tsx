@@ -13,14 +13,14 @@ const Drawer = ({ isOpen, setIsOpen }: Props) => {
     <div>
       <div
         className={clsx('fixed inset-0 cursor-default transition-all duration-500', {
-          'pointer-events-auto z-30 bg-gray-900/80 backdrop-blur': isOpen,
+          'pointer-events-auto z-30 bg-slate-900/80 backdrop-blur': isOpen,
           'pointer-events-none -z-10 bg-transparent': !isOpen,
         })}
         onClick={() => setIsOpen(false)}
       >
         <div
           className={clsx(
-            'fixed right-0 top-0 z-40 flex h-full w-64 transform flex-col bg-slate-100 p-4 text-gray-700 shadow-lg transition-transform duration-500',
+            'fixed right-0 top-0 z-40 flex h-full w-64 transform flex-col bg-slate-100 p-4 text-slate-700 shadow-lg transition-transform duration-500',
             { 'translate-x-0': isOpen, 'translate-x-full': !isOpen },
           )}
         >

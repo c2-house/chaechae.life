@@ -55,7 +55,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="ko">
-    <body className={clsx('text-gray-900', inter.className)}>
+    <body className={clsx('text-slate-900', inter.className)}>
       <Header />
       {children}
       <Footer />

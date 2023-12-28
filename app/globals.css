@@ -7,7 +7,7 @@
     @apply bg-yellow-100;
   }
 
-  p > code {
+  .prose code:not(pre code) {
     @apply rounded-md bg-slate-200/80 px-1.5 py-0.5 before:!content-[''] after:!content-[''];
   }
 }

@@ -24,7 +24,7 @@ const Author = ({ author, date }: Props) => {
         <span>{author}</span>
       </Link>
       <time
-        className="text-gray-500 before:px-1.5 before:content-['·']"
+        className="text-slate-500 before:px-1.5 before:content-['·']"
         dateTime={dayjs(date).format('YYYY-MM-DD')}
       >
         {dayjs(date).format('MMM D, YYYY')}

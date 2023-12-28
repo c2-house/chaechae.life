@@ -28,7 +28,7 @@ const PostListItem = ({ post }: { post: Post }) => {
             <h2 className="line-clamp-2 font-bold sm:text-lg md:text-xl lg:text-2xl">
               {post.title}
             </h2>
-            <p className="mt-2 hidden text-gray-700 md:line-clamp-2">{post.description}</p>
+            <p className="mt-2 hidden text-slate-700 md:line-clamp-2">{post.description}</p>
           </Link>
           <Tags tags={post.tags} />
         </div>

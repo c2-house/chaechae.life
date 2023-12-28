@@ -29,7 +29,7 @@ const LinkPreview = ({ url }: { url: string }) => {
   if (error || !data)
     return (
       <LinkContainer url={url}>
-        <div className="flex-1 overflow-hidden px-4 py-3 text-sm font-normal text-gray-700">
+        <div className="flex-1 overflow-hidden px-4 py-3 text-sm font-normal text-slate-700">
           {url}
         </div>
       </LinkContainer>
@@ -38,10 +38,10 @@ const LinkPreview = ({ url }: { url: string }) => {
   return (
     <LinkContainer url={url}>
       <div className="flex-1 overflow-hidden px-4 py-3 font-normal">
-        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-gray-900 sm:line-clamp-1 sm:h-auto md:text-base">
+        <div className="mb-1.5 line-clamp-2 h-10 text-sm font-semibold text-slate-900 sm:line-clamp-1 sm:h-auto md:text-base">
           {data.title}
         </div>
-        <div className="mb-1.5 hidden h-10 text-sm text-gray-500 sm:line-clamp-2">
+        <div className="mb-1.5 hidden h-10 text-sm text-slate-500 sm:line-clamp-2">
           {data.description}
         </div>
         <div className="flex items-center">
@@ -50,7 +50,7 @@ const LinkPreview = ({ url }: { url: string }) => {
           ) : (
             <GlobeIcon className="h-4 w-4 fill-slate-400" />
           )}
-          <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-gray-700">{url}</div>
+          <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-slate-700">{url}</div>
         </div>
       </div>
       {data.image && (
