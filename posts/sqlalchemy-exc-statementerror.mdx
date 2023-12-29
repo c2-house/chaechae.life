@@ -1,5 +1,5 @@
 ---
-title: sqlalchemy.exc.StatementError(sqlalchemy.exc.MissingGreenlet) greenlet_spawn has not been called
+title: sqlalchemy greenlet_spawn error 해결
 description: sqlalchemy.exc.StatementError (sqlalchemy.exc.MissingGreenlet) greenlet_spawn has not been called
 tags: [SQLAlchemy]
 author: mingke
@@ -15,10 +15,10 @@ date: 2023/11/14
 
 FastAPI + 비동기 SQLAlchemy사용하다 아래와 같은 에러를 만났습니다. 별거아니 에러인데 어이없게 시간을 좀 써서 기록합니다.
 
-<aside>
-💡 sqlalchemy.exc.StatementError: (sqlalchemy.exc.MissingGreenlet) greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place?
+<Callout emoji="💡">
+sqlalchemy.exc.StatementError: (sqlalchemy.exc.MissingGreenlet) greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place?
 
-</aside>
+</Callout>
 
 ## 해결
 
