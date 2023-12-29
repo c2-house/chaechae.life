@@ -3,12 +3,16 @@
 @tailwind utilities;
 
 @layer base {
-  mark {
+  .prose mark {
     @apply bg-yellow-100;
   }
 
   .prose code:not(pre code) {
     @apply rounded-md bg-slate-200/80 px-1.5 py-0.5 before:!content-[''] after:!content-[''];
+  }
+
+  .prose .callout p {
+    @apply my-0;
   }
 }
 

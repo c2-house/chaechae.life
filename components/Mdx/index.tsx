@@ -17,17 +17,27 @@ const CustomLink = (props: any) => {
   return <a {...props} />;
 };
 
-const components: MDXComponents = {
+const Callout = ({ emoji, children }: { emoji: string; children: React.ReactNode }) => {
+  return (
+    <div className="flex rounded bg-slate-100 p-4 text-slate-700">
+      <div className="mr-2 text-lg">{emoji}</div>
+      <div className="callout">{children}</div>
+    </div>
+  );
+};
+
+const mdxComponents: MDXComponents = {
   a: CustomLink,
   Link: LinkPreview,
   Image: NextImage,
   Youtube: YoutubeVideo,
+  Callout,
 };
 
 const Mdx = ({ code }: { code: string }) => {
-  const Component = useMDXComponent(code);
+  const MDXComponent = useMDXComponent(code);
 
-  return <Component components={components} />;
+  return <MDXComponent components={mdxComponents} />;
 };
 
 export default Mdx;
