@@ -7,10 +7,10 @@ import Author from './Author';
 const PostListItem = ({ post }: { post: Post }) => {
   return (
     <li>
-      <article className="flex">
+      <article className="flex items-center">
         <Link
           href={`/blog/${post.slug}`}
-          className="h-[100px] w-[100px] overflow-hidden rounded-lg border border-slate-200 md:h-[160px] md:w-[160px]"
+          className="h-[80px] w-[80px] flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:h-[100px] sm:w-[100px] md:h-[160px] md:w-[160px]"
         >
           <Image
             src={post.image}

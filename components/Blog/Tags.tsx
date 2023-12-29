@@ -5,7 +5,7 @@ import { tags } from '@/constants/pages';
 
 export const Tags = ({ tags }: { tags: Post['tags'] }) => {
   return (
-    <div className="flex space-x-2 text-xs text-slate-700 sm:text-sm">
+    <div className="flex flex-wrap gap-x-2 gap-y-1.5 text-xs text-slate-700 sm:text-sm">
       {tags.map((tag) => (
         <Link
           key={tag}

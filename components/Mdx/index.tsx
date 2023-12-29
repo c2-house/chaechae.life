@@ -1,9 +1,11 @@
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import type { MDXComponents } from 'mdx/types';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
-import LinkPreview from './LinkPreview';
 import { NextImage, YoutubeVideo } from './Figure';
+
+const LinkPreview = dynamic(() => import('./LinkPreview'));
 
 const CustomLink = (props: any) => {
   if (props.href.startsWith('/')) {

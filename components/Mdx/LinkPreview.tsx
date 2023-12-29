@@ -73,7 +73,7 @@ const LinkContainer = ({ url, children }: { url: string; children: React.ReactNo
         href={url}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex overflow-hidden rounded-[4px] border border-slate-200 no-underline transition-colors hover:bg-slate-100"
+        className="flex overflow-hidden rounded border border-slate-200 no-underline transition-colors hover:bg-slate-100"
       >
         {children}
       </a>
@@ -83,7 +83,7 @@ const LinkContainer = ({ url, children }: { url: string; children: React.ReactNo
 
 const Loading = () => {
   return (
-    <div className="my-5 flex h-[88px] w-full items-center justify-center space-x-2 rounded-[4px] border border-slate-200 sm:h-[116px] lg:my-6">
+    <div className="my-5 flex h-[88px] w-full items-center justify-center space-x-2 rounded border border-slate-200 sm:h-[116px] lg:my-6">
       <div aria-label="loading" role="status">
         <svg
           width="24"
