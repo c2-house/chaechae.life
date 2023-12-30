@@ -16,8 +16,8 @@ export const NextImage = ({ src, alt, caption, fullWidth = true }: ImageProps) =
       <Image
         src={`/images/blog${src}`}
         alt={alt}
-        width={fullWidth ? 732 : 400}
-        height={fullWidth ? 549 : 400}
+        width={fullWidth ? 730 : 400}
+        height={fullWidth ? 548 : 400}
         className="mx-auto"
       />
       {caption && <figcaption className="text-center">{caption}</figcaption>}
