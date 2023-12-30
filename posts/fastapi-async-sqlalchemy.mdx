@@ -4,10 +4,10 @@ description: 최신 애플리케이션 개발에서 효율성과 확장성은 �
 tags: [FastAPI, SQLAlchemy]
 author: mingke
 date: 2023/11/11
-thumbnail: /thumbnails/fastapi_logo.png
+thumbnail: /thumbnails/fastapi-logo.png
 ---
 
-<Image src="/thumbnails/fastapi_logo.png" alt="FastAPI Logo" />
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo" />
 
 ### Table of Contents
 
@@ -86,9 +86,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 # Create
 async def create(self, db: AsyncSession, **kwargs):
-		db_obj = self.model(**kwargs)
-		db.add(db_obj)
-		await db.commit()
+    db_obj = self.model(**kwargs)
+    db.add(db_obj)
+    await db.commit()
 
 async def create2(self, db: AsyncSession, data: dict | list[dict]):
     query = insert(self.model).values(data)
