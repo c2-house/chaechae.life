@@ -3,11 +3,15 @@ title: AWS ECS EC2에서 Replica와 Daemon 전략 비교
 description: 이 글에서는 Replica와 Daemon, 두 가지 주요 배치 전략의 차이점과 적절한 사용 시나리오에 대해 알아보고자 합니다. ECS에 처음 배포해볼 때 서비스 유형에서 Replica, Daemon을 보고 이게 뭐지 했던 것에서 시작하게 되었습니다.
 tags: [AWS]
 author: mingke
-thumbnail: /thumbnails/aws.png
+thumbnail: /thumbnails/aws-logo.png
 date: 2023/12/08
 ---
 
-<Image src="/thumbnails/aws.png" alt="AWS Logo" />
+<Image src="/thumbnails/aws-logo.png" alt="AWS Logo" />
+
+### Table of Contents
+
+## 소개
 
 AWS의 Elastic Container Service(ECS)는 컨테이너화된 애플리케이션을 관리하고 배포하기에 아주 좋은 서비스입니다. ECS는 효율적인 컨테이너 관리를 위해 다양한 배치 전략을 제공합니다. 이 글에서는 Replica와 Daemon, 두 가지 주요 배치 전략의 차이점과 적절한 사용 시나리오에 대해 알아보고자 합니다. ECS에 처음 배포해볼 때 서비스 유형에서 Replica, Daemon을 보고 **이게 뭐지** 했던 것에서 시작하게 되었습니다. 궁금한건 못참기 때문이죠. Fargate가 아닌 EC2에 배포하는 걸 예시로 설명하겠습니다. Fargate는 Daemon을 지원하지 않기 때문입니다.
 
