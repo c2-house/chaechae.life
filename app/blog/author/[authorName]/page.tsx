@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { allPosts } from 'contentlayer/generated';
 import { authors } from '@/constants/pages';
+import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
 
 interface Props {
@@ -10,11 +11,12 @@ interface Props {
 }
 
 export const generateStaticParams = async () => {
-  return authors.map((author) => ({ authorName: author.toLowerCase() }));
+  return authors.map((author) => ({ authorName: slugify(author) }));
 };
 
 const AuthorPage = ({ params: { authorName } }: Props) => {
-  const posts = allPosts.filter((post) => post.author.toLowerCase() === authorName);
+  const posts = allPosts.filter((post) => slugify(post.author) === authorName);
+  const author = authors.find((author) => slugify(author) === authorName);
 
   return (
     <main>
@@ -27,11 +29,11 @@ const AuthorPage = ({ params: { authorName } }: Props) => {
             height={100}
             className="rounded-full border border-slate-200"
           />
-          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{authorName}</h1>
+          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{author}</h1>
         </div>
       </div>
-      <section className="container-lg pt-8">
-        <PostList posts={posts} />
+      <section className="container-lg pt-6 md:pt-8">
+        <PostList posts={posts} countLabel="글 목록" />
       </section>
     </main>
   );

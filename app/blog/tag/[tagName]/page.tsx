@@ -1,6 +1,7 @@
 import { allPosts } from 'contentlayer/generated';
 import { tags } from '@/constants/pages';
-import { TagTabs } from '@/components/Blog/Tags';
+import { TagNavbar } from '@/components/Blog/Tags';
+import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
 
 interface Props {
@@ -10,17 +11,18 @@ interface Props {
 }
 
 export const generateStaticParams = async () => {
-  return tags.map((tag) => ({ tagName: tag.toLowerCase() }));
+  return tags.map((tag) => ({ tagName: slugify(tag) }));
 };
 
 const TagPage = ({ params: { tagName } }: Props) => {
-  const posts = allPosts.filter((post) => post.tags.find((tag) => tag.toLowerCase() === tagName));
+  const posts = allPosts.filter((post) => post.tags.find((tag) => slugify(tag) === tagName));
+  const tag = tags.find((tag) => slugify(tag) === tagName);
 
   return (
     <main className="container-lg">
-      <TagTabs currentTab={tagName} />
-      <section className="pt-5">
-        <PostList posts={posts} />
+      <TagNavbar currentTab={tagName} />
+      <section className="pt-2 md:pt-5">
+        <PostList posts={posts} countLabel={`${tag} 관련 글`} />
       </section>
     </main>
   );
