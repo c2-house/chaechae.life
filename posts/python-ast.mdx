@@ -1,0 +1,137 @@
+---
+title: Python - ast, Abstract Syntax Tree 추상 구문 트리
+description: AST는 소스 코드의 구조를 트리 형태로 나타내는 것으로, 코드의 구조를 분석하고 다양하게 조작하는 데 사용할 수 있습니다. 오늘은 ast를 간단하게 알아보고 사용경험을 공유하고자 합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/03
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+AST는 소스 코드의 구조를 트리 형태로 나타내는 것으로, 코드의 구조를 분석하고 다양하게 조작하는 데 사용할 수 있습니다. 오늘은 ast를 간단하게 알아보고 사용경험을 공유하고자 합니다.
+
+CPython 인터프리터는 코드 실행전에 코드를 AST로 변환합니다. 코드의 각 요소를 노드로 표현합니다. 우리는 ast 내장 라이브러리를 사용해서 이 트리를 탐색 및 수정 가능하고 동적으로 코드 선언도 가능합니다.
+
+코드분석 및 리팩터링 등 분석하는 여러가지 분석 작업들을 할 수 있습니다. 저는 CPython같은 Python의 내부구조는 잘 모르지만 ast를 활용해서 이것저것 만들어볼 수는 있었습니다.
+
+## ast 활용
+
+- 코드 파싱
+
+```python
+import ast
+
+source_code = """
+def my_function(x, y):
+    return x + y
+"""
+
+parsed_code = ast.parse(source_code)
+```
+
+Python 코드를 문자열로 작성하고, **`ast.parse()`** 함수를 사용하여 파싱합니다. 파싱된 결과는 AST의 루트 노드가 됩니다.
+
+- AST 탐색
+
+```python
+class Visitor(ast.NodeVisitor):
+    def visit_FunctionDef(self, node):
+        print(f"Function name: {node.name}")
+        self.generic_visit(node)
+
+visitor = Visitor()
+visitor.visit(parsed_code)
+```
+
+**`ast.NodeVisitor`** 클래스를 상속받아 특정 유형의 노드를 방문하는 Visitor 클래스를 정의할 수 있습니다. 여기서는 모든 함수 정의(**`FunctionDef`**)를 찾는 방문자를 정의하겠습니다. 입력되는 node의 타입은 ast.**`FunctionDef`** 입니다.
+
+위 코드 예시는 입력된 코드의 소스 코드에서 함수 이름을 출력합니다.
+
+## 활용 사례 공유
+
+[https://github.com/c2-house/fastapi-mctools/blob/main/fastapi_mctools/commands/types.py](https://github.com/c2-house/fastapi-mctools/blob/main/fastapi_mctools/commands/types.py)
+
+AST 탐색을 이용해서 TypeHintChecker를 만든 경험을 공유합니다.
+
+최근 FastAPI로 개발을 많이 하는데 FastAPI를 사용하다보면 타입 힌트와 친해지게 됩니다. 하지만 Python은 타입 힌트를 사용하지 않아도 정상적으로 코드가 잘 동작합니다. 저 같은 경우는 왜 그런지 모르겠는데, ‘어디에는 타입을 썼다가 어디에는 안썼다가’ 하는 실수를 계속했습니다. 물론 mypy와 같이 정적으로 타입을 검사하는 도구를 사용하여 빡세게 타입을 검사할 수 있습니다만, 타입을 빡빡하게 검증까진 아니고 타입을 썼는지 안썼는지 정도 확인하는 검사기를 만들어보고 싶었습니다.
+
+이 때 ast를 사용해서 이것을 한 번 만들어보았습니다.
+
+```python
+import ast
+import os
+import click
+
+Hint = tuple[str, str]
+HintDict = dict[str, list[Hint]]
+
+SELF = {"self", "cls"}
+
+class TypeHintChecker(ast.NodeVisitor):
+    def __init__(self):
+        self.missing_type_hints = []
+
+    def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+        for arg in node.args.args:
+            if arg.annotation is None and arg.arg not in SELF:
+                self.missing_type_hints.append((node.name, arg.arg))
+
+        if node.returns is None:
+            self.missing_type_hints.append((node.name, "return"))
+
+        self.generic_visit(node)
+
+def check_file_for_type_hints(filename: str) -> list[Hint]:
+    with open(filename, "r") as file:
+        tree = ast.parse(file.read(), filename=filename)
+        checker = TypeHintChecker()
+        checker.visit(tree)
+        return checker.missing_type_hints
+
+def check_directory_for_type_hints(directory: str) -> HintDict:
+    missing_type_hints = {}
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith(".py"):
+                full_path = os.path.join(root, file)
+                file_hints = check_file_for_type_hints(full_path)
+                if file_hints:
+                    missing_type_hints[full_path] = file_hints
+    return missing_type_hints
+
+@click.command("types", help="타입 힌트 안빠트렸는지 검사")
+@click.argument("path", type=click.Path(exists=True))
+def main(path):
+    if os.path.isdir(path):
+        missing_hints = check_directory_for_type_hints(path)
+        if missing_hints:
+            click.echo("Type Hint 빼먹음 :")
+            for file, hints in missing_hints.items():
+                click.echo(f"In {file}:")
+                for func, arg in hints:
+                    click.echo(f"  Function '{func}' 타입힌트가 없습니다. -> '{arg}'")
+        else:
+            click.echo("타입힌트를 빼먹지 않았습니다.")
+    else:
+        missing_hints = check_file_for_type_hints(path)
+        if missing_hints:
+            click.echo("Type Hint 빼먹음 :")
+            click.echo(f"In {path}:")
+            for func, arg in missing_hints:
+                click.echo(f"  Function '{func}' 타입힌트가 없습니다. -> '{arg}'")
+        else:
+            click.echo("타입힌트를 빼먹지 않았습니다.")
+```
+
+직접만든 라이브러리 fastapi-mctools에 cli기능으로 추가했습니다. cli를 만들때 썼던 click도 다음에 블로그로 다뤄봐야 겠습니다. 사용법은 `mctools types dir or file` 로 사용합니다. TypeHintChecker를 보면 활용 예시에 AST탐색의 예시 코드와 비슷합니다. 로직은 단순합니다. 모든 파일을 .py 읽어 함수 및 클래스에 타입힌트가 있는지 없는지 검사하고 빠졌으면, 어디에 빠졌는지 알려주는게 다입니다.
+
+타입힌트를 빼먹고 싶지 않은 저에게 간단하지만 아주 유용한 도구가 되었습니다.
+
+---
+
+이밖에도 다양한 유틸 기능들을 만들어볼 수 있게 해주는 유용한 라이브러리인 것 같습니다. 오늘은 python ast의 간단한 소개와 활용에 대해서 다뤄봤습니다. 이만 포스팅을 마치겠습니다.
