@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import Link from 'next/link';
 import Image from 'next/image';
+import { slugify } from './utils';
 
 interface Props {
   author: string;
@@ -11,11 +12,11 @@ const Author = ({ author, date }: Props) => {
   return (
     <div className="flex items-center">
       <Link
-        href={`/blog/author/${author.toLowerCase()}`}
+        href={`/blog/author/${slugify(author)}`}
         className="not-prose flex items-center hover:underline"
       >
         <Image
-          src={`/images/avatar/${author.toLowerCase()}.png`}
+          src={`/images/avatar/${slugify(author)}.png`}
           alt="프로필 사진"
           width={24}
           height={24}

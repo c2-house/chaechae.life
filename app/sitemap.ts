@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { allPosts } from 'contentlayer/generated';
 import { authors, tags } from '@/constants/pages';
+import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
   const posts = allPosts.map((post) => ({
@@ -9,12 +10,12 @@ const sitemap = (): MetadataRoute.Sitemap => {
   }));
 
   const tagPages = tags.map((tag) => ({
-    url: `https://chaechae.life/blog/tag/${tag.toLowerCase()}`,
+    url: `https://chaechae.life/blog/tag/${slugify(tag)}`,
     lastModified: new Date(),
   }));
 
   const authorPages = authors.map((author) => ({
-    url: `https://chaechae.life/blog/author/${author.toLowerCase()}`,
+    url: `https://chaechae.life/blog/author/${slugify(author)}`,
     lastModified: new Date(),
   }));
 

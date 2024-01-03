@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import Link from 'next/link';
 import { Post } from 'contentlayer/generated';
 import { tags } from '@/constants/pages';
+import { slugify } from './utils';
 
 export const Tags = ({ tags }: { tags: Post['tags'] }) => {
   return (
@@ -9,7 +10,7 @@ export const Tags = ({ tags }: { tags: Post['tags'] }) => {
       {tags.map((tag) => (
         <Link
           key={tag}
-          href={`/blog/tag/${tag.toLowerCase()}`}
+          href={`/blog/tag/${slugify(tag)}`}
           className="not-prose rounded-full bg-slate-200/60 px-2 py-0.5 sm:px-3"
         >
           {tag}
@@ -27,9 +28,9 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
       {allTags.map((tag) => (
         <li key={tag}>
           <Link
-            href={tag === 'All' ? `/blog` : `/blog/tag/${tag.toLowerCase()}`}
+            href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
             className={clsx('inline-flex rounded-full border border-slate-200 px-3 py-0.5', {
-              'border-slate-800 bg-slate-800 text-white': currentTab === tag.toLowerCase(),
+              'border-slate-800 bg-slate-800 text-white': currentTab === slugify(tag),
             })}
           >
             {tag}

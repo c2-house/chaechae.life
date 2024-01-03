@@ -8,8 +8,8 @@ const BlogPage = () => {
   return (
     <main className="container-lg">
       <TagNavbar currentTab="all" />
-      <section className="pt-5">
-        <PostList posts={posts} />
+      <section className="pt-2 md:pt-5">
+        <PostList posts={posts} countLabel="전체 글" />
       </section>
     </main>
   );
