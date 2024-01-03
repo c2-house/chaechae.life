@@ -19,7 +19,7 @@ export const Tags = ({ tags }: { tags: Post['tags'] }) => {
   );
 };
 
-export const TagTabs = ({ currentTab }: { currentTab: string }) => {
+export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
   const allTags = ['All', ...tags];
 
   return (

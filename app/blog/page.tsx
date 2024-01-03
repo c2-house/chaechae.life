@@ -1,5 +1,5 @@
 import { allPosts } from 'contentlayer/generated';
-import { TagTabs } from '@/components/Blog/Tags';
+import { TagNavbar } from '@/components/Blog/Tags';
 import PostList from '@/components/Blog/PostList';
 
 const BlogPage = () => {
@@ -7,7 +7,7 @@ const BlogPage = () => {
 
   return (
     <main className="container-lg">
-      <TagTabs currentTab="all" />
+      <TagNavbar currentTab="all" />
       <section className="pt-5">
         <PostList posts={posts} />
       </section>

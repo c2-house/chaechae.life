@@ -1,6 +1,6 @@
 import { allPosts } from 'contentlayer/generated';
 import { tags } from '@/constants/pages';
-import { TagTabs } from '@/components/Blog/Tags';
+import { TagNavbar } from '@/components/Blog/Tags';
 import PostList from '@/components/Blog/PostList';
 
 interface Props {
@@ -18,7 +18,7 @@ const TagPage = ({ params: { tagName } }: Props) => {
 
   return (
     <main className="container-lg">
-      <TagTabs currentTab={tagName} />
+      <TagNavbar currentTab={tagName} />
       <section className="pt-5">
         <PostList posts={posts} />
       </section>
