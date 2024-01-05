@@ -20,6 +20,14 @@
   .container-lg {
     @apply mx-auto max-w-screen-lg px-4 md:px-6 lg:px-8;
   }
+
+  .bg-gradient-light {
+    @apply bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50;
+  }
+
+  .bg-gradient-text {
+    @apply bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 bg-clip-text text-transparent;
+  }
 }
 
 @layer utilities {

@@ -1,22 +1,25 @@
 'use client';
 
+import clsx from 'clsx';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { navLinks } from '@/constants/pages';
-import { MenuIcon } from '@/public/icons';
+import { Logo, MenuIcon } from '@/public/icons';
 import Drawer from './Drawer';
 
 const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const currentPath = `/${usePathname().split('/')[1]}`;
 
   return (
     <>
       <header>
         <div className="container-lg py-3 md:py-5">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-xl font-bold md:text-2xl">
-              CHAECHAE LIFE
+            <Link href="/">
+              <Logo />
             </Link>
 
             <nav className="hidden md:block">
@@ -25,7 +28,10 @@ const Header = () => {
                   <li key={link.name}>
                     <Link
                       href={link.path}
-                      className="px-4 py-2 font-semibold uppercase transition-colors hover:text-slate-500"
+                      className={clsx('block px-4 py-1 font-semibold transition-colors', {
+                        'text-indigo-500': currentPath === link.path,
+                        'hover:text-slate-500': currentPath !== link.path,
+                      })}
                     >
                       {link.name}
                     </Link>
@@ -47,7 +53,7 @@ const Header = () => {
         </div>
       </header>
 
-      <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
+      <Drawer currentPath={currentPath} isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
     </>
   );
 };
