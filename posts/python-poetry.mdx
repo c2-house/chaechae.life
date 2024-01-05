@@ -1,0 +1,88 @@
+---
+title: Python 프로젝트 관리를 위한 Poetry 알아보기
+description: Poetry는 Python 프로젝트 관리의 많은 작업을 간소화하는 아주 강력한 의존성 관리 및 패키징 도구입니다. 최근 poetry를 사용하지 않는 팀원에게 poetry를 사용하는 방법을 알려줬었는데, 블로그에도 글로 한 번 남겨봅니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/05
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+Python 프로젝트를 관리하려면 다양한 의존성, 환경 설정 및 배포 구성을 처리해야 하는 경우가 많습니다. pip 및 requirements.txt를 사용하는 기존 방법은 작동할 수 있지만 자체적인 한계가 있습니다. 저는 꽤 오래전부터 poetry를 사용하고 있습니다. Poetry는 Python 프로젝트 관리의 많은 작업을 간소화하는 아주 강력한 의존성 관리 및 패키징 도구입니다. 최근 poetry를 사용하지 않는 팀원에게 poetry를 사용하는 방법을 알려줬었는데, 블로그에도 글로 남겨봅니다.
+
+## Poetry 사용 이유
+
+requirements.txt 작성 필요없이 간단한 명령으로 프로젝트 의존성을 쉽게 추가, 제거 또는 업데이트할 수 있습니다. poetry.lock 파일은 팀원 모두가 동일한 버전의 의존성을 사용하도록 보장합니다. 팀원 중 poetry를 사용하지 않는 사람이 있다면 poetry에서 간단한 명령으로 requirements.txt를 만들수도 있습니다. 다양한 명령어들이 있으니 곧 알아보겠습니다.
+
+또한 가상환경의 설정을 쉽게 할 수 있고 배포를 위한 패키지와 설정을 생성하는 것도 매우 간단하고 쉽습니다.
+
+## 기본 명령어
+
+- 프로젝트 시작
+  - init: 새로운 프로젝트를 시작할 때 사용합니다. 대화형 프롬프트로 pyproject.toml을 생성합니다.
+  - new: 지정한 이름으로 프로젝트 디렉토리를 자동으로 생성합니다.
+
+```python
+poetry init
+
+poetry new [프로젝트명]
+```
+
+- 패키지 설치
+  - install: pyproject.toml에 설치된 모든 패키지를 자동으로 설치합니다.
+
+```python
+poetry install
+```
+
+- 가상환경 실행
+  - shell: 가상환경이 실행됩니다. 없으면 생성합니다.
+
+```python
+poetry shell
+```
+
+- 가상환경 위치를 프로젝트 안에 생성
+  - 가상환경이 생기는 경로를 내 프로젝트 안에 생성할 수 있도록하는 설정 명령어입니다. 가상환경 디렉토리가 프로젝트 안에 존재하는게 편해서 아래 명령어로 설정을 변경했습니다.
+
+```python
+poetry config virtualenvs.in-project true
+```
+
+- 의존성 설치, 제거, 업데이트
+  - add: 패키지를 설치합니다. 설치가되면 pyproject.toml이 업데이트 됩니다. optional을 설치할 땐 ‘’로 감싸주기!
+  - remove: 패키지를 삭제합니다.
+  - update: 버젼을 업데이트 합니다.
+
+```python
+poetry add numpy # poetry add 'sqlalchemy[asyncio]'
+poetry remove pandas
+poetry update pandas
+```
+
+- 개발용 의존성 설치
+  - 개발할 때만 필요한 개발용 패키지는 아래 명령어로 설치할 수 있습니다. pyproject.toml에서 구분되어 작성됩니다.
+
+```python
+poetry add package name --group dev
+```
+
+- requirements.txt 생성
+  - export: requirements.txt file을 생성할 때 사용합니다. —without-hashes를 안하면 hash값들이 엄청 길게 생성되는데 보기에 불편하니 hash없이 생성하도록 합니다.
+
+```python
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+```
+
+## 마무리
+
+Poetry는 Python 프로젝트 관리의 여러 측면을 간소화합니다. 여타 다른 의존성 관리 도구를 사용했을 때 보다 100배는 편리하게 느끼고 있습니다. 최근에 개인 라이브러리를 만들어 배포할 때도 사용했는데 너무 편했습니다.
+
+오늘은 파이썬의 의존성 관리 도구인 poetry에 대해서 간략하게 알아봤습니다. 자세한 내용이 궁금하다면 공식문서를 참고하면 됩니다.
+
+- [Poetry 공식문서](https://python-poetry.org/docs/)
