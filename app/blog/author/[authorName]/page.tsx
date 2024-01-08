@@ -15,8 +15,11 @@ export const generateStaticParams = async () => {
 };
 
 const AuthorPage = ({ params: { authorName } }: Props) => {
-  const posts = allPosts.filter((post) => slugify(post.author) === authorName);
-  const author = authors.find((author) => slugify(author) === authorName);
+  const posts = allPosts
+    .filter((post) => slugify(post.author) === authorName)
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  const currentAuthor = authors.find((author) => slugify(author) === authorName);
 
   return (
     <main>
@@ -29,7 +32,7 @@ const AuthorPage = ({ params: { authorName } }: Props) => {
             height={100}
             className="rounded-full"
           />
-          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{author}</h1>
+          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
         </div>
       </div>
       <section className="container-lg pt-6 md:pt-8">

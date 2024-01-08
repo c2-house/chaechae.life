@@ -12,8 +12,8 @@ export const generateStaticParams = async () => {
   return allPosts.map((post) => ({ slug: post.slug }));
 };
 
-const PostPage = ({ params }: Props) => {
-  const post = allPosts.find((post) => post.slug === params.slug);
+const PostPage = ({ params: { slug } }: Props) => {
+  const post = allPosts.find((post) => post.slug === slug);
 
   if (!post) notFound();
 
