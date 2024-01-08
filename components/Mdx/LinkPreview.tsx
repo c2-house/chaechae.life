@@ -26,10 +26,11 @@ const LinkPreview = ({ url }: { url: string }) => {
 
   if (isLoading) return <Loading />;
 
-  if (error || !data)
+  if (error || !data || !data.title)
     return (
       <LinkContainer url={url}>
-        <div className="flex-1 overflow-hidden px-4 py-3 text-sm font-normal text-slate-700">
+        <div className="flex items-center break-all px-4 py-3 text-sm font-normal text-slate-700">
+          <GlobeIcon className="mr-1.5 h-4 w-4 flex-shrink-0 fill-slate-400" />
           {url}
         </div>
       </LinkContainer>
