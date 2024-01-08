@@ -44,7 +44,7 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
                     className={clsx(
                       'inline-block w-full p-2 text-center font-semibold transition-colors',
                       {
-                        'text-indigo-500': currentPath === link.path,
+                        'text-indigo-600': currentPath === link.path,
                         'hover:text-slate-500': currentPath !== link.path,
                       },
                     )}

@@ -48,7 +48,7 @@ const Header = () => {
                     <Link
                       href={link.path}
                       className={clsx('block px-4 py-1 font-semibold transition-colors', {
-                        'text-indigo-500': currentPath === link.path,
+                        'text-indigo-600': currentPath === link.path,
                         'hover:text-slate-500': currentPath !== link.path,
                       })}
                     >

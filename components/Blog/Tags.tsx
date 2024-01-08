@@ -29,9 +29,12 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
         <li key={tag}>
           <Link
             href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
-            className={clsx('inline-flex rounded-full border border-slate-200 px-3 py-0.5', {
-              'border-slate-800 bg-slate-800 text-white': currentTab === slugify(tag),
-            })}
+            className={clsx(
+              'inline-flex rounded-full border border-slate-200 px-3 py-0.5 transition-colors hover:border-indigo-600',
+              {
+                'border-indigo-600 bg-indigo-600 text-white': currentTab === slugify(tag),
+              },
+            )}
           >
             {tag}
           </Link>
