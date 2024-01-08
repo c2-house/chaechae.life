@@ -3,7 +3,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { navLinks } from '@/constants/pages';
 import { Logo, MenuIcon } from '@/public/icons';
@@ -11,11 +11,30 @@ import Drawer from './Drawer';
 
 const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [scrollY, setScrollY] = useState(0);
   const currentPath = `/${usePathname().split('/')[1]}`;
+
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   return (
     <>
-      <header>
+      <header
+        className={clsx(
+          'inset-x-0 top-0 z-30 w-full transition-colors duration-300',
+          currentPath === '/' ? 'fixed' : 'sticky',
+          {
+            'bg-transparent': currentPath === '/' && scrollY === 0,
+            'border-b border-gray-100 bg-white/70 backdrop-blur-lg': scrollY > 0,
+          },
+        )}
+      >
         <div className="container-lg py-3 md:py-5">
           <div className="flex items-center justify-between">
             <Link href="/">
