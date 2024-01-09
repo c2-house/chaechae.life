@@ -10,7 +10,7 @@ const PostListItem = ({ post }: { post: Post }) => {
       <article className="flex items-center">
         <Link
           href={`/blog/${post.slug}`}
-          className="h-[80px] w-[80px] flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 sm:h-[100px] sm:w-[100px] md:h-[160px] md:w-[160px]"
+          className="h-[80px] w-[80px] flex-shrink-0 overflow-hidden rounded-lg sm:h-[100px] sm:w-[100px] md:h-[160px] md:w-[160px]"
         >
           <Image
             src={post.image}

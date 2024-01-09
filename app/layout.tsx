@@ -52,6 +52,10 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
   <html lang="ko">
+    <head>
+      <meta name="google-site-verification" content="yAPCOjrjXkneaFLU21zJVUZT_mDKpTL3BM8QPsHgvN0" />
+      <meta name="naver-site-verification" content="122255a4016836acf755c9b414e0394869ece0ea" />
+    </head>
     <body className={clsx('text-slate-900', inter.className)}>
       <Header />
       {children}
