@@ -14,7 +14,7 @@ export const generateMetadata = async (
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const tag = tags.find((tag) => slugify(tag) === tagName);
-  const title = `블로그 - ${tag}`;
+  const title = `채채의 개발 블로그 - ${tag}`;
   const description = (await parent).description || '';
 
   return {

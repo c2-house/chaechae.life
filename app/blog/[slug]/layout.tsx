@@ -21,7 +21,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
       title,
       description,
       url: `/blog/${slug}`,
-      siteName: '채채라이프',
+      siteName: '개발자 부부 채채',
       locale: 'ko_KR',
       type: 'article',
       publishedTime: date,

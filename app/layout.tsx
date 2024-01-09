@@ -9,24 +9,21 @@ import Footer from '@/components/Layout/Footer';
 
 const inter = Inter({ subsets: ['latin'] });
 
-const rootTitle = `${title} - 개발자 부부 채채`;
-
 export const metadata: Metadata = {
   metadataBase: new URL('https://chaechae.life'),
   title: {
     default: title,
-    template: `%s - ${title}`,
-    absolute: rootTitle,
+    template: `${title} - %s`,
   },
   description,
   openGraph: {
     ...openGraph,
-    title: rootTitle,
+    title,
     description,
     url: '/',
   },
   twitter: {
-    title: rootTitle,
+    title,
     description,
     card: 'summary_large_image',
   },

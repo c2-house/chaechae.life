@@ -11,7 +11,7 @@ export const generateMetadata = async (
   { params: { authorName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const title = `블로그 - ${authorName}`;
+  const title = `채채의 개발 블로그 - ${authorName}`;
   const description = (await parent).description || '';
 
   return {
