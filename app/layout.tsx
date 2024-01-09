@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import clsx from 'clsx';
 import './globals.css';
 
@@ -55,6 +56,11 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     <head>
       <meta name="google-site-verification" content="yAPCOjrjXkneaFLU21zJVUZT_mDKpTL3BM8QPsHgvN0" />
       <meta name="naver-site-verification" content="122255a4016836acf755c9b414e0394869ece0ea" />
+      <Script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID}`}
+        crossOrigin="anonymous"
+      />
     </head>
     <body className={clsx('text-slate-900', inter.className)}>
       <Header />

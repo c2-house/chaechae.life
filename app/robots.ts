@@ -7,7 +7,6 @@ const robots = (): MetadataRoute.Robots => {
       allow: '/',
     },
     sitemap: 'https://chaechae.life/sitemap.xml',
-    host: 'https://chaechae.life',
   };
 };
 
