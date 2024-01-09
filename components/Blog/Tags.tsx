@@ -29,12 +29,11 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
         <li key={tag}>
           <Link
             href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
-            className={clsx(
-              'inline-flex rounded-full border border-slate-200 px-3 py-0.5 transition-colors hover:border-indigo-600',
-              {
-                'border-indigo-600 bg-indigo-600 text-white': currentTab === slugify(tag),
-              },
-            )}
+            className={clsx('inline-flex rounded-full border px-3 py-0.5 transition-colors', {
+              'border-slate-200 hover:border-indigo-600': currentTab !== slugify(tag),
+              'border-indigo-600 bg-indigo-600 text-white':
+                (currentTab === 'all' && tag === 'All') || currentTab === slugify(tag),
+            })}
           >
             {tag}
           </Link>

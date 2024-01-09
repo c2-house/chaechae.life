@@ -13,7 +13,7 @@ const Home = () => {
       <section className="bg-gradient-light bg-gradient-to-b">
         <div className="flex h-screen items-center justify-center md:h-screen">
           <div className="px-6 text-center">
-            <h1 className="mb-5 text-5xl font-semibold md:mb-8 md:text-7xl lg:mb-12 lg:text-8xl">
+            <h1 className="mb-5 text-5xl font-bold md:mb-8 md:text-7xl lg:mb-12 lg:text-8xl">
               <span className="animate-fade-in animation-delay-100">개발자 부부</span>
               <br />
               <span className="animate-fade-in animation-delay-300 bg-gradient-text mt-4 inline-block md:mt-5 lg:mt-6">

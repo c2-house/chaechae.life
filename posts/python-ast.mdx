@@ -54,7 +54,7 @@ visitor.visit(parsed_code)
 
 ## 활용 사례 공유
 
-[https://github.com/c2-house/fastapi-mctools/blob/main/fastapi_mctools/commands/types.py](https://github.com/c2-house/fastapi-mctools/blob/main/fastapi_mctools/commands/types.py)
+<Link url="https://github.com/c2-house/fastapi-mctools/blob/main/fastapi_mctools/commands/types.py" />
 
 AST 탐색을 이용해서 TypeHintChecker를 만든 경험을 공유합니다.
 
@@ -131,7 +131,5 @@ def main(path):
 직접만든 라이브러리 fastapi-mctools에 cli기능으로 추가했습니다. cli를 만들때 썼던 click도 다음에 블로그로 다뤄봐야 겠습니다. 사용법은 `mctools types dir or file` 로 사용합니다. TypeHintChecker를 보면 활용 예시에 AST탐색의 예시 코드와 비슷합니다. 로직은 단순합니다. 모든 파일을 .py 읽어 함수 및 클래스에 타입힌트가 있는지 없는지 검사하고 빠졌으면, 어디에 빠졌는지 알려주는게 다입니다.
 
 타입힌트를 빼먹고 싶지 않은 저에게 간단하지만 아주 유용한 도구가 되었습니다.
-
----
 
 이밖에도 다양한 유틸 기능들을 만들어볼 수 있게 해주는 유용한 라이브러리인 것 같습니다. 오늘은 python ast의 간단한 소개와 활용에 대해서 다뤄봤습니다. 이만 포스팅을 마치겠습니다.
