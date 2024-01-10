@@ -1,0 +1,117 @@
+---
+title: SQLAlchemy ORM 속도 측정하기
+description: 최근 FastAPI + Async SQLAlchemy 조합으로 백엔드 개발을 주로하고 있습니다. 며칠전까지 별 문제 없었는데 어제 API 응답 속도가 좀 느려진 것을 감지했습니다. 원인을 파악하던 도중에 ORM 속도를 측정봐야겠다고 생각했습니다. Async SQLAlchemy ORM의 Query를 실행하는데 걸리는 시간을 측정하는 데코레이터를 만들어보았습니다.
+tags: [Python, SQLAlchemy]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/10
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+최근 FastAPI + Async SQLAlchemy 조합으로 백엔드 개발을 주로하고 있습니다. 며칠전까지 별 문제 없었는데 어제 API 응답 속도가 좀 느려진 것을 감지했습니다. 원인을 파악하던 도중에 ORM 속도를 측정봐야겠다고 생각했습니다. 그동안 Django로 개발하면서 ORM 속도 측정을 django-debug-toolbar로 많이 했었습니다만, SQLAlchemy로는 경험이 없었습니다.
+
+아! 그럼 간단하게 한 번 만들어봐야겠다. 생각하고 바로 한 번 개발해봤습니다.(역사가 긴 ORM이니 찾아보면 분명 도구가 이미 있겠지만요!)
+
+저는 SQLAlchemy Async ORM을 주로 사용합니다. 일종의 Repository 패턴으로 클래스를 만들어서 그 안에 ORM을 메소드로 구현합니다.
+
+그래서 클래스 데코레이터를 만들어서 Repository 클래스에 씌워 모든 메소드에 적용할 수 있도록 만들었습니다.
+
+## 구현
+
+### 사용한 라이브러리
+
+파이썬의 기본 내장 라이브러리만 사용했습니다.
+
+- time
+  - 시작 시간과 끝나는 시간을 구하기 위해 사용했습니다.
+- inspect
+  - 클래스 내부에서 메소드 정보를 꺼내오기 위해 사용했습니다.
+- functools
+  - wraps 데코레이터를 사용해서 원래 함수의 이름 및 메타데이터를 유지하기 위해 사용했습니다.
+- logging
+  - 로깅하기 위해 사용했습니다.
+- typing
+  - 타입 힌트를 위해서 사용했습니다.
+
+```python
+import time
+import inspect
+import functools
+from logging import Logger
+from typing import TypeVar, Type, Callable, Any, cast
+
+T = TypeVar("T", bound=Callable[..., Any])
+R = TypeVar("R")
+
+def time_checker(
+    debug: bool = False, logger: Logger = None
+) -> Callable[[Type[T]], Type[T]]:
+    """
+    Async SQLAlchemy의 Query를 실행하는데 걸리는 시간을 측정합니다.
+
+    :param debug: 디버그 모드를 활성화합니다. debug가 아니면 실행하지 않습니다.
+    :param logger: 로거를 지정합니다. 지정하지 않으면 AttributeError가 발생합니다.
+
+    example:
+
+    @time_checker(debug=True, logger=logger)
+    class SomeRepository:
+        def get(self, db: AsyncSession, id: int) -> SomeModel:
+            ...
+
+    temp = SomeRepository()
+    temp.get(db, 1)  # SomeRepository.get took 0.01 ms
+
+    """
+
+    if not logger:
+        raise AttributeError("you must set logger!")
+
+    def decorator(cls):
+        if debug:
+            for name, method in inspect.getmembers(cls, predicate=inspect.isfunction):
+                if name != "__init__" and not name.startswith("_"):
+                    setattr(cls, name, check(method))
+        return cls
+
+    def check(method: T) -> T:
+        @functools.wraps(method)
+        async def wrapper(*args: Any, **kwargs: Any) -> R:
+            class_name = args[0].__class__.__name__
+            start = time.time()
+            result = await method(*args, **kwargs)
+            end = time.time()
+            logger.info(
+                f"{class_name}.{method.__name__} took {(end - start) * 1000:.2f} ms"
+            )
+            return cast(R, result)
+
+        return cast(T, wrapper)
+
+    return decorator
+```
+
+### 설명
+
+logger를 넣지 않으면 에러를 발생시킵니다.
+
+docstring에서 보이는 것처럼 클래스에 사용하는 클래스 데코레이터입니다. **debug** 모드에서만 동작하도록 하였습니다.
+
+클래스에서 메소드를 꺼내오고 \_\_init\_\_과 내부에서만 사용되는 \_가 붙은 private 메소드들은 건너 뛰도록 하였습니다.
+
+비동기 메소드를 측정하기 위한 목적으로 만들어졌기에 wrapper도 비동기로 작성되었습니다.
+
+메소드 시작전에 시작 시간을 기록하고, 메소드가 끝나면 끝나는 시간을 기록합니다. 그리고 끝나는 시간에서 시작 시간을 빼서 걸린 시간을 구합니다. 그리고 로그를 남깁니다.
+
+cast 함수같은 경우는 mypy에서 return 타입을 알려주기 위한 것으로 데코레이터 실제 동작에는 영향을 끼치지 않습니다. mypy를 사용해보려고 넣었습니다만, 아직 mypy는 제대로 써보지는 못했습니다.
+
+## 마무리
+
+이렇게 간단하게 Async SQLAlchemy 속도 측정하는 기능을 만들어 봤습니다. 요즘 라이브러리 만들기에 관심이 많아져서 이 기능도 최근에 만든 저의 라이브러리에 업데이트 했습니다. 나를 위해 만든 라이브러리라 docstring을 아주 중구난방으로 쓰고 있는데 이것도 조만간 규칙을 정해서 한 번 싹 정리해봐야겠습니다. 또한 파이썬 내장 라이브러리들만을 활용해서도 유용한 기능들을 많이 뽑아낼 수 있는데 그것들도 하나씩 다뤄보면 재밌을 것 같네요.
+
+이상으로 포스팅을 마치겠습니다.
