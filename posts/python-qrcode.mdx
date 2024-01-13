@@ -1,0 +1,82 @@
+---
+title: Python QRCode 생성하기
+description: QRCode를 Python으로 간단하게 만들어봅니다. qrcode 라이브러리를 이용하면 아주 쉽게 만들수 있습니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/13
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### Table of Contents
+
+## 소개
+
+얼마전 Barcode 이미지를 생성해달라는 요청이 있었습니다. Barcode 요청을 처리하고 난 뒤, 문득 QRCode도 생성할 수 있나? 궁금해져서 한 번 찾아봤는데, QRCode를 아주 쉽게 생성할 수 있는 방법이 있었습니다. 오늘은 간단하게 Python으로 QRCode를 생성하기를 해보려고 합니다.
+
+## 라이브러리 설치
+
+```python
+pip install qrcode
+
+pip install "qrcode[pil]"
+```
+
+- `pip install "qrcode[pil]"` 이렇게 설치하면 Python Image 라이브러리인 pillow를 설치하여 QRCODE 이미지 생성에 활용할 수 있습니다.
+
+## 구현
+
+```python
+
+from qrcode import QRCode, ERROR_CORRECT_L
+from io import BytesIO
+
+def create_qrcode(self, data):
+    """
+    data는 대게 url이 많이 들어가나
+    다양한 종류의 데이터가 들어갈 수 있습니다.
+		"""
+    qr = QRCode(
+        version=2,
+        error_correction=ERROR_CORRECT_L,
+        box_size=20,
+        border=2,
+    )
+    qr.add_data(data)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    output = BytesIO()
+    img.save(output)
+    return output.getvalue()
+
+# 사용 예시
+create_qrcode('010-1234-1234')
+
+with open('qrcode.png', 'wb') as f:
+    f.write(qr_data)
+```
+
+간단하게 위와 같은 함수로 만들어서 사용할 수 있습니다.
+
+- QRcode
+
+  - version - 여러가지 버젼을 나타냅니다 1~40까지 이것저것 넣어보세요.
+  - error_correction - Error Correction은 QR의 일부 데이터가 손상된 부분을 복구하는 정도를 나타냅니다. `ERROR_CORRECT_L` 은 Low로 약 7% 복구할 수 있다고 하네요.
+  - box_size - QRCode의 크기 입니다.
+  - border - 테두리 여백을 나타냅니다.
+
+- make_image
+  - fill_color - QRCode의 색
+  - back_color - 배경색
+  - RGB값을 입력하여 색을 지정할 수 있음
+
+<Link url="https://github.com/lincolnloop/python-qrcode/tree/main" />
+
+Github에 더 다양하게 사용하는 방법이 나와있습니다. 다양한 스타일에 QRCODE를 생성할 수 있네요. 재미있는 QRCODE 만들기를 한 번 해봤습니다.
+
+아래 이미지는 직접 만든 사이트들의 바로 가기 QR입니다. 한번 넣어봤습니다. 흥미로운걸 만들면서 개발에 재미를 붙이는 것은 좋은것 같습니다. 이상으로 포스팅을 마치겠습니다.
+
+<Image src="/python-qrcode/01.png" alt="website link QRCode" />
