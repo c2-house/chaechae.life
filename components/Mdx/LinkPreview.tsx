@@ -2,7 +2,7 @@
 'use client';
 
 import useSWR from 'swr';
-import { GlobeIcon } from '@/public/icons';
+import { GlobeIcon, LoadingIcon } from '@/public/icons';
 
 interface LinkData {
   title: string;
@@ -86,20 +86,7 @@ const Loading = () => {
   return (
     <div className="my-5 flex h-[88px] w-full items-center justify-center space-x-2 rounded border border-slate-200 sm:h-[116px] lg:my-6">
       <div aria-label="loading" role="status">
-        <svg
-          width="24"
-          height="24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          viewBox="0 0 24 24"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          xmlns="http://www.w3.org/2000/svg"
-          className="h-4 w-4 animate-spin stroke-slate-500"
-        >
-          <path d="M12 3v3m6.366-.366-2.12 2.12M21 12h-3m.366 6.366-2.12-2.12M12 21v-3m-6.366.366 2.12-2.12M3 12h3m-.366-6.366 2.12 2.12"></path>
-        </svg>
+        <LoadingIcon className="h-4 w-4 animate-spin stroke-slate-500" />
       </div>
       <span className="text-xs font-medium text-slate-500">Loading...</span>
     </div>
