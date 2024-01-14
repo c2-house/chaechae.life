@@ -30,7 +30,7 @@ const Header = () => {
           'inset-x-0 top-0 z-10 w-full transition-colors duration-300',
           currentPath === '/' ? 'fixed' : 'sticky',
           {
-            'bg-transparent': currentPath === '/' && scrollY === 0,
+            'bg-transparent': currentPath === '/' && scrollY <= 0,
             'border-b border-gray-100 bg-white/70 backdrop-blur-lg': scrollY > 0,
           },
         )}
@@ -47,10 +47,10 @@ const Header = () => {
                   <li key={link.name}>
                     <Link
                       href={link.path}
-                      className={clsx('block px-4 py-1 font-semibold transition-colors', {
-                        'text-indigo-600': currentPath === link.path,
-                        'hover:text-slate-500': currentPath !== link.path,
-                      })}
+                      className={clsx(
+                        'block px-4 py-1 font-semibold transition-colors',
+                        currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
+                      )}
                     >
                       {link.name}
                     </Link>

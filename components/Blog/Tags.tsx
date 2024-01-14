@@ -24,21 +24,24 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
   const allTags = ['All', ...tags];
 
   return (
-    <ul className="not-prose my-5 flex flex-wrap gap-2 text-sm text-slate-700 md:gap-3 md:text-base">
-      {allTags.map((tag) => (
-        <li key={tag}>
-          <Link
-            href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
-            className={clsx('inline-flex rounded-full border px-3 py-0.5 transition-colors', {
-              'border-slate-200 hover:border-indigo-600': currentTab !== slugify(tag),
-              'border-indigo-600 bg-indigo-600 text-white':
-                (currentTab === 'all' && tag === 'All') || currentTab === slugify(tag),
-            })}
-          >
-            {tag}
-          </Link>
-        </li>
-      ))}
-    </ul>
+    <nav>
+      <ul className="not-prose my-5 flex flex-wrap justify-center gap-2 text-sm text-slate-700 md:gap-3 md:text-base">
+        {allTags.map((tag) => (
+          <li key={tag}>
+            <Link
+              href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
+              className={clsx(
+                'inline-flex rounded-full border px-3 py-1 transition-colors sm:px-4',
+                currentTab === slugify(tag)
+                  ? 'border-indigo-600 bg-indigo-600 text-white'
+                  : 'border-slate-200 hover:border-indigo-600',
+              )}
+            >
+              {tag}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 };
