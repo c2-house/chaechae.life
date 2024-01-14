@@ -27,7 +27,7 @@ const Header = () => {
     <>
       <header
         className={clsx(
-          'inset-x-0 top-0 z-30 w-full transition-colors duration-300',
+          'inset-x-0 top-0 z-10 w-full transition-colors duration-300',
           currentPath === '/' ? 'fixed' : 'sticky',
           {
             'bg-transparent': currentPath === '/' && scrollY === 0,
