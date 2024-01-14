@@ -14,12 +14,12 @@ const Error = ({ error, reset }: Error) => {
 
   return (
     <div className="container-lg flex h-[80dvh] flex-col items-center justify-center">
-      <h2>Something went wrong!</h2>
+      <h2>오류가 발생했습니다.</h2>
       <button
         onClick={reset}
         className="mt-6 flex justify-center rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-700"
       >
-        Try again
+        새로고침
       </button>
     </div>
   );
