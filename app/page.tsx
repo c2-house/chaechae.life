@@ -11,16 +11,16 @@ const Home = () => {
   return (
     <main>
       <section className="bg-gradient-light bg-gradient-to-b">
-        <div className="flex h-screen items-center justify-center md:h-screen">
+        <div className="flex h-[100svh] items-center justify-center">
           <div className="px-6 text-center">
             <h1 className="mb-5 text-5xl font-bold md:mb-8 md:text-7xl lg:mb-12 lg:text-8xl">
-              <span className="animate-fade-in animation-delay-100">개발자 부부</span>
+              <span className="animation-delay-100 animate-fade-in">개발자 부부</span>
               <br />
-              <span className="animate-fade-in animation-delay-300 bg-gradient-text mt-4 inline-block md:mt-5 lg:mt-6">
+              <span className="animation-delay-300 bg-gradient-text mt-4 inline-block animate-fade-in md:mt-5 lg:mt-6">
                 채채
               </span>
             </h1>
-            <p className="animate-fade-in animation-delay-500 text-lg text-slate-700 md:text-xl md:!leading-relaxed lg:text-2xl">
+            <p className="animation-delay-500 animate-fade-in text-lg text-slate-700 md:text-xl md:!leading-relaxed lg:text-2xl">
               세상에 필요한 서비스를 만듭니다.
               <br />
               사용하기 쉽고 편리한 서비스를 개발합니다.
