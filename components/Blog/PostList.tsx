@@ -18,7 +18,7 @@ const PostList = ({ posts, countLabel }: Props) => {
   return (
     <>
       {countLabel && (
-        <div className="mb-5 font-semibold text-slate-700 md:mb-7 md:text-xl">
+        <div className="mb-5 font-semibold md:mb-7 md:text-xl">
           {countLabel} ({posts.length})
         </div>
       )}
