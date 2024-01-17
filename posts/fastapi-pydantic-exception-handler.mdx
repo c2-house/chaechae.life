@@ -1,0 +1,162 @@
+---
+title: FastAPI - Pydantic 에러 응답 변경 (feat.Exception Handler)
+description: FastAPI로 개발하면 pydantic을 통해 입력받은  데이터의 Validation을 하는 경우가 많습니다.  pydantic에서 에러가 발생하면 422에러와 함께 pydantic에서 미리 정해놓은 에러 응답이 전송됩니다.  오늘은 이 부분을 내가 원하는대로 응답을 변경하는  방법을 알아보겠습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/01/17
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo" />
+
+### Table of Contents
+
+## 소개
+
+FastAPI로 개발하면 pydantic을 통해 입력받은 데이터의 Validation을 하는 경우가 많습니다. pydantic에서 에러가 발생하면 **422에러와 함께 pydantic에서 미리 정해놓은 에러 응답**이 전송됩니다. 오늘은 이 부분을 내가 원하는대로 응답을 변경하는 방법을 알아보겠습니다.
+
+FastAPI의 Exception Handler를 이용해서 쉽게 만들 수 있습니다.
+
+## 구현 및 예시
+
+바로 예제 코드로 들어가 보겠습니다.
+
+### Request에서 데이터 검증 에러 응답 변경
+
+```python
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, model_validator
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    price: float
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_name(cls, v):
+        name = v.get("name")
+        if len(name) < 5:
+            raise ValueError("name too short")
+    return v
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    err = exc.errors()[0]
+    return JSONResponse(
+        status_code=422,
+        content={"message": str(err["msg"]), "code": "VALIDATION_ERROR"},
+    )
+```
+
+FastAPI에서 pydantic 에러가 발생하면 아래와 같은 형태를 띄게 됩니다.
+
+```json
+{
+  "detail": [
+    {
+      "type": "value_error",
+      "loc": ["body"],
+      "msg": "Value error, name too short",
+      "input": {
+        "name": "123",
+        "price": 0
+      },
+      "ctx": {
+        "error": {}
+      },
+      "url": "https://errors.pydantic.dev/2.2/v/value_error"
+    }
+  ]
+}
+```
+
+이런 에러를 원하지 않고 원하는 형태로 에러를 발생시키고 싶다면 핵심은 `RequestValidationError` 와 `@app.exception_handler` 입니다. 예제의 `validation_exception_handler` 처럼 RequestValidationError가 발생했을 때 에러를 캐치할 수 있습니다.
+
+- exc.errors()를 호출하면 응답이 담깁니다.
+- 이것을 통해 데이터를 정제하여 `JSONResponse`로 응답을 변경하여 전송할 수 있습니다.
+- 예시코드를 실행하여 고의로 에러를 발생시키면 다음과 응답은 다음과 같이 변경됩니다.
+
+```json
+{
+  "message": "Value error, name too short",
+  "code": "VALIDATION_ERROR"
+}
+```
+
+이것은 **Request 요청을 받았을 때 Request에서 데이터 검증 에러가 발생했을 때만 처리가 됩니다.**
+
+### Response에서 데이터 검증 에러 변경
+
+Response에서 데이터 검증 에러를 변경하려면 아래와 같이 코드를 추가합니다.
+
+```python
+from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError, ResponseValidationError
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel, model_validator
+
+app = FastAPI()
+
+class Item(BaseModel):
+    name: str
+    price: float
+
+    @model_validator(mode="before")
+    @classmethod
+    def check_name(cls, v):
+        name = v.get("name")
+        if len(name) < 5:
+            raise ValueError("name too short")
+        return v
+
+class ItemResponse(BaseModel):
+    name: int
+    price: float
+
+@app.post("/items/", response_model=ItemReponse)
+async def create_item(item: Item):
+    return item
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    err = exc.errors()[0]
+    return JSONResponse(
+        status_code=422,
+        content={"message": str(err["msg"]), "code": "VALIDATION_ERROR"},
+    )
+
+@app.exception_handler(ResponseValidationError)
+async def response_validation_exception_handler(request, exc):
+    err = exc.errors()[0]
+    return JSONResponse(
+        status_code=500,
+        content={"message": str(err["msg"]), "code": "VALIDATION_ERROR"},
+    )
+```
+
+`ResponseValidationError` 를 처리하는 `response_validation_exception_handler` 를 만들었습니다.
+
+위 코드에서 `ItemResponse` 를 무조건 에러가 발생하도록 작성했습니다.
+
+response exception handler가 없으면 INTERNAL SERVER ERROR가 발생하지만, handler를 추가한 뒤엔 다음과 같이 변경됩니다.
+
+```json
+{
+  "message": "Input should be a valid integer, unable to parse string as an integer",
+  "code": "VALIDATION_ERROR"
+}
+```
+
+## 마무리
+
+오늘은 Pydantic에서 데이터 검증 에러가 발생했을 때 응답을 변경하는 방법을 알아봤습니다. 프론트엔드와 에러응답을 어떻게 줄 것인가에 대해서 논의를 거치다가, 위에서 언급한 내용들이 필요하게 되어 블로그에 포스팅하게 되었습니다.
+
+이상으로 포스팅을 마치겠습니다.
