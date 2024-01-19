@@ -1,9 +1,19 @@
 import { MetadataRoute } from 'next';
-import { allPosts } from 'contentlayer/generated';
-import { authors, tags } from '@/constants/pages';
+import { allPosts, allProjects } from 'contentlayer/generated';
+import { authors, navLinks, tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
+  const navigationPages = navLinks.map((navLink) => ({
+    url: `https://chaechae.life${navLink.path}`,
+    lastModified: new Date(),
+  }));
+
+  const projects = allProjects.map((project) => ({
+    url: `https://chaechae.life/projects/${project.slug}`,
+    lastModified: new Date(),
+  }));
+
   const posts = allPosts.map((post) => ({
     url: `https://chaechae.life/blog/${post.slug}`,
     lastModified: new Date(post.date),
@@ -24,10 +34,8 @@ const sitemap = (): MetadataRoute.Sitemap => {
       url: 'https://chaechae.life',
       lastModified: new Date(),
     },
-    {
-      url: 'https://chaechae.life/blog',
-      lastModified: new Date(),
-    },
+    ...navigationPages,
+    ...projects,
     ...posts,
     ...tagPages,
     ...authorPages,
