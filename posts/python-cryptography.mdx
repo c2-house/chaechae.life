@@ -1,0 +1,135 @@
+---
+title: Python 암호화 AES-128-CBC 암호화 구현하기 - pycryptodome과 cryptography 사용하기
+description: 암호화는 데이터 보안의 중요한 측면 중 하나입니다. 그리고 AES(Advanced Encryption Standard)는 가장 널리 사용되는 대칭 키 암호화 알고리즘 중 하나입니다. 최근 데이터를 암호화 할 일이 있었습니다. 하지만 저는 암호학에 대해 아는게 없습니다. 하지만 Python 라이브러리를 이용하면 쉽게 구현할 수 있습니다
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/16
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### 목차
+
+## 소개
+
+암호화는 데이터 보안의 중요한 측면 중 하나입니다. 그리고 AES(Advanced Encryption Standard)는 가장 널리 사용되는 대칭 키 암호화 알고리즘 중 하나입니다. 최근 데이터를 암호화 할 일이 있었습니다. 하지만 저는 **암호학에 대해 아는게 없습니다**. **하지만 Python 라이브러리를 이용하면 쉽게 구현**할 수 있습니다. Python으로 암호화하는 방법을 정리해보고자 합니다. 이 포스트에서는 Python을 사용하여 AES-128-CBC 모드로 암호화하는 두 가지 방법, `pycryptodome`와 `cryptography` 라이브러리를 사용하는 방법을 소개하겠습니다.
+
+## pycryptodome 라이브러리 사용하기
+
+### 설치
+
+`pycryptodome`는 PyCrypto가 더 이상 개발되지 않아 포크되어 개발된 라이브러리입니다. `pycrypto`와 호환됩니다. 다양한 암호화 및 해시 알고리즘을 제공합니다.
+
+```bash
+pip install pycryptodome
+```
+
+### AES-128-CBC 암호화 구현
+
+`pycryptodome`를 사용하여 AES-128-CBC 암호화 및 복호화 예제 코드를 작성해보겠습니다.
+
+```python
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+from Crypto.Random import get_random_bytes
+
+class AESCipher:
+    def __init__(self, key: bytes) -> None:
+        self.key = key
+
+    def encrypt(self, data: bytes) -> bytes:
+        iv = get_random_bytes(16)
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        ct_bytes = cipher.encrypt(pad(data, AES.block_size))
+        return iv + ct_bytes
+
+    def decrypt(self, encrypted_data: bytes) -> bytes:
+        iv = encrypted_data[:16]
+        cipher = AES.new(self.key, AES.MODE_CBC, iv)
+        pt = unpad(cipher.decrypt(encrypted_data[16:]), AES.block_size)
+        return pt
+
+```
+
+여기서 `AESCipher` 클래스는 `encrypt` 메소드와 `decrypt` 메소드를 포함합니다. `encrypt` 메소드는 데이터를 암호화하고, `decrypt` 메소드는 암호화된 데이터를 복호화합니다.
+
+## cryptography 라이브러리 사용하기
+
+### 설치
+
+`cryptography`는 Python에서 널리 사용되는 또 다른 보안 라이브러리입니다. 설치는 다음 명령어로 수행할 수 있습니다:
+
+```bash
+pip install cryptography
+```
+
+### AES-128-CBC 암호화 구현
+
+`cryptography` 라이브러리를 사용한 AES-128-CBC 암호화 및 복호화 예제코드를 작성해보겠습니다.
+
+```python
+import os
+from cryptography.hazmat.primitives import padding
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+
+class AESCipher:
+    def __init__(self, key: bytes) -> None:
+        self.key = key
+
+    def encrypt(self, data: bytes) -> bytes:
+        iv = os.urandom(16)
+        cipher = Cipher(
+            algorithms.AES(self.key), modes.CBC(iv), backend=default_backend()
+        )
+        encryptor = cipher.encryptor()
+        padder = padding.PKCS7(128).padder()
+        padded_data = padder.update(data) + padder.finalize()
+        encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+        return iv + encrypted_data
+
+    def decrypt(self, encrypted_data: bytes) -> bytes:
+        iv = encrypted_data[:16]
+        cipher = Cipher(
+            algorithms.AES(self.key), modes.CBC(iv), backend=default_backend()
+        )
+        decryptor = cipher.decryptor()
+        unpadder = padding.PKCS7(128).unpadder()
+        padded_data = decryptor.update(encrypted_data[16:]) + decryptor.finalize()
+        return unpadder.update(padded_data) + unpadder.finalize()
+
+```
+
+이 클래스는 `encrypt` 및 `decrypt` 메소드를 통해 데이터를 각각 암호화 및 복호화합니다.
+
+## Base64 Encoding Decoding
+
+데이터를 base64로 인코딩, 디코딩하여 무결성을 유지하고 클라이언트와 서버간에 안전하게 데이터를 주고받을 수 있도록 합니다.
+
+```python
+# 각 클래스의 메소드 추가
+def encrypt_to_base64(self, data: bytes) -> str:
+    encrypted_data = self.encrypt(data)
+    return base64.b64encode(encrypted_data).decode('utf-8')
+
+def decrypt_from_base64(self, encrypted_data: str) -> bytes:
+    encrypted_data_bytes = base64.b64decode(encrypted_data)
+    return self.decrypt(encrypted_data_bytes)
+```
+
+## 마무리
+
+Python에서 `pycryptodome` 및 `cryptography` 라이브러리를 사용하여 AES-128-CBC 암호화를 수행하는 방법에 대해 알아보았습니다. 두 라이브러리 사용하기 쉽지만 `pycryptodome` 이 구현은 더 쉬운 것 같습니다.
+
+저의 선택은 `cryptography`로 하였습니다. 이걸 더 많이 쓰더라구요.
+
+<Image src="/python-cryptography/01.jpg" alt="Github Actions Logo" />
+
+알아보니 두 라이브러리 모두 여러가지 암호화 방법들을 제공해주었습니다.`pycryptodomex`
+
+도 있는데 이것은 pycrypto와 호환되지 않고 별도의 독립적인 라이브러리로 제공됩니다.
+
+두 라이브러리 모두 간단하게 알아봤습니다. 더 깊이, 여러가지 기능을 사용하고 싶다면 공식문서를 참고하시길 바랍니다.
+
+이상으로 포스팅 마치겠습니다.

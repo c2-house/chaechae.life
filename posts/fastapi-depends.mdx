@@ -1,0 +1,127 @@
+---
+title: FastAPI - Depends 의존성 주입 그리고 use_cache
+description: FastAPI의 Depends 함수는 의존성 주입(Dependency Injection)을 구현하는 데 사용됩니다. 의존성 주입은 컴포넌트(함수, 클래스 등) 간의 의존성을 외부에서 제공하는 방법입니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/01/18
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo" />
+
+### 목차
+
+## Depends 의존성 주입
+
+FastAPI의 `Depends` 함수는 의존성 주입(Dependency Injection)을 구현하는 데 사용됩니다. 의존성 주입은 컴포넌트(함수, 클래스 등) 간의 의존성을 외부에서 제공하는 방법입니다.
+
+덕분에 코드를 보다 유연하게 작성할 수 있습니다.
+
+`Depends`는 route operation function, 즉 API 엔드포인트에서 실행되는 함수에서만 동작합니다. FastAPI의 `APIRoute`객체에서 Depends를 풀어서 실행하는 로직이 들어 있기 때문입니다. 따라서 API와 관계없는 함수에서는 동작하지 않습니다. 예를들면 middleware 객체에 Depends를 쓴다면 동작하지 않습니다.
+
+`Depends`는 인자로 dependency가 되는 Callable 객체와 use_cache를 받습니다. use_cache는 의존성을 캐싱할지 여부를 결정합니다.
+
+## 예제 코드
+
+예제 코드를 한 번 살펴보겠습니다.
+
+```python
+from datetime import datetime
+from fastapi import FastAPI, Depends
+
+app = FastAPI()
+
+def temp_db():
+    now = datetime.now()
+    print(f"db called at {now}")
+    return dict()
+
+async def add_name(db: dict = Depends(temp_db)):
+    # temp db를 실제 db라고 가정
+    db["name"] = "Temp Man"
+    print("commit!")
+    return "Temp Man"
+
+@app.post("/items/")
+async def create_item(
+    name: str = Depends(add_name),
+    db: str = Depends(temp_db), # use_cache=False
+):
+    db["age"] = 20
+    print("commit!")
+    print("name", name)
+    return {"message": "OK"}
+```
+
+`temp_db` 함수는 `add_name`과 `create_item`에서 두 번 주입됩니다. add_name은 다시 create_item에서도 사용되며 nested 되어 있습니다.
+
+add_name에서도 db를 호출하고, create_item에서도 db를 호출하는 것처럼 보입니다. 하지만 **Depends의 use_cache 기본값이 True**입니다. db는 2번 호출되지만 cache가 되어 create_item에서는 처음 호출된 db가 재사용됩니다.
+
+API를 한 번 호출하고 터미널을 확인하면 아래처럼 찍힙니다.
+
+```bash
+db called at 2024-01-18 20:15:26.951926
+commit!
+commit!
+name Temp Man
+```
+
+`use_cache=False`를 주면 같은 상황에서 temp_db 의존성이 2번 실행됩니다. 실제 DB라면 session을 2번 연결하는 상황이 되겠습니다.
+
+False로 변경한 뒤 실행하면 결과는 다음과 같습니다.
+
+```bash
+db called at 2024-01-18 20:22:11.060676
+commit!
+db called at 2024-01-18 20:22:11.061062
+commit!
+name Temp Man
+```
+
+`temp_db`가 2번 호출되어 time_stamp가 2번 찍혔습니다.
+
+대게는 use_cache가 True인 상황이 많지만 nested로 구현해도 매번 호출되어야 하는 의존성이 있다면 `use_cache=False`를 사용하시기 바랍니다.
+
+## Depends의 cache 실수
+
+Depends의 cache를 몰랐을 때 했던 과거의 실수를 공유하려 합니다. 얼마전에 저와 같은 실수를 했던 사람을 봤습니다. 그래서 실수를 공유하여 혹시 몰랐던 분들에게 도움이 되길 바랍니다.
+
+- 상황
+  - push 메세지를 보내는 API를 개발하던 상황
+  - push보낼 data를 정제하는 의존성을 push 를 전송하는 의존성에 주입하는 상황
+  - 두 곳 모두에서 db가 사용됨
+
+```python
+
+DB = Annotated[AsyncSession, Depends(async_session_1)]
+
+async def get_push_data(db: DB, message: PushMessageRequest) -> dict:
+    모바일_토큰_조회_함수(db)
+    ...
+
+    data = {
+    ...
+    db: db, # ???
+    ...
+    }
+    return data
+
+async def send_message(data: Annotated[dict, Depends(get_push_data)]) -> dict:
+    db = data.pop("db") # 이렇게 꺼냈음
+    ...
+    전송_내역_저장(db)
+    ...
+```
+
+`get_push_data` 함수에서 `data`에 `db`를 저장할 필요가 없었습니다. cache의 존재를 몰라서 session연결이 두 번되는 줄 알고 db 객체를 data에 저장하고 `send_message`에서 꺼내서 사용했습니다. cache가 걸려있기 때문에 `send_message` 에 db 를 다시 주입해줘도 되는 상황이었습니다.
+
+아래와 같이 하는게 Depends의 기능을 제대로 활용하는 것이겠죠.
+
+```python
+async def send_message(db: DB, data: Annotated[dict, Depends(get_push_data)]) -> dict:
+    ...
+```
+
+## 마무리
+
+Depends를 이용한 편리한 의존성 주입이 FastAPI를 대표하는 기능이라고 생각합니다. 오늘은 FastAPI의 Depends에 대해서 포스팅을 해봤습니다.

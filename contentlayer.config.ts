@@ -1,6 +1,6 @@
 import { defineDocumentType, makeSource } from 'contentlayer/source-files';
 import remarkGfm from 'remark-gfm';
-import remarkToc from 'remark-toc';
+import remarkToc, { Options as RemarkTocOptions } from 'remark-toc';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode, { Options as PrettyCodeOptions } from 'rehype-pretty-code';
@@ -58,7 +58,10 @@ export default makeSource({
   contentDirPath: 'posts',
   documentTypes: [Post],
   mdx: {
-    remarkPlugins: [remarkGfm, remarkToc],
+    remarkPlugins: [
+      remarkGfm,
+      [remarkToc, { heading: '목차' } satisfies Partial<RemarkTocOptions>],
+    ],
     rehypePlugins: [
       rehypeSlug,
       rehypeAutolinkHeadings,
