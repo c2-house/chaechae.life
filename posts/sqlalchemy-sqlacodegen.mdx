@@ -1,0 +1,98 @@
+---
+title: SQLAlchemy - 기존 DB로 SQLAlchemy 모델 생성하기(feat.sqlacodegen)
+description: 새 프로젝트에서 DB를 새로 만들고 migration할 땐 보통 alembic을 사용해서 테이블을 만들고 그것을 기반으로 SQLAlchemy model을 작성합니다. 하지만 DB가 기존에 만들어져 있는 경우는 그렇게 할 수 없죠.  오늘은 sqlacodegen 라이브러리로 기존 DB를 가져와서 SQLAlchemy Model을 생성하는 방법을 알아보려고 합니다.
+tags: [SQLAlchemy]
+author: mingke
+thumbnail: /thumbnails/sqlalchemy-logo.png
+date: 2024/01/19
+---
+
+<Image src="/thumbnails/sqlalchemy-logo.png" alt="SQLAlchemy Logo" />
+
+### 목차
+
+## 소개
+
+FastAPI와 함께 SQLAlchemy를 ORM으로 많이 사용합니다. 새 프로젝트에서 DB를 새로 만들고 migration할 땐 보통 alembic을 사용해서 테이블을 만들고 그것을 기반으로 SQLAlchemy model을 작성합니다. 하지만 DB가 기존에 만들어져 있는 경우는 그렇게 할 수 없죠. 오늘은 **sqlacodegen** 라이브러리로 기존 DB를 가져와서 SQLAlchemy Model을 생성하는 방법을 알아보려고 합니다.
+
+## 설치
+
+```bash
+pip install sqlacodegen=3.0.0rc3
+```
+
+2024년 1월을 기준으로 정식3 버젼이 릴리즈 되지 않아서 설치할 때 위에 보시는 것과 같이 rc버젼을 명시해줘야 합니다. rc버젼을 명시해주지 않으면 **2.3.0.post1 버젼이** 설치되는데, 이 버젼은 **sqlalchemy 2버젼 이상을 지원하지 않습니다.**
+
+- rc : Release Candidate 릴리즈 후보, 테스트 버젼
+
+sqlalchemy 2버젼부터는 Model을 만드는 방법이 좀 바뀌었습니다. sqlalchemy 1.4 버젼을 이용하신다면 `pip install sqlacodegen`을 이용해서 설치하면 됩니다.
+
+## 사용법
+
+사용법은 아주 간단합니다. mysql 기준으로 설명하겠습니다.
+
+```bash
+sqlacodegen 'mysql+pymysql://user:password@localhost/dbname' > 저장할이름.py
+```
+
+추가적인 다른 사용법들은 github 문서를 참고해주세요.
+
+<Link url="https://github.com/agronholm/sqlacodegen" />
+
+명령어를 실행하면 다음과 같은 결과물이 나옵니다. 가짜 Model입니다.
+
+### 2 버젼 결과물
+
+type import가 mysql db에서 가져왔더니 `sqlalchemy.dialects.mysql`에서 가져오기도 하고 `sqlalchemy`에서 바로 가져오기도 해서 정상 동작은 하지만 type import가 못생긴 문제가 있습니다. 원하는대로 import를 수정해주시면 됩니다.
+
+```python
+from typing import List, Optional
+
+from sqlalchemy import DateTime, Enum, Float, ForeignKeyConstraint, Index, Integer, String, text
+from sqlalchemy.dialects.mysql import CHAR, ENUM, MEDIUMTEXT, VARCHAR
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+import datetime
+
+class Base(DeclarativeBase):
+    pass
+
+class Fake(Base):
+    __tablename__ = 'fake'
+    __table_args__ = (
+        Index('가짜 가짜 가짜', '가짜 가짜', unique=True),
+        {'comment': '가짜 호호호'}
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, comment='호호호')
+    name: Mapped[str] = mapped_column(String(100), comment='호호호')
+    code: Mapped[str] = mapped_column(VARCHAR(20), comment='호호호')
+    ...
+```
+
+### 1 버젼 결과물
+
+sqlalchemy 1버젼을 이용한다면 결과물이 다음과 같습니다.
+
+```python
+from sqlalchemy import Column, Date, DateTime, Enum, Float, ForeignKeyConstraint, Index, Integer, String, Time, text
+from sqlalchemy.dialects.mysql import ENUM, MEDIUMTEXT, VARCHAR
+from sqlalchemy.orm import declarative_base, relationship
+
+Base = declarative_base()
+
+class Business(Base):
+    __tablename__ = 'business'
+    __table_args__ = (
+        Index('가짜 가짜 가짜', '가짜 가짜', unique=True),
+        {'comment': '가짜 호호호'}
+    )
+
+	id = Column(Integer, primary_key=True, comment='호호호')
+    name = Column(String(100), nullable=False, comment='호호호')
+	code = Column(VARCHAR(20), nullable=False, unique=True, comment='호호호')
+    ...
+```
+
+## 마무리
+
+django를 사용할 땐 inspectdb 명령어를 쓰면 기존 DB를 model로 쉽게 뽑을 수 있었는데 sqlalchemy를 쓰니 이렇게 따로 작업을 해줘야하는 불편함이 있네요. 그래도 크게 불편하진 않은것 같습니다.
