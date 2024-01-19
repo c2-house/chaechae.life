@@ -9,7 +9,7 @@ import { authors, tags } from './constants/pages';
 
 export const Post = defineDocumentType(() => ({
   name: 'Post',
-  filePathPattern: `**/*.mdx`,
+  filePathPattern: `posts/**/*.mdx`,
   contentType: 'mdx',
   fields: {
     title: {
@@ -45,7 +45,7 @@ export const Post = defineDocumentType(() => ({
   computedFields: {
     slug: {
       type: 'string',
-      resolve: (doc) => doc._raw.flattenedPath,
+      resolve: (doc) => doc._raw.flattenedPath.split('/')[1],
     },
     image: {
       type: 'string',
@@ -54,9 +54,39 @@ export const Post = defineDocumentType(() => ({
   },
 }));
 
+export const Project = defineDocumentType(() => ({
+  name: 'Project',
+  filePathPattern: `projects/**/*.mdx`,
+  contentType: 'mdx',
+  fields: {
+    order: {
+      type: 'number',
+      required: true,
+    },
+    title: {
+      type: 'string',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      required: true,
+    },
+    mockupType: {
+      type: 'enum',
+      options: ['mobile', 'desktop'],
+    },
+  },
+  computedFields: {
+    slug: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.split('/')[1],
+    },
+  },
+}));
+
 export default makeSource({
-  contentDirPath: 'posts',
-  documentTypes: [Post],
+  contentDirPath: 'content',
+  documentTypes: [Post, Project],
   mdx: {
     remarkPlugins: [
       remarkGfm,

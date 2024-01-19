@@ -47,14 +47,4 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
-
-  .animation-delay-100 {
-    animation-delay: 100ms;
-  }
-  .animation-delay-300 {
-    animation-delay: 300ms;
-  }
-  .animation-delay-500 {
-    animation-delay: 500ms;
-  }
 }

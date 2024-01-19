@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://chaechae.life'),
   title: {
     default: title,
-    template: `${title} - %s`,
+    template: `%s - ${title}`,
   },
   description,
   openGraph: {
@@ -66,10 +66,12 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
         src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}`}
       />
       <Script id="google-analytics">
-        {`window.dataLayer = window.dataLayer || [];
+        {`
+          window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');`}
+          gtag('config', '${process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID}');
+        `}
       </Script>
     </head>
     <body className={clsx('text-slate-900', inter.className)}>

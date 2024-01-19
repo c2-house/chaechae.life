@@ -44,7 +44,7 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
         </div>
 
         <nav>
-          <ul className="flex flex-col items-center">
+          <ul className="flex flex-col items-center gap-2">
             {navLinks.map((link) => (
               <li key={link.name} className="w-full">
                 <Link
