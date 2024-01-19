@@ -31,7 +31,7 @@ const PostPage = ({ params: { slug } }: Props) => {
           <Link href={`/blog/${allPosts[i + 1].slug}`} className="group flex flex-col">
             <span className="ml-7 text-xs text-slate-500">이전 글</span>
             <div className="mt-1 flex items-center font-semibold">
-              <ChevronRightIcon className="mr-1 h-6 w-6 rotate-180 fill-slate-500" />
+              <ChevronRightIcon className="mr-1 h-6 w-6 flex-shrink-0 rotate-180 fill-slate-500" />
               <span className="line-clamp-1 transition-colors group-hover:text-indigo-600">
                 {allPosts[i + 1].title}
               </span>
@@ -45,7 +45,7 @@ const PostPage = ({ params: { slug } }: Props) => {
               <span className="line-clamp-1 transition-colors group-hover:text-indigo-600">
                 {allPosts[i - 1].title}
               </span>
-              <ChevronRightIcon className="ml-1 h-6 w-6 fill-slate-500" />
+              <ChevronRightIcon className="ml-1 h-6 w-6 flex-shrink-0 fill-slate-500" />
             </div>
           </Link>
         )}
