@@ -54,9 +54,39 @@ export const Post = defineDocumentType(() => ({
   },
 }));
 
+export const Project = defineDocumentType(() => ({
+  name: 'Project',
+  filePathPattern: `projects/**/*.mdx`,
+  contentType: 'mdx',
+  fields: {
+    order: {
+      type: 'number',
+      required: true,
+    },
+    title: {
+      type: 'string',
+      required: true,
+    },
+    description: {
+      type: 'string',
+      required: true,
+    },
+    mockupType: {
+      type: 'enum',
+      options: ['mobile', 'desktop'],
+    },
+  },
+  computedFields: {
+    slug: {
+      type: 'string',
+      resolve: (doc) => doc._raw.flattenedPath.split('/')[1],
+    },
+  },
+}));
+
 export default makeSource({
   contentDirPath: 'content',
-  documentTypes: [Post],
+  documentTypes: [Post, Project],
   mdx: {
     remarkPlugins: [
       remarkGfm,
