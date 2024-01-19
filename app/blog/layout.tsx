@@ -1,7 +1,9 @@
 import { Metadata } from 'next';
-import { title, blogDescription as description, openGraph } from '@/app/shared-metadata';
+import { title, openGraph } from '@/app/shared-metadata';
 
-const ogTitle = `${title} - 블로그`;
+const ogTitle = `블로그 - ${title}`;
+const description =
+  '프론트엔드, 백엔드 개발자 부부 채채의 개발 경험과 개발자로서의 삶을 공유하는 블로그입니다.';
 
 export const metadata: Metadata = {
   title: '블로그',

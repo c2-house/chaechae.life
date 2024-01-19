@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { openGraph } from '@/app/shared-metadata';
+import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 import { tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
@@ -14,7 +14,7 @@ export const generateMetadata = async (
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
   const tag = tags.find((tag) => slugify(tag) === tagName);
-  const title = `채채의 개발 블로그 - ${tag}`;
+  const title = `${tag} - ${baseTitle}`;
   const description = (await parent).description || '';
 
   return {

@@ -1,5 +1,5 @@
 import { Metadata, ResolvingMetadata } from 'next';
-import { openGraph } from '@/app/shared-metadata';
+import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
   params: {
@@ -11,7 +11,7 @@ export const generateMetadata = async (
   { params: { authorName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const title = `채채의 개발 블로그 - ${authorName}`;
+  const title = `${authorName} - ${baseTitle}`;
   const description = (await parent).description || '';
 
   return {

@@ -1,6 +1,6 @@
 import RSS, { FeedOptions } from 'rss';
 import { allPosts } from 'contentlayer/generated';
-import { title, blogDescription as description } from '@/app/shared-metadata';
+import { title, description } from '@/app/shared-metadata';
 
 const host =
   process.env.NODE_ENV === 'production' ? 'https://chaechae.life' : 'http://localhost:3000';

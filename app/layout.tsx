@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://chaechae.life'),
   title: {
     default: title,
-    template: `${title} - %s`,
+    template: `%s - ${title}`,
   },
   description,
   openGraph: {
