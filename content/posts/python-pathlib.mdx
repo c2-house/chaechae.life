@@ -1,0 +1,151 @@
+---
+title: python pathlib 파일 경로 다루기 - python 표준 내장 라이브러리
+description: 오늘은 python에서 파일 경로를 다루는 방법을 알아보려고 합니다. 파이썬을 처음 배울 땐 os.path를 이용해서 다루곤 했는데요. 이젠 python 내장 라이브러리인 pathlib도 많이 사용합니다. pathlib은 파일 시스템 경로를 객체로 취급하며, 경로 관련 작업을 효율적이고 직관적으로 수행할 수 있게 해줍니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/01/21
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### 목차
+
+## 소개
+
+오늘은 python에서 파일 경로를 다루는 방법을 알아보려고 합니다. 파이썬을 처음 배울 땐 os.path를 이용해서 다루곤 했는데요. 이젠 python 내장 라이브러리인 pathlib도 많이 사용합니다.
+
+**pathlib**은 파일 시스템 경로를 객체로 취급하며, 경로 관련 작업을 효율적이고 직관적으로 수행할 수 있게 해줍니다.
+
+객체로 관리하게되면 코드 가독성과 유지 보수성이 올라갑니다. 플랫폼에 독립적이어서 os가 window이거나 unix 계열이거나 관계없이 동일한 코드로 사용할 수 있습니다.
+
+코드와 예시를 통해 알아보겠습니다.
+
+## pathlib 예시
+
+### 파일 경로 지정
+
+django에서 프로젝트를 생성했을 때 생성된 settings.py를 보면 상단에 다음과 같은 코드가 있습니다.
+
+```python
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+```
+
+코드를 해석해보면 BASE_DIR은 ‘현재 파일의 2단계 상위의 디렉토리이다.’ 가 됩니다. 이처럼 Path 객체를 통해 경로를 쉽게 지정할 수 있습니다.
+
+### 디렉토리 및 파일 생성
+
+디렉토리 및 파일도 쉽게 생성할 수 있습니다.
+
+```python
+from pathlib import Path
+
+# 경로 생성
+p = Path('./new_dir')
+# 새 폴더 생성
+p.mkdir(parents=True, exist_ok=True)
+# 파일 경로 생성 및 파일 이름 변경
+new_file = p / 'new_file.txt'
+new_file.touch()
+new_file.rename(p / 'renamed_file.txt')
+```
+
+- Path객체에 생성할 디렉토리 경로를 설정합니다.
+- mkdir 메소드로 디렉토리를 생성합니다. parents는 `mkdir -p`와 같은 역할입니다. exist_ok는 경로가 이미 존재한다면 아무 행동도 하지 않습니다. False경우 에러 발생
+- file 같은 경우는 / 를 사용하여 매우 직관적으로 표현할 수 있습니다. ‘**아니 어떻게 / 연산자를 str에 쓸 수 있지?**’ 라고 생각할 수 있는데 Path 내부적으로 따로 가능하도록 구현이 되어있습니다.
+
+  ```python
+  # 참고
+  ...
+  def __truediv__(self, key):
+          try:
+              return self._make_child((key,))
+          except TypeError:
+            return NotImplemented
+
+  def __rtruediv__(self, key):
+      try:
+          return self._from_parts([key] + self._parts)
+      except TypeError:
+          return NotImplemented
+  ```
+
+- touch, rename 등 unix 계열 명령어와 동일하거나 직관적인 메소드를 사용하고 있습니다.
+
+### 파일 쓰기 및 읽기
+
+너무 당연하게도 file에 쓰기 작업도 할 수 있습니다.
+
+```python
+# 1-1 쓰기
+file = Path("./new_dir/renamed_file.txt")
+file.write_text("Hello, world!")
+
+# 1-2 읽기
+file.read_text()
+
+# 2-1 쓰기
+with open("./new_dir/renamed_file.txt", 'w') as f:
+    f.write("Hello, world!")
+
+# 2-2 읽기
+with open("./new_dir/renamed_file.txt", 'r') as f:
+    print(f.read())
+```
+
+1번과 2 번이 같은 동일한 기능인데 1번이 아주 직관적이고 좋아보입니다. 1번 코드의 내부가 2번으로 구현된 것이긴 합니다.
+
+### 디렉토리 순회
+
+특정 디렉토리 및 특정 경로의 파일들을 순회하여 파일을 찾을 수있습니다.
+
+```python
+# 폴더 내의 모든 파일과 폴더 순회
+for item in p.iterdir():
+    print(item)
+# 특정 패턴의 파일 찾기
+for file in p.glob('*.txt'):
+    print(file)
+```
+
+실제 프로젝트에 사용했던 코드를 공유합니다.
+
+최근에 만든 기능중에 `mct run dev`명령어로 uvicorn서버를 실행할 수 있는 cli가 있습니다. 코드는 다음과 같습니다.
+
+```python
+...
+def dev():
+    main_py = find_main_py()
+
+    if main_py:
+        module_path = str(main_py).replace("/", ".").rstrip(".py")
+        if module_path.startswith("."):
+            module_path = module_path[1:]
+        uvicorn_command = [
+            "uvicorn",
+            f"{module_path}:app",
+            "--reload",
+            "--host",
+            "127.0.0.1",
+        ]
+        subprocess.run(uvicorn_command)
+    else:
+        click.echo("main.py 파일을 찾을 수 없습니다.")
+
+def find_main_py():
+    """
+    현재 디렉토리부터 시작하여 main.py 파일을 찾습니다.
+    """
+    for path in Path(".").rglob("main.py"): # <------
+        return path
+    return None
+```
+
+`for path in Path(".").rglob("main.py")` 현재 경로에서 오른쪽으로 내려가며 main.py를 찾습니다. FastAPI는 보통 main.py를 만들어 그곳에 app을 생성합니다.
+
+## 마무리
+
+python 경로를 다루는 pathlib에 대해서 대표적인 기능들에 대해서 알아봤습니다. 더 다양한 기능들은 공식문서를 참고하시면 되겠습니다.
