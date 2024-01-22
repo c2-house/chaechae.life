@@ -2,6 +2,7 @@
 
 import clsx from 'clsx';
 import { useState, useEffect } from 'react';
+import ProjectShowcaseCard from './ProjectShowcaseCard';
 
 const words = ['감사', '축하', '응원', '위로', '격려'];
 
@@ -23,36 +24,28 @@ const MessageBot = () => {
   }, []);
 
   return (
-    <section className="not-prose mt-10 bg-slate-50 px-5 py-10 md:py-12">
-      <p className="mb-6 text-center text-xl leading-loose md:mb-8 md:text-2xl">
-        소중한 사람들에게
-        <br />
-        따뜻한{' '}
-        <span
-          className={clsx(
-            'mr-0.5 text-2xl font-semibold transition-opacity duration-500 md:text-3xl',
-            isTransitioning ? 'opacity-0' : 'opacity-100',
-          )}
-        >
-          {words[currentIndex]}
-        </span>
-        의 말을 전해보세요.
-      </p>
-
-      <div className="mx-auto max-w-[300px] overflow-hidden rounded-[40px] border-[10px] border-slate-200 bg-gradient-to-b from-white to-[#B5E1FF] py-4 shadow-md">
-        <video
-          className="h-auto w-full"
-          poster="/images/projects/messagebot/messagebot-poster.jpg"
-          playsInline
-          autoPlay
-          loop
-          muted
-        >
-          <source src="/images/projects/messagebot/messagebot.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-      </div>
-    </section>
+    <ProjectShowcaseCard
+      title={
+        <p className="!mt-0 leading-relaxed">
+          소중한 사람들에게
+          <br />
+          따뜻한{' '}
+          <span
+            className={clsx(
+              'mr-0.5 text-2xl font-semibold text-sky-600 transition-opacity duration-500 md:text-3xl',
+              isTransitioning ? 'opacity-0' : 'opacity-100',
+            )}
+          >
+            {words[currentIndex]}
+          </span>
+          의 말을 전해보세요.
+        </p>
+      }
+      showcaseType="video"
+      src="/images/projects/messagebot/messagebot.mp4"
+      poster="/images/projects/messagebot/messagebot-poster.jpg"
+      phoneBg="bg-gradient-to-b from-white from-50% to-[#B5E1FF] to-50%"
+    />
   );
 };
 
