@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { allProjects } from 'contentlayer/generated';
 import Mdx from '@/components/Mdx';
+import MessageBot from '@/components/Projects/MessageBot';
 
 interface Props {
   params: {
@@ -32,6 +33,7 @@ const Page = ({ params: { slug } }: Props) => {
       <section>
         <Mdx code={project.body.code} />
       </section>
+      {slug === 'messagebot' && <MessageBot />}
     </article>
   );
 };
