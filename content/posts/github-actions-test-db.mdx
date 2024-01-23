@@ -1,0 +1,101 @@
+---
+title: Github Actions에서 TEST DB 사용하기
+description: 테스트코드를 작성하면서 DB가 필요한 경우가 있습니다. 로컬에서 테스트를 실행할 때는 docker-compose로 테스트 DB 컨테이너를 하나 새로 띄워서 사용했습니다. 하지만 CI/CD 구축을 할 때는 굳이 docker compose를 사용하지는 않았습니다. DB를 쉽게 띄울 수 있기에 그렇게 했습니다.  Gitbhub Actions에서 TEST DB 사용하는 방법을 알아보겠습니다.
+tags: [FastAPI, GithubActions]
+author: mingke
+thumbnail: /thumbnails/github-actions-logo.png
+date: 2024/01/24
+---
+
+<Image src="/thumbnails/github-actions-logo.png" alt="Github Actions Logo" />
+
+### 목차
+
+## Github Actions에서 TEST DB 사용하기
+
+테스트코드를 작성하면서 DB가 필요한 경우가 있습니다. 로컬에서 테스트를 실행할 때는 docker-compose로 테스트 DB 컨테이너를 하나 새로 띄워서 사용했습니다. 하지만 CI/CD 구축을 할 때는 굳이 docker compose를 사용하지는 않았습니다. DB를 쉽게 띄울 수 있기에 그렇게 했습니다. Gitbhub Actions에서 TEST DB 사용하는 방법을 알아보겠습니다.
+
+### 예시 코드 - test.yml
+
+```yaml
+name: Test with DB and pytest
+
+on:
+  pull_request:
+    branches: [dev]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0.30
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: admin
+          MYSQL_USER: admin
+          MYSQL_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      - name: Run tests
+        run: pytest
+```
+
+services에 mysql 컨테이너를 띄울 수 있습니다. 옵션은 설정해줘도 되고 안해도 됩니다. 주요한 설정값은 다음과 같습니다. docker-compose 작성과 비슷합니다.
+
+- MYSQL_DATABASE - 데이터 베이스 스키마 이름
+- MYSQL_USER - 데이터 베이스 접속 유저
+- MYSQL_PASSWORD - 데이터 베이스 접속 비밀번호
+
+### FastAPI에서 setting
+
+직접만든 라이브러리를 사용해서 다음과 같이 설정했습니다.
+
+<Link url="https://github.com/c2-house/fastapi-mctools" />
+
+```python
+# settings.py
+import platform
+from pydantic_settings import BaseSettings
+
+class AppSettings(BaseSettings):
+    ...
+    TEST_DB_URL: str = (
+        "mysql+aiomysql://admin:root@localhost:3306/admin"
+        if platform.system() == "Linux"
+        else "mysql+aiomysql://admin:root@127.0.0.1:3306/admin"
+    )
+
+# conftest.py
+from examples.models import Base
+from fastapi_mctools.test_tools.db_managers import TestConfDBManager
+
+@pytest.fixture
+async def db():
+    async for session in db_test_manager.get_async_db_session(base=Base, is_meta=True):
+        yield session
+```
+
+## 마무리
+
+테스트코드를 작성하는 과정에서 DB를 어떻게 사용할까 고민하다가 위와 같은 방법을 사용했습니다. 코드를 작성하는 것만큼 테스트 환경 구축도 중요하기 때문에 고민을 많이 했네요. 고민을 하다가 test tool도 미리 만들어 놓게 되었습니다.
