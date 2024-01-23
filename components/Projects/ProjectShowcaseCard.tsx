@@ -6,6 +6,7 @@ export interface ProjectShowcaseCardProps {
   description?: string;
   showcaseType: 'image' | 'video';
   src: string;
+  alt?: string;
   poster?: string;
   cardBg?: string;
   phoneBg?: string;
@@ -16,6 +17,7 @@ const ProjectShowcaseCard = ({
   description,
   showcaseType,
   src,
+  alt,
   poster,
   cardBg,
   phoneBg,
@@ -34,7 +36,7 @@ const ProjectShowcaseCard = ({
         )}
       >
         {showcaseType === 'image' && (
-          <Image src={src} alt="" width={280} height={500} className="not-prose" />
+          <Image src={src} alt={alt || ''} width={280} height={500} className="not-prose" />
         )}
         {showcaseType === 'video' && (
           <video
