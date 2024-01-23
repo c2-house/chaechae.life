@@ -75,6 +75,10 @@ export const Project = defineDocumentType(() => ({
       type: 'enum',
       options: ['mobile', 'desktop'],
     },
+    year: {
+      type: 'number',
+      required: true,
+    },
   },
   computedFields: {
     slug: {
