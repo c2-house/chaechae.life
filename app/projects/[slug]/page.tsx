@@ -3,6 +3,7 @@ import { allProjects } from 'contentlayer/generated';
 import Mdx from '@/components/Mdx';
 import EvCharge from '@/components/Projects/EvCharge';
 import MessageBot from '@/components/Projects/MessageBot';
+import WeddingCard from '@/components/Projects/WeddingCard';
 
 interface Props {
   params: {
@@ -33,6 +34,7 @@ const Page = ({ params: { slug } }: Props) => {
       <hr className="!my-0" />
       <section>
         <Mdx code={project.body.code} />
+        {slug === 'wedding-card' && <WeddingCard />}
         {slug === 'ev-charge' && <EvCharge />}
         {slug === 'messagebot' && <MessageBot />}
       </section>

@@ -26,7 +26,7 @@ const ProjectShowcaseCard = ({
     <figure className={clsx('rounded-2xl px-5 py-10 md:py-12', cardBg || 'bg-slate-50')}>
       <div className="text-center text-xl md:text-2xl">
         {title}
-        {description && <p className="mt-3 text-base text-slate-500 md:text-lg">{description}</p>}
+        {description && <p className="!mt-2 text-base text-slate-500 md:text-lg">{description}</p>}
       </div>
 
       <div
