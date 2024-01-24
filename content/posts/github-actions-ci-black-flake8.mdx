@@ -1,0 +1,102 @@
+---
+title: Github Actions CI - 코드 품질 관리를 위한 Black, Flake8 설정하기
+description: Github Actions를 CI/CD 툴로 자주 이용하고 있습니다. 꽤 편리한데 아주 쓸만합니다. 많은 개발자들이 이미 만들어 놓은 actions들이 marketplace에 존재하고 있어 그 편리함을 더 증폭시켜줍니다. 이번 포스팅에서는 CI의 기본이되는 코드 품질 관리를 위한, Python에서 아주 널리널리 쓰이고 있는 코드 포맷터와 린트, black, flake8 조합을 Github Actions에서 사용하는 방법을 알아보겠습니다.
+tags: [GithubActions]
+author: mingke
+thumbnail: /thumbnails/github-actions-logo.png
+date: 2024/01/24
+---
+
+<Image src="/thumbnails/github-actions-logo.png" alt="Github Actions Logo" />
+
+### 목차
+
+## 소개
+
+**Github Actions**를 CI/CD 툴로 자주 이용하고 있습니다. 꽤 편리한데 아주 쓸만합니다. 많은 개발자들이 이미 만들어 놓은 actions들이 marketplace에 존재하고 있어 그 편리함을 더 증폭시켜줍니다. 이번 포스팅에서는 CI의 기본이되는 코드 품질 관리를 위한, Python에서 아주 널리널리 쓰이고 있는 코드 포맷터와 린트, **black, flake8** 조합을 Github Actions에서 사용하는 방법을 알아보겠습니다.
+
+## yml 작성
+
+너무 간단하게 작성할 수 있습니다. 실행 단계는 다음과 같습니다.
+
+1. Checkout
+   - Code를 원격저장소에서 당겨옵니다.
+2. Setup Python
+   - CI가 돌아갈 환경에 Python을 셋팅합니다.
+3. Check Black
+   - black action을 가져와서 black 포맷에 맞게 코드가 작성되었는지 검사합니다.
+   - "~= 22.0" → 22버젼 이상을 의미합니다.
+4. Check Flake8
+   - 마찬가지로 flake8 action을 가져와서 flake8 린트 규칙을 어긴게 없는지 검사합니다.
+
+```yaml
+name: Lint
+
+on:
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+
+      - name: Check black
+        uses: psf/black@stable
+        with:
+          options: '--check --verbose --line-length 120'
+          src: './src'
+          version: '~= 22.0'
+
+      - name: Check flake8
+        uses: py-actions/flake8@v2
+```
+
+black은 따로 line길이만 조정하여 config file을 작성하지 않았지만 flake8은 `.flake8`을 작성해봤습니다. 작성만 해두면 알아서 돌아갑니다.
+
+- flake8 예시
+
+```toml
+[flake8]
+max-line-length = 120
+ignore=E203, F401, E712, E711, W503, E501, F821
+```
+
+이런식으로 작성하면 main 또는 dev 브랜치에 pull_request가 요청되면 action이 실행됩니다.
+
+## 실행결과
+
+### black
+
+파일들을 검사하며 모두 통과하면 아래와 같은 메세지를 actions 로그에서 볼 수 있습니다.
+
+<Image src="/github-actions-ci-black-flake8/01.png" alt="Github Actions Black 결과" />
+
+### flake8
+
+flake8은 별도로 로그가 출력되지 않았습니다. 성공시 로그가 출력되지 않았습니다.
+
+마지막줄에 아래와 같이 실행 명령이 있고 끝이었습니다.
+
+```toml
+/opt/hostedtoolcache/Python/3.11.7/x64/bin/flake8 ./src
+```
+
+## 마무리
+
+코드 포맷팅과 린트 설정은 깔큼한 코드 품질 관리를 위한 가장 기본적인 단계인데요. github actions를 이용해서 모두가 동일한 설정을 하고 통일성있게 코드 품질을 관리할 수 있습니다. 어렵지도 않고 좋습니다.
+
+사실 위와 같은 설정으로 바꾸기 전에 **super-linter**를 사용했었는데 이름에서 알 수 있듯 정말 super합니다. 언어별 온갖 린트를 다 갖고 있습니다. 여러 기능을 가지고 있는 대신 무겁고 시간이 오래걸리고, 뭐가 너무 많아서 빠르게 적용하기엔 적합하지 않아 위 설정대로 교체했습니다.
+
+super-linter도 궁금하시면 살펴보시길 바랍니다.
+
+<Link url="https://github.com/super-linter/super-linter" />
