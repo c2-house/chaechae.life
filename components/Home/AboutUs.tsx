@@ -1,5 +1,11 @@
-import { ProfileEkoIcon1, ProfileEkoIcon2, ProfileEkoIcon3 } from '@/public/icons';
+import Link from 'next/link';
 import ProfileCard, { type ProfileCardProps } from './ProfileCard';
+import {
+  ChevronRightIcon,
+  ProfileEkoIcon1,
+  ProfileEkoIcon2,
+  ProfileEkoIcon3,
+} from '@/public/icons';
 
 const profiles: ProfileCardProps[] = [
   {
@@ -56,6 +62,16 @@ const AboutUs = () => {
         {profiles.map((profile) => (
           <ProfileCard key={profile.name} {...profile} />
         ))}
+      </div>
+
+      <div className="mt-8 flex justify-center">
+        <Link
+          href="/projects"
+          className="bg-gradient-dark inline-flex items-center justify-center rounded-lg bg-opacity-100 px-4 py-3 font-semibold text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
+        >
+          <span className="pl-2">프로젝트 보기</span>
+          <ChevronRightIcon className="h-6 w-6 fill-current" />
+        </Link>
       </div>
     </section>
   );
