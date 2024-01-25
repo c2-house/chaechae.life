@@ -1,0 +1,106 @@
+---
+title: docker-compose mysql sql 파일 실행 방법 알아보기
+description: 새로운 프로젝트를 시작할 땐, docker-compose로 로컬에 db를 띄우고 migration 파일을 만들어 migration을 해서 프로젝트를 진행해 나갔습니다. DB는 기존의 것을 사용하는 경우가 있습니다. 그럴때는 기존 DB구조를 로컬 DB에도 똑같이 migration하여 사용해야 하죠. 그 방법을 알아보겠습니다.
+tags: [Docker]
+author: mingke
+thumbnail: /thumbnails/docker-logo.png
+date: 2024/01/25
+---
+
+<Image src="/thumbnails/docker-logo.png" alt="Docker Logo" />
+
+### 목차
+
+## 소개
+
+개발할 때 **테스트 DB를 docker-compose로 컨테이너를 실행하여 사용**하곤 합니다. **docker**덕분에 굳이 따로 로컬에 db를 설치할 필요도 없고 필요에 따라 mysql, postgresql등 원하는 걸 편리하게 골라 쓸 수도 있습니다.
+
+새로운 프로젝트를 시작할 땐, docker-compose로 로컬에 db를 띄우고 migration 파일을 만들어 migration을 해서 프로젝트를 진행해 나갔습니다. 그런데 프로젝트는 새로 시작하지만, DB는 기존의 것을 사용하는 경우가 있습니다. 그럴때는 기존 DB구조를 로컬 DB에도 똑같이 migration하여 사용해야 하죠.
+
+그 때 사용한 방법을 공유해 볼까 합니다. DB는 mysql입니다.
+
+## MYSQL 덤프
+
+mysql 셋팅 과정은 스킵합니다.
+
+우선 기존 DB에서 dump 파일을 만듭니다. 다음과 같이 만들 수 있습니다.
+
+### 원격에서 가져올 때
+
+```bash
+mysqldump -h [호스트] -u [유저아이디] -p[비밀번호] [DB이름] > dumps.sql
+```
+
+### 서버에서 접속해서 직접 만들 때
+
+```bash
+mysqldump -u [유저아이디] -p[비밀번호] [DB이름] > dump.sql
+```
+
+또는 mysqlworkbench 같은 툴을 쓴다면 data export를 아주아주 쉽게 할 수 있습니다.
+
+## docker-compose.yml 작성
+
+다음은 django 프로젝트와 mysql 조합의 docker-compose.yml 예시입니다.
+
+- dump한 파일을 프로젝트 root에 **dumps** 디렉토리에 저장
+- 대략 이런 구조입니다.
+
+```yaml
+프로젝트/
+│
+├── src/
+│   └── [Django 프로젝트 파일들]
+│
+├── dumps/
+│   └── dumps.sql
+│
+├── Dockerfile
+└── docker-compose.yml
+```
+
+```yaml
+version: '3.9'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-project
+    ports:
+      - '8000:8000'
+    command: python ./src/manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./src:/app/src
+    depends_on:
+      - db
+  db:
+    image: 'mysql:8.0.30'
+    container_name: django-db
+    ports:
+      - '6033:3306'
+    environment:
+      MYSQL_DATABASE: 'admin'
+      MYSQL_USER: 'admin'
+      MYSQL_PASSWORD: 'root'
+      MYSQL_ROOT_PASSWORD: 'root'
+    volumes:
+      - ./dumps:/docker-entrypoint-initdb.d
+```
+
+- services의 backend는 django 프로젝트를 실행하는 명령들의 정의입니다.
+- **db의 volumes에 보이는 대로 sql파일이 있는 디렉토리와 docker-entrypoint-initdb.d를 마운트 해주면 됩니다.**
+
+### 동작원리
+
+1. MYSQL컨테이너가 실행될 때 `/docker-entrypoint-initdb.d` \*\*\*\*를 확인합니다.
+2. 디렉토리 내부에 .sql 파일을 entry-point에서 실행
+
+   - 참고자료
+
+   <Link url="https://github.com/docker-library/mysql/blob/ffa6423ca24168e4d96631b5e8f536ac826d2a5b/docker-entrypoint.sh" />
+
+## 마무리
+
+사실 별건 아닌데 좀 길어졌네요. 혹시 궁금해 하는 분들을 위해 작성합니다. 로컬 db에 스키마를 마이그레이션하는 방법은 다양하게 있지만, 저는 이 방법을 자주 쓰고 있습니다.

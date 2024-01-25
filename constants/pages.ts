@@ -7,6 +7,7 @@ export const authors = ['EKO', 'mingke'] as const;
 
 export const tags = [
   'AWS',
+  'Docker',
   'FastAPI',
   'GithubActions',
   'Gunicorn',
