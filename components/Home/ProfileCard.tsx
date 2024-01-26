@@ -25,7 +25,7 @@ const ProfileCard = ({
 }: ProfileCardProps) => {
   return (
     <div className={clsx('mx-auto rounded-xl px-5 py-6 lg:p-8', cardBg || 'bg-gray-100')}>
-      <div className="flex flex-col items-center">
+      <div className="mb-5 flex flex-col items-center border-b border-gray-200 pb-5">
         <Image
           src={`/images/avatar/${image}`}
           alt={`${name}의 프로필`}
@@ -38,7 +38,7 @@ const ProfileCard = ({
           <p className="mt-1 text-slate-500">{role}</p>
         </div>
       </div>
-      <ul className="mt-8 flex flex-col gap-6 py-2 text-slate-700">
+      <ul className="flex flex-col gap-6 py-2 text-slate-700">
         {descriptions.map((description) => (
           <li key={description.text} className="flex items-center gap-4">
             <div

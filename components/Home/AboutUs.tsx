@@ -18,11 +18,11 @@ const profiles: ProfileCardProps[] = [
     descriptions: [
       {
         icon: <ProfileEkoIcon1 />,
-        text: '편리하고 직관적인 UI/UX를 만들기 위해 사용자 관점에서 고민합니다.',
+        text: 'Next.js와 TypeScript를 사용하여 빠르고 안정적인 웹사이트를 개발합니다.',
       },
       {
         icon: <ProfileEkoIcon2 />,
-        text: '모든 기기에서 원활하게 작동하는 반응형 웹사이트를 개발합니다.',
+        text: '편리하고 직관적인 UI/UX를 설계하기 위해 사용자 관점에서 고민하고, 모든 기기에서 원활하게 작동하는 반응형 웹사이트를 개발합니다.',
       },
       {
         icon: <ProfileEkoIcon3 />,
