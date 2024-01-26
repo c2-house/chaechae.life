@@ -1,0 +1,118 @@
+---
+title: pre-commit custom hook 만들기
+description: pre-commit은 Git 원격 저장소에 커밋하기 전, 실행되는 스크립트를 구성하는 데 사용되는 tool입니다. 오늘은 pre-commit에서 custom hook을 만드는 방법을 알아보려고 합니다.
+tags: [PreCommit]
+author: mingke
+thumbnail: /thumbnails/pre-commit-logo.png
+date: 2024/01/26
+---
+
+<Image src="/thumbnails/pre-commit-logo.png" alt="pre-commit logo" />
+
+### 목차
+
+## 소개
+
+pre-commit은 Git 원격 저장소에 커밋하기 전, 실행되는 스크립트를 구성하는 데 사용되는 tool입니다. pre-commit을 사용하여 코드 정적 분석, 코드 스타일 검사, 테스트 실행 등 다양한 작업을 자동화할 수 있습니다. 오늘은 pre-commit에서 custom hook을 만드는 방법을 알아보려고 합니다. pre-commit이 무엇인지, 기본 사용법을 자세하게 알고 싶은 분들은 공식 문서를 참고해주세요.
+
+<Link url="https://pre-commit.com" />
+
+## Pre-commit Custom hook 만들기
+
+pre-commit custom hook은 다양한 언어로 만들 수 있습니다. Python, JavaScript, Ruby, Go, Bash 등 원하는 언어로 만들면 됩니다.
+
+저는 보통 프로젝트에서 `scripts` 디렉토리를 만들어서 그안에 저장하는편입니다. 실제로 사용했던 간단한 사례를 중심으로 알아보겠습니다.
+
+- poetry로 의존성을 관리하고 있는데 안쓰는 사람들을 위해 requirements.txt를 만들어 push하는 상황
+- 그런데 poetry add or update를 사용한 뒤 requirements.txt 업데이트를 자꾸만 잊어버림
+- commit을 하며 requirements.txt를 업데이트 하도록 훅을 만듬
+
+### 예시 코드
+
+- requirements.txt 는 root에 존재
+
+```bash
+# scripts/check_requirements.sh
+#!/bin/bash
+
+cp requirements.txt requirements.txt.bak
+
+poetry export -f requirements.txt --output requirements.txt --without-hashes
+
+# 원본과 업데이트된 파일을 비교.
+if ! cmp -s requirements.txt.bak requirements.txt; then
+    echo "Requirements updated, Add the changes to commit."
+    rm requirements.txt.bak
+    exit 1
+fi
+
+# 변경 사항이 없으면 복사본을 삭제후 종료.
+rm requirements.txt.bak
+echo "Nothing to change in requirements.txt"
+exit 0
+```
+
+1. requirements.txt를 백업합니다.
+2. requirements.txt 업데이트를 시도합니다.
+3. 백업본과 비교하여 업데이트가 있었는지 체크합니다.
+4. 있으면 pre-commit 실패 없으면 성공
+
+- **실행권한을 반드시 줘야 pre-commit이 실행시킬 수 있습니다.**
+
+```bash
+chmod +x /scripts/check_requirements.sh
+```
+
+### .pre-commit-config.yaml에 등록
+
+- 아래와 같이 등록할 수 있습니다.
+
+```yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        args: [--line-length=120]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+  - repo: local
+    hooks:
+      - id: check-and-update-requirements
+        name: Check requirements.txt
+        entry: ./scripts/check_requirements.sh
+        language: script
+```
+
+- `pre-commit install`하여 hook들을 등록합니다.
+
+<Callout emoji="💡">
+만약 python으로 만든다면 entry를 python file이름.py로 변경하고  language를 python으로 변경
+
+</Callout>
+
+### 실행결과
+
+실행하면 다음과 같이 동작합니다.
+
+- 실패
+
+  <Image src="/pre-commit-custom-hook/01.png" alt="pre-commit fail" />
+
+- 성공
+  <Image src="/pre-commit-custom-hook/02.png" alt="pre-commit success" />
+
+## 마무리
+
+pre-commit에 커스텀 훅을 등록해서 사용하는 방법을 알아봤습니다. pre-commit에서 기본으로 다양한 훅들을 제공하는데 이것도 살펴보는 것도 좋을 것 같습니다. 쓸만한 hook 아이디어가 생각나면 만들어봐야겠습니다.
+
+<Link url="https://github.com/pre-commit/pre-commit-hooks/tree/main/pre_commit_hooks" />

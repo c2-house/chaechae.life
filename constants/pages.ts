@@ -11,6 +11,7 @@ export const tags = [
   'FastAPI',
   'GithubActions',
   'Gunicorn',
+  'PreCommit',
   'Pydantic',
   'Pytest',
   'Python',
