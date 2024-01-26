@@ -40,15 +40,15 @@ const profiles: ProfileCardProps[] = [
     descriptions: [
       {
         icon: <ProfileEkoIcon1 />,
-        text: '편리하고 직관적인 UI/UX를 만들기 위해 사용자 관점에서 고민합니다.',
+        text: '주로 FastAPI, Django를 사용합니다. Python을 주 무기로 이것저것 합니다. ',
       },
       {
         icon: <ProfileEkoIcon2 />,
-        text: '모든 기기에서 원활하게 작동하는 반응형 웹사이트를 개발합니다.',
+        text: '새로운 기술에 열려있고 모르는 것을 부끄러워하지 않고 배웁니다. 최근 주 관심사는 AI 입니다.',
       },
       {
         icon: <ProfileEkoIcon3 />,
-        text: '개발뿐만 아니라 기획, 디자인, SEO 등 서비스 출시에 필요한 모든 과정을 직접 수행할 수 있습니다.',
+        text: '1밖에 모르지만 0.5만 아는 사람들에게 알려주는 것을 좋아합니다.',
       },
     ],
   },
