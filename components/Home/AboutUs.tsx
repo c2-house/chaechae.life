@@ -5,6 +5,9 @@ import {
   ProfileEkoIcon1,
   ProfileEkoIcon2,
   ProfileEkoIcon3,
+  ProfileMingkeIcon1,
+  ProfileMingkeIcon2,
+  ProfileMingkeIcon3,
 } from '@/public/icons';
 
 const profiles: ProfileCardProps[] = [
@@ -39,16 +42,16 @@ const profiles: ProfileCardProps[] = [
     iconColor: 'fill-indigo-500',
     descriptions: [
       {
-        icon: <ProfileEkoIcon1 />,
-        text: '주로 FastAPI, Django를 사용합니다. Python을 주 무기로 이것저것 합니다. ',
+        icon: <ProfileMingkeIcon1 />,
+        text: 'FastAPI 또는 Django를 사용하여 안정적인 서버를 구축하는 Python 개발자입니다.',
       },
       {
-        icon: <ProfileEkoIcon2 />,
-        text: '새로운 기술에 열려있고 모르는 것을 부끄러워하지 않고 배웁니다. 최근 주 관심사는 AI 입니다.',
+        icon: <ProfileMingkeIcon2 />,
+        text: '컨테이너 기술과 AWS를 사용하여 서버를 배포하고, CI/CD를 구축하여 개발 생산성을 높일 수 있습니다.',
       },
       {
-        icon: <ProfileEkoIcon3 />,
-        text: '1밖에 모르지만 0.5만 아는 사람들에게 알려주는 것을 좋아합니다.',
+        icon: <ProfileMingkeIcon3 />,
+        text: '새로운 기술을 배우고 지식을 공유하는 것을 좋아합니다. 최근 관심사는 프롬프트 엔지니어링입니다.',
       },
     ],
   },
