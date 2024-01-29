@@ -1,0 +1,124 @@
+---
+title: FastAPI - Pydantic 으로 Query param 만들기
+description: Query Parameter에 대해서 Query parameter가 많아서 함수의 parameter 값으로 넣으면 코드가 지저분해지고 보기 힘들어지거나, Query Parameter를 따로 관리하고 싶거나 할 때 Pydantic BaseModel을 사용해서 Query Parameter를 정의해서 사용하면 편리합니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/01/29
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo" />
+
+### 목차
+
+## 소개
+
+FastAPI에서 Pydantic은 주로 Request Body를 받거나 Response Model을 정의하거나 할 때 많이 사용됩니다. Query Parameter는 router로 감싸진 함수에 parameter로 입력하거나, `from fastapi import Query` 를 사용하여 만들수 있습니다. Query Parameter에 대해서 Query parameter가 많아서 함수의 parameter 값으로 넣으면 코드가 지저분해지고 보기 힘들어지거나, Query Parameter를 따로 관리하고 싶거나 할 때 Pydantic `BaseModel`을 사용해서 Query Parameter를 정의해서 사용하면 편리합니다.
+
+## Pydantic Query Parameter 예제 코드
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel, model_validator
+
+class Params(BaseModel):
+    name: str
+    age: int
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_model(cls, v):
+        if v.get("name") in ["foo", "bar"]:
+            raise ValueError("name should not be foo or bar")
+        if v.get("age") < 18:
+            raise ValueError("age should be greater than 18")
+        return v
+
+@app.get("/items/")
+async def get_item(item: Params = Depends()):
+    return item
+```
+
+- 결과
+
+<Image
+  src="/fastapi-pydantic-query-params/01.png"
+  alt="Pydantic Query Parameter 결과"
+  caption="Pydantic QueryParameter Swagger 화면"
+/>
+
+예시 코드처럼 사용하면 Query Parameter를 정의하고 Data Validation까지 할 수 있습니다. **다만 Query Parameter를 list로 받고 싶은 경우에는 pydantic 사용이 불가능**한 것 같습니다.
+
+### Query Parameter list
+
+list로 받을 경우에는 다음과 같이 할 수 있습니다.
+
+```python
+from fastapi import Query
+
+@app.get("/items/")
+async def get_item(item: Params = Depends(), query_list:list[str] = Query(...)):
+    return item
+```
+
+### 추가
+
+- Query Parameter와 비슷한 맥락으로 Form Data 쉽게 선언하기
+- Form 간단한 form data 선언할 때 귀찮아서 만든 함수
+- `from fastapi_mctools.dependencies import create_simple_form_dependency`
+  - 직접 만든 라이브러리에 추가함
+
+```python
+
+def create_simple_form_dependency(input_dict: dict) -> type:
+    """
+    Creates a class for using FastAPI's Form.
+    Developed to avoid the tedious task of repeatedly writing out the Form.
+    It can be used as a class dependency.
+
+    사용법:
+        * input : type 형식으로 입력합니다.
+        input = {
+            "username": str,
+            "password": str,
+            "age": int,
+        }
+        FastAPIForm = create_fastapi_form_class(input)
+
+        @app.post("/user")
+        def create_user(form_data: FastAPIForm = Depends()):
+            return form_data
+    """
+
+    init_params_str = ", ".join(
+        f"{name}: {_type.__name__} = Form(...)" for name, _type in input_dict.items()
+    )
+    init_body_str = "\n        ".join(
+        f"self.{name} = {name}" for name in input_dict.keys()
+    )
+    init_method_str = f"def __init__(self, {init_params_str}):\n        {init_body_str}"
+
+    class_def_str = f"class FastAPIForm:\n    {init_method_str}"
+
+    namespace = {}
+    exec(class_def_str, globals(), namespace)
+    return namespace["FastAPIForm"]
+
+# 사용 예시
+
+SimpleForm = create_simple_form_dependency(
+    {
+        "username": str,
+        "password": str,
+        "age": int,
+    }
+)
+
+@app.post("/items/")
+async def create_item(item: SimpleForm = Depends(), file: UploadFile = File(...)):
+    return item
+```
+
+## 마무리
+
+pydantic으로 QueryParameter 설정하는 방법을 알아봤습니다. Query Parameter, Request Body, Form Data 등은 따로 관리해주는 것이 코드 추적에도 편리하고 여러모로 이점이 많은 것 같습니다.
