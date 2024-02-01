@@ -12,6 +12,7 @@ export const tags = [
   'Github Actions',
   'Gunicorn',
   'pre-commit',
+  'Programming',
   'Prompt Engineering',
   'Pydantic',
   'Pytest',
