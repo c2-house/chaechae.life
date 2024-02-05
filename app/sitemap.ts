@@ -4,7 +4,7 @@ import { authors, navLinks, tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
-  const navigationPages = navLinks.map((navLink) => ({
+  const navbarPages = navLinks.map((navLink) => ({
     url: `https://chaechae.life${navLink.path}`,
     lastModified: new Date(),
   }));
@@ -34,7 +34,7 @@ const sitemap = (): MetadataRoute.Sitemap => {
       url: 'https://chaechae.life',
       lastModified: new Date(),
     },
-    ...navigationPages,
+    ...navbarPages,
     ...projects,
     ...posts,
     ...tagPages,
