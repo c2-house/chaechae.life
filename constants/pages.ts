@@ -18,6 +18,7 @@ export const tags = [
   'Pytest',
   'Python',
   'Redis',
+  'Rust',
   'SQLAlchemy',
   'Swagger',
 ] as const;
