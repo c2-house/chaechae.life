@@ -1,0 +1,80 @@
+---
+title: SQLAlchemy 임시테이블 생성하기
+description: 요구사항에 맞춰 개발을 하던 도중, IN 절에 데이터를 넣어 조회해야하는 케이스가 생겼습니다. 그런데, 그 숫자가 수만에서 수십만까지도 가능한 상황이라, 다른 방법이 필요했습니다. 여러가지 방법들 중 선택한 방법은 임시테이블을 만들어 조인하여 사용하는 것이었습니다.
+tags: [SQLAlchemy]
+author: mingke
+thumbnail: /thumbnails/sqlalchemy-logo.png
+date: 2024/02/06
+---
+
+<Image src="/thumbnails/sqlalchemy-logo.png" alt="SQLAlchemy Logo" />
+
+### 목차
+
+## 인트로
+
+요구사항에 맞춰 개발을 하던 도중, IN 절에 데이터를 넣어 조회해야하는 케이스가 생겼습니다. 그런데, 그 숫자가 **수만에서 수십만까지**도 가능한 상황이라, 다른 방법이 필요했습니다. 여러가지 방법들 중 선택한 방법은 **임시테이블**을 만들어 조인하여 사용하는 것이었습니다. 쿼리 최적화 측면에서도 이득이 있다고 봤습니다. MYSQL을 사용하고 있어 **max_allowed_packet**의 크기를 늘려주면 많이 커버 가능하다고는 해도 이 상황에는 어울리지 않는 방법처럼 보였습니다.
+
+SQLAlchemy를 사용해서 쉽게 임시테이블을 생성하고 삭제하고가 가능합니다.
+
+## SQLAlchemy 임시테이블
+
+임시테이블은 다음과 같은 방법으로 생성할 수 있습니다. 예시는 async orm을 사용하였습니다.
+
+```python
+from sqlalchemy import Table, Column, VARCHAR
+from sqlalchemy.schema import CreateTable, DropTable
+
+Meta = Base.metadata
+
+# 임시테이블 생성
+async def create_temp_table(db: AsyncSession, table_name: str, columns: list[str]):
+    # 모든 컬럼은 VARCHAR라고 가정 -> 생성하고자하는 테이블에 맞게 개발
+    column_objects = [Column(column, VARCHAR) for column in columns]
+    table = Table(table_name, Meta, *column_objects, prefixes=["TEMPORARY"])
+    await db.execute(CreateTable(table))
+    await db.commit()
+    return table
+
+# 임시테이블 삭제
+async def drop_temp_table(db: AsyncSession, table_name: str):
+    table = Table(table_name, Meta)
+    await db.execute(DropTable(table))
+    await db.commit()
+    return table
+```
+
+### 생성
+
+- 임시테이블에 사용할 테이블 명이 필요합니다.
+- 생성할 Table과 Column을 정의해줍니다. 예시에서는 모든 컬럼이 Varchar로 가정
+- CreateTable로 쿼리를 실행하고 commit합니다.
+
+### 삭제
+
+- 삭제할 테이블 이름을 받아 Table을 정의하고 DropTable에 넣어 쿼리를 실행하고 commit 하면 끝입니다.
+
+## 추가 SQLAlchemy raw query 실행
+
+- 임시테이블을 truncate 할 상황이 있었는데 truncate가 따로 지원되지 않아 raw query를 사용
+
+```python
+from sqlalchemy import text
+
+async def truncate_table(db: AsyncSession, table_name: str):
+    truncate_stmt = text(f"TRUNCATE TABLE {table_name}")
+    await db.execute(truncate_stmt)
+    await db.commit()
+```
+
+## 마무리
+
+임시테이블을 생성하여 당면한 문제를 생성할 수 있었습니다. SQLAlchemy의 폭넓은 지원으로 쉽고 빠르게 접근할 수 있었습니다. 임시테이블을 생성하는 경우에는 Error가 발생해도 **Table이 삭제되도록 삭제 코드는 finally문** 안에 넣으시길..
+
+```python
+try:
+    create_temp_table
+    ...
+finally:
+    drop_temp_table
+```
