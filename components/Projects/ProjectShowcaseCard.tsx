@@ -41,6 +41,11 @@ const ProjectShowcaseCard = ({
         {showcaseType === 'video' && (
           <video
             className="not-prose h-auto w-full"
+            style={{
+              WebkitMaskImage: '-webkit-radial-gradient(white, black)',
+              WebkitBackfaceVisibility: 'hidden',
+              MozBackfaceVisibility: 'hidden',
+            }}
             poster={poster}
             playsInline
             autoPlay
