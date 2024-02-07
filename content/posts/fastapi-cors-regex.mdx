@@ -1,0 +1,47 @@
+---
+title: FastAPI CORS 특정 도메인 전체 포트 허용하기
+description: FastAPI에서는 CORSMiddleware를 사용하여 이러한 CORS 설정을 쉽게 구현할 수 있습니다. CORS에서 도메인을 입력할 때 도메인이 같아도 포트번호가 다르면 다른 출처가 됩니다. 최근 프론트엔드 개발자가 CORS 에서 특정 도메인에 포트를 여러개 허용해달라는 요청이 있었습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/02/07
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo" />
+
+### 목차
+
+## CORS(Cross-Origin Resource Sharing)
+
+CORS 프론트엔드와 백엔드가 다른 출처(origin)에서 실행되는 경우에 필요한 개념입니다. 브라우저의 보안 정책인 Same-Origin Policy는 기본적으로 출처가 다른 리소스 공유를 제한합니다. 이를 해결하기 위해 CORS (Cross-Origin Resource Sharing)이라는 메커니즘이 사용됩니다.
+
+CORS는 서버가 브라우저에게 어떤 출처에서 오는 리소스 요청을 허용할지를 알려주는 HTTP 헤더 기반의 메커니즘입니다. 서버는 `Access-Control-Allow-Origin` 헤더를 통해 특정 출처, 또는 모든 출처('\*')로부터의 요청을 허용할 수 있습니다. 서버는 안전한 교차 출처 데이터 전송을 보장하면서 알 수없는 요청으로부터 보호할 수 있습니다.
+
+FastAPI에서는 `CORSMiddleware`를 사용하여 이러한 CORS 설정을 쉽게 구현할 수 있습니다. CORS에서 도메인을 입력할 때 도메인이 같아도 포트번호가 다르면 다른 출처가 됩니다. 최근 프론트엔드 개발자가 CORS 에서 **특정 도메인에 포트를 여러개 허용해달라는 요청**이 있었습니다. 보통은 CORS 허용을 그렇게 해주지 않지만 작은 개발팀에 서로 고생하는데 거절할 이유가 없더군요.
+
+## allow_origin_regex
+
+FastAPI로 개발을 해봤다면 아시겠지만 `CORSMiddleware`에 `allow_origins=[”*”]` 으로 설정하면 모든 출처를 허용해줄 수 있습니다만, 이번 케이스에서는 특정 도메인의 포트를 전부 허용하려는 것이기 때문에 저방법은 맞지 않습니다. **allow_origin_regex** 라는 파라미터가 있습니다. 정규표현식으로 허용하는 방법이 있습니다. 예시 코드를 살펴보겠습니다.
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS, # 기존 ORIGIN은 그대로 둠
+    allow_origin_regex="http://111\.111\.111\.111(:\d+)?",
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+```
+
+위의 코드를 추가하면 http://111.111.111.111 에서 오는 모든 요청은 포트번호 상관없이 CORS 허용이 됩니다. 일반적인 정규표현식으로 나타낼 수 있습니다. allow_origins와 allow_origin_regex를 같이 사용할 수 있습니다. 나머지 cors 설정에 대한 설명은 굳이 남기지 않겠습니다. 설명이 더 필요하다면 공식문서를 참고하면 쉽게 설명이 되어있습니다.
+
+<Link url="https://fastapi.tiangolo.com/ko/tutorial/cors/" />
+
+## 마무리
+
+CORS는 웹개발에 있어 아주 기본적인 요소인데요. 이렇게 CORS 설정해보기는 처음이라 공유도 할 겸 블로그로 남겨봅니다. FastAPI에서 middleware로 지원해줘서 매우 쉽게 적용할 수 있었습니다.
