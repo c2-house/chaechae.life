@@ -1,0 +1,89 @@
+---
+title: python calendar 파이썬 달력 다루기 - python 표준 내장 라이브러리
+description: Python에서 제공하는 calendar 라이브러리에 대해서 알아보려고 합니다. calendar라이브러리는 날짜 관련 작업을 간편하게 사용할 수 있도록 제공해주는 라이브러리입니다. 최근 하고 있는 업무가 어드민 관련 기능을 만드는 것이 많이 있는데요. 아무래도 관리자들이 사용하는 것이다 보니 날짜와 관련된 내용을 다루게 되었습니다. 그래서 calendar에 대해서 블로그에 기록해보려고 합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/02/09
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo" />
+
+### 목차
+
+## 소개
+
+Python에서 제공하는 calendar 라이브러리에 대해서 알아보려고 합니다. calendar라이브러리는 날짜 관련 작업을 간편하게 사용할 수 있도록 제공해주는 라이브러리입니다. 최근 하고 있는 업무가 어드민 관련 기능을 만드는 것이 많이 있는데요. 아무래도 관리자들이 사용하는 것이다 보니 날짜와 관련된 내용을 다루게 되었습니다. 그래서 calendar에 대해서 블로그에 기록해보려고 합니다.
+
+## calendar의 기능
+
+### monthrange(year, month)
+
+입력한 연도와 월에 대해서 첫 번째 요일과, 그 달이 총 몇 일인지 반환해줍니다. 다음과 같이 작성할 수 있습니다.
+
+```python
+import calendar
+first_weekday, month_days = calendar.monthrange(2024, 2)
+```
+
+### weekday(year, month, day)
+
+입력한 날의 요일을 반환합니다. 0~6 사이의 숫자가 반환됩니다. 0은 월요일, 6은 일요일입니다.
+
+```python
+weekday = calendar.weekday(2024, 2, 14)  # 0: 월요일, 1: 화요일, ..., 6: 일요일
+```
+
+### isleap(year)
+
+입력한 날짜가 윤년인지 아닌지 반환합니다.
+
+```python
+is_leap_year = calendar.isleap(2024)
+```
+
+### 그외 잡기능
+
+- month_name: 월 이름의 리스트를 반환합니다. 1~12 인덱스
+- month_abbr: 월 이름의 약어 리스트를 반환합니다. 1~12 인덱스
+- day_name: 요일 이름의 리스트를 반환합니다. 0~6 인덱스
+- day_abbr: 요일 이름의 약어 리스트를 반환합니다. 0~6 인덱스
+- prmonth(year, month): 입력된 월의 달력을 출력합니다.
+
+## 사용사례 공유
+
+1. 정산 기능중, **특정 월의 정산 자료를 뽑아주는 기능을 개발**. 클라이언트로부터 `year-month` 를 입력으로 받는 상황인데, DB로 쿼리를 날릴때는 1일부터 마지막 날까지를 범위로하여 조회를 합니다. 날짜 변환이 필요한 상황입니다. **이 때 입력받은 year-month로 1일과 마지막날 범위로 변환합니다.**
+
+   - calendar의 monthrange를 사용하여 last_day를 구할 수 있습니다. 월마다 마지막날짜가 다르기 때문에 유용하게 쓰입니다.
+
+   ```python
+   import calendar
+   from datetime import datetime
+
+   def get_month_range(target_date: str) -> tuple:
+       year, month = map(int, target_date.split("-"))
+       last_day = calendar.monthrange(year, month)[1]
+       start_date = datetime(year, month, 1, 0, 0, 0, 0)
+       end_date = datetime(year, month, last_day, 23, 59, 59, 999999)
+       return start_date, end_date
+   ```
+
+2. 주문을 받았을 때, 다음날을 출고 가능일로 잡은 상황. 오늘 날짜를 입력받아서 출고 가능일을 반환합니다. 만약 다음날이 공휴일이거나 주말이면 가장 가까운 평일로 날짜를 반환합니다.
+
+   ```python
+   import calendar
+   from datetime import datetime, timedelta
+
+   def get_next_business_day(order_date: str, holidays: list) -> datetime:
+       order_date = datetime.strptime(order_date, '%Y-%m-%d')
+       next_day = order_date + timedelta(days=1)
+
+       while calendar.weekday(next_day.year, next_day.month, next_day.day) >= 5 or next_day.strftime('%Y-%m-%d') in holidays:
+           next_day += timedelta(days=1)
+
+       return next_day
+   ```
+
+## 마무리
+
+제 생각엔 calendar의 기능들은 엄청 유용하긴 하지만 엄청 유용한 것까진 아니고, 특정 상황에서만 쓸만하고 대체적으론 `datetime`으로 많이 대체할 수 있는 것 같습니다. 2번 사례도 사실 추후에 `calendar.weekday`를 `next_day.weekday` 로 변경했습니다. 설 연휴를 맞이하여 무엇을 작성할까 고민하다 이렇게 글을 쓰게 되었는데요, 이 글을 설 연휴에 보게 되는 분들은 없겠지만, 복 많이 받고 행복하시길
