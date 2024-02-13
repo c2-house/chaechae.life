@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { allPosts } from 'contentlayer/generated';
 import Post from '@/components/Blog/Post';
 import PostNavigation from '@/components/Blog/PostNavigation';
+import Comments from '@/components/Blog/Comments';
 
 interface Props {
   params: {
@@ -24,8 +25,11 @@ const PostPage = ({ params: { slug } }: Props) => {
 
   return (
     <main className="container-lg">
-      <Post post={post} />
-      <PostNavigation allPosts={allPosts} currentIndex={currentIndex} />
+      <div className="mx-auto max-w-[730px]">
+        <Post post={post} />
+        <PostNavigation allPosts={allPosts} currentIndex={currentIndex} />
+        <Comments slug={slug} title={post.title} />
+      </div>
     </main>
   );
 };
