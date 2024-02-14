@@ -5,7 +5,7 @@ import Author from './Author';
 
 const Post = ({ post }: { post: Post }) => {
   return (
-    <article className="prose prose-slate mx-auto max-w-[730px] py-6 lg:prose-lg prose-figcaption:text-sm md:py-10">
+    <article className="prose prose-slate py-6 lg:prose-lg prose-figcaption:text-sm md:py-10">
       <header>
         <h1 className="!mb-4 md:!mb-6">{post.title}</h1>
         <div className="mb-4 text-sm md:mb-6 lg:text-base">
