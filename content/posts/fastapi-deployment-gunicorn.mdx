@@ -11,7 +11,7 @@ date: 2024/02/17
 
 ### 목차
 
-### 인트로
+## 인트로
 
 AI의 인기와 함께 요즘 FastAPI를 배우려고 하는 분들이 많이 늘어난 것 같습니다. 개발이 빠르고, 쉽게 ML모델을 서빙해볼 수 있는 도구로 FastAPI가 주목받고 있어서 그런것 같습니다. 친구에게도 FastAPI 애플리케이션 배포 어떻게 하냐는 질문을 받은 적도 있어서, FastAPI + Gunicorn 배포 방법을 포스팅해보려고 합니다.
 
@@ -34,7 +34,7 @@ fastapi
 
 FastAPI는 자동으로 Swagger 문서를 생성해줍니다. 실제 운영환경인데 API의 문서가 공개적으로 노출이 되어 있다면 문제가 발생할 수 있습니다. 따라서 배포할 때는 **Swagger가 동작하지 않도록 셋팅**해주어야 합니다. 배포할 때는 **gunicorn을 사용하기 때문에 설치**를 해줍니다. **gunicorn config를 생성하여 관련 설정**을 진행합니다.
 
-### Swagger 끄기
+### Swagger 비활성화
 
 다음과 같이 설정하면 Swagger 문서가 생성되지 않도록 할 수 있습니다. app에서 `openapi_url`을 `None`으로 셋팅해줍니다.
 
@@ -54,7 +54,7 @@ Gunicorn은 Python WSGI(Web Server Gateway Interface) 서버로, 가볍고 빠�
 
 - 설치
 
-```python
+```bash
 pip install gunicorn
 ```
 
