@@ -1,0 +1,133 @@
+---
+title: FastAPI 배포하기 gunicorn
+description: AI의 인기와 함께 요즘 FastAPI를 배우려고 하는 분들이 많이 늘어난 것 같습니다. 개발이 빠르고, 쉽게 ML모델을 서빙해볼 수 있는 도구로 FastAPI가 주목받고 있어서 그런것 같습니다. 친구에게도 FastAPI 애플리케이션 배포 어떻게 하냐는 질문을 받은 적도 있어서, FastAPI + Gunicorn 배포 방법을 포스팅해보려고 합니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/02/17
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo fastapi deployment gunicorn" />
+
+### 목차
+
+## 인트로
+
+AI의 인기와 함께 요즘 FastAPI를 배우려고 하는 분들이 많이 늘어난 것 같습니다. 개발이 빠르고, 쉽게 ML모델을 서빙해볼 수 있는 도구로 FastAPI가 주목받고 있어서 그런것 같습니다. 친구에게도 FastAPI 애플리케이션 배포 어떻게 하냐는 질문을 받은 적도 있어서, FastAPI + Gunicorn 배포 방법을 포스팅해보려고 합니다.
+
+- Python ==3.11
+- FastAPI ==0.109.0
+- Uvicorn ==0.25.0
+- Gunicorn ==21.2.0
+- **예시 프로젝트 구조**
+  - 예시에서는 main.py만 만들었고 실제로는 app/ 아래에 여러 모듈을 만들어 개발하면 됩니다.
+
+```
+fastapi
+├─ app
+│  ├─ __init__.py
+│  ├─ gunicorn.config.py
+└─ └─ main.py
+```
+
+## 배포 준비
+
+FastAPI는 자동으로 Swagger 문서를 생성해줍니다. 실제 운영환경인데 API의 문서가 공개적으로 노출이 되어 있다면 문제가 발생할 수 있습니다. 따라서 배포할 때는 **Swagger가 동작하지 않도록 셋팅**해주어야 합니다. 배포할 때는 **gunicorn을 사용하기 때문에 설치**를 해줍니다. **gunicorn config를 생성하여 관련 설정**을 진행합니다.
+
+### Swagger 비활성화
+
+다음과 같이 설정하면 Swagger 문서가 생성되지 않도록 할 수 있습니다. app에서 `openapi_url`을 `None`으로 셋팅해줍니다.
+
+```python
+app = FastAPI(
+    ...
+    openapi_url=None,
+    ...
+)
+```
+
+### Gunicorn 설치 및 셋팅
+
+Gunicorn은 Python WSGI(Web Server Gateway Interface) 서버로, 가볍고 빠른 속도를 내는 것이 장점입니다. 멀티프로세스를 이용하여 한 번에 많은 요청을 처리할 수 있도록 해줍니다. 조금 어렵게 말하면 pre-fork worker를 사용해서 애플리케이션을 각각의 독립적인 프로세스로 실행하는 것입니다. 사용하는 인프라의 CPU 코어수가 많으면 많을 수록 더 많은 프로세스를 실행할 수 있습니다.
+
+주로 Django나 Flask와 같은 Python 웹 프레임워크의 배포 용도로 사용되어왔습니다. ASGI인 Uvicorn Worker와 함께 FastAPI 애플리케이션 배포 용도로도 사용될 수 있습니다.
+
+- 설치
+
+```bash
+pip install gunicorn
+```
+
+- config
+
+`gunicorn.config.py` 를 만들어 줍니다. 기본 셋팅 예제는 다음과 같습니다.
+
+```python
+import multiprocessing
+
+workers = multiprocessing.cpu_count() * 2 + 1
+worker_class = "uvicorn.workers.UvicornWorker"
+wsgi_app = "app.main:app"
+timeout = 60
+loglevel = "info"
+bind = "0.0.0.0:8000"
+max_requests = 1000
+max_requests_jitter = 100
+```
+
+- workers
+  - Gunicorn이 사용하는 Worker 프로세스의 수 입니다. 일반적으로 CPU 코어 수 \* 2 + 1으로 설정합니다. CPU 코어보다 Worker수를 크게하는 이유는 동시에 들어오는 요청을 보다 효율적으로 처리하기 위합인데요. I/O 바운드 작업같이 CPU유휴 시간이 발생하면서 발생하는 대기 시간에 다른 Worker들이 그 시간에 작업을 실행할 수 있습니다. 이 설정은 무조건은 아니고 요구사항에 따라 달라질 수 있습니다.
+- worker_class
+  - Worker 프로세스가 사용할 class 입니다. FastAPI같은 ASGI에 적합한 UvicornWorker를 사용합니다. 비동기 서버에서 Gunicorn의 안정성과 Uvicorn의 비동기 처리를 활용하기 위해서 사용합니다.
+- **wsgi_app**
+  - Gunicorn은 Python WSGI 서버입니다. Gunicorn이 실행할 wsgi_app을 셋팅합니다. 일반적으로 app은 main.py 에 생성합니다.
+- timeout
+  - Worker프로세스 timeout입니다. 각 worker 프로세스는 default로 30초의 timeout을 가지는데 위 예시에서는 60초로 설정하였습니다. 실행이 오래걸리는 작업이 있다면 timeout을 더 늘릴 수 있습니다. timeout 시간이 지나면 worker프로세스는 자동으로 종료되고 재실행됩니다.
+- bind
+  - 0.0.0.0으로 해주면 모든 네트워크 인터페이스를 허용합니다. 로컬 또는 인터넷에서 접근하는 모든 접근을 허용할 수 있습니다. 컨테이너은 환경에서 배포한다면 필수 사항입니다. 모든 배포환경에서 적용되는 이야기는 아닙니다.
+- max_requests
+  - 메모리 누수를 방지하기 위해 하나의 worker가 받는 최대 요청입니다. 예제에서는 1000개의 요청을 처리한 뒤 worker가 재실행됩니다. 만약 설정하지 않으면 worker가 죽을 때만 재실행됩니다.
+- max_requests_jitter
+  - 모든 woker가 동시에 재실행되는 것을 방지하기 위한 설정입니다. 예시에서는 100으로 설정되었는데 이 경우 900에서 1100 사이의 요청을 처리한 후 재시작합니다.
+
+더 많은 configuration이 궁금하다면 공식문서를 참고해주세요.
+
+<Link url="https://docs.gunicorn.org/en/latest/settings.html#config-file" />
+
+## 실행방법
+
+아래 방법으로 실행할 수 있습니다.
+
+`gunicorn -c app/gunicorn.config.py`
+
+이 명령어로 실행하면 config 설정이 적용된 채로 실행됩니다.
+
+<Image
+  src="/fastapi-deployment-gunicorn/01.png"
+  alt="gunicorn 실행 터미널"
+  caption="gunicorn 실행 터미널 예시"
+/>
+
+개발할 때는 uvicorn을 사용하지만 운영환경에서는 gunicorn을 많이 사용합니다. uvicorn도 멀티프로세스를 지원하여 여러개의 worker를 실행할 수 있지만 gunicorn 보다 제한적인 부분이 많다고 합니다.
+
+`uvicorn app.main:app --reload`
+
+<Image
+  src="/fastapi-deployment-gunicorn/02.png"
+  alt="uvicorn 실행 터미널"
+  caption="uvicorn 실행 터미널 예시"
+/>
+
+물론 로컬 및 개발환경에서 gunicorn을 사용할 수도 있습니다만, gunicorn은 기본적으로 reload 기능을 제공하지 않습니다.
+
+그리고 만약 **개발환경에서 uvicorn worker 수를 늘리면 reload 옵션이 적용되지 않으니** 개발환경에서는 웬만하면 특별한 상황이 아니라면 싱글 worker로 실행하시기 바랍니다.
+
+`uvicorn app.main:app --workers 2`
+
+## 배포하기
+
+다양한 방법으로 배포를 할 수 있습니다. 일반적으로는 클라우드 서비스를 많이 이용합니다. 대표적으로 AWS, GCP, AZURE 등이 있습니다. 그 안에도 배포할 수 있는 여러 서비스들이 존재합니다. 저는 AWS의 ECS를 많이 이용하는데요. ECS배포까지 다루면 글이 너무 길어져 다음 번에 포스팅하도록 하겠습니다.
+
+## 마무리
+
+FastAPI 애플리케이션을 배포하기 위한 Gunicorn 셋팅과 실행 방법을 알아봤습니다. Gunicorn은 FastAPI의 공식 문서에서도 배포용으로 다루는 신뢰도 높은 오픈소스이기 때문에 배포할 때 잘 사용하시기 바랍니다.
