@@ -8,8 +8,8 @@ const cards: Pick<ProjectShowcaseCardProps, 'title' | 'description' | 'src'>[] =
   },
   {
     title: '하객들을 위한 세심한 배려',
-    description: '예식장 미리보기, 지도 앱 연동, 계좌번호 복사 등 편의 기능',
-    src: '02.jpg',
+    description: '예식장 미리보기, 지도앱 연동, 계좌번호 복사 등 편의 기능 제공',
+    src: '05.jpg',
   },
   {
     title: '모바일 청첩장의 꽃, 사진첩',
