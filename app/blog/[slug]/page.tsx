@@ -3,6 +3,7 @@ import { allPosts } from 'contentlayer/generated';
 import Post from '@/components/Blog/Post';
 import PostNavigation from '@/components/Blog/PostNavigation';
 import Comments from '@/components/Blog/Comments';
+import SideStickyAds from '@/components/AdSense/SideStickyAds';
 
 interface Props {
   params: {
@@ -24,11 +25,14 @@ const PostPage = ({ params: { slug } }: Props) => {
   if (!post) notFound();
 
   return (
-    <main className="container-lg">
-      <div className="mx-auto max-w-[730px]">
+    <main className="container-lg lg:flex">
+      <div className="mx-auto max-w-[650px] lg:ml-0 lg:max-w-[730px]">
         <Post post={post} />
         <PostNavigation allPosts={allPosts} currentIndex={currentIndex} />
         <Comments slug={slug} title={post.title} />
+      </div>
+      <div className="hidden h-[600px] w-[160px] pt-10 lg:sticky lg:top-16 lg:block">
+        <SideStickyAds />
       </div>
     </main>
   );

@@ -1,6 +1,6 @@
-import { Fragment } from 'react';
 import { Post } from 'contentlayer/generated';
 import PostListItem from './PostListItem';
+import BlogInfeedAds from '../AdSense/BlogInfeedAds';
 
 interface Props {
   posts: Post[];
@@ -24,10 +24,18 @@ const PostList = ({ posts, countLabel }: Props) => {
       )}
       <ul>
         {posts.map((post, index) => (
-          <Fragment key={post.slug}>
-            {index !== 0 && <hr className="my-6 md:my-8" />}
-            <PostListItem post={post} />
-          </Fragment>
+          <>
+            {index % 4 === 0 && index !== 0 && index !== posts.length - 1 && (
+              <div>
+                <hr className="my-6 md:my-8" />
+                <BlogInfeedAds />
+              </div>
+            )}
+            <li>
+              {index !== 0 && <hr className="my-6 md:my-8" />}
+              <PostListItem key={post.slug} post={post} />
+            </li>
+          </>
         ))}
       </ul>
     </>

@@ -21,8 +21,6 @@ export const metadata: Metadata = {
   },
 };
 
-const Layout = ({ children }: { children: React.ReactNode }) => {
-  return <main className="container-lg">{children}</main>;
-};
+const Layout = ({ children }: { children: React.ReactNode }) => children;
 
 export default Layout;
