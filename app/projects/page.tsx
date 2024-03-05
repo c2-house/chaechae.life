@@ -1,6 +1,7 @@
 import { allProjects } from 'contentlayer/generated';
 import ProjectListItem from '@/components/Projects/ProjectListItem';
 import { WebsiteIcon } from '@/public/icons';
+import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 
 const Page = () => {
   const projects = allProjects.sort((a, b) => a.order - b.order);
@@ -28,6 +29,7 @@ const Page = () => {
           </p>
         </li>
       </ul>
+      <ResponsiveAds />
     </main>
   );
 };

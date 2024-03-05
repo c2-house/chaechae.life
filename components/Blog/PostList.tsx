@@ -25,7 +25,7 @@ const PostList = ({ posts, countLabel }: Props) => {
       <ul>
         {posts.map((post, index) => (
           <>
-            {index % 3 === 0 && index !== 0 && index !== posts.length - 1 && (
+            {index % 4 === 0 && index !== 0 && index !== posts.length - 1 && (
               <div>
                 <hr className="my-6 md:my-8" />
                 <BlogInfeedAds />
