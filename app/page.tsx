@@ -4,6 +4,7 @@ import { allPosts } from 'contentlayer/generated';
 import PostList from '@/components/Blog/PostList';
 import Hero from '@/components/Home/Hero';
 import AboutUs from '@/components/Home/AboutUs';
+import BlogInfeedAds from '@/components/AdSense/BlogInfeedAds';
 import { ChevronRightIcon } from '@/public/icons';
 
 const Home = () => {
@@ -15,6 +16,7 @@ const Home = () => {
     <main>
       <Hero />
       <AboutUs />
+
       <section className="container-lg pt-10">
         <div className="mb-5 flex items-center justify-between md:mb-7">
           <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl">Recent Posts</h2>
@@ -24,6 +26,10 @@ const Home = () => {
           </Link>
         </div>
         <PostList posts={posts} />
+        <div>
+          <hr className="my-6 md:my-8" />
+          <BlogInfeedAds />
+        </div>
       </section>
     </main>
   );

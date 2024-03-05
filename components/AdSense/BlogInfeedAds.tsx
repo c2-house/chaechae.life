@@ -6,9 +6,9 @@ const BlogInfeedAds = () => {
   const [isMobileView, setIsMobileView] = useState(false);
 
   useEffect(() => {
+    setIsMobileView(window.innerWidth < 768);
     if (process.env.NODE_ENV !== 'production') return;
     (window.adsbygoogle = window.adsbygoogle || []).push({});
-    setIsMobileView(window.innerWidth < 768);
   }, []);
 
   return (
