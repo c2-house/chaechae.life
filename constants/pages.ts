@@ -21,4 +21,5 @@ export const tags = [
   'Rust',
   'SQLAlchemy',
   'Swagger',
+  'Writing',
 ] as const;
