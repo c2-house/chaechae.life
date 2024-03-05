@@ -1,11 +1,14 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const BlogInfeedAds = () => {
+  const [isMobileView, setIsMobileView] = useState(false);
+
   useEffect(() => {
     if (process.env.NODE_ENV !== 'production') return;
     (window.adsbygoogle = window.adsbygoogle || []).push({});
+    setIsMobileView(window.innerWidth < 768);
   }, []);
 
   return (
@@ -13,9 +16,9 @@ const BlogInfeedAds = () => {
       className="adsbygoogle"
       style={{ display: 'block' }}
       data-ad-format="fluid"
-      data-ad-layout-key="-fn-1z+db-p6+93"
+      data-ad-layout-key={isMobileView ? '-ht-f+9-7q+kc' : '-fp-1q+do-pz+7c'}
       data-ad-client={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID}
-      data-ad-slot="5659758817"
+      data-ad-slot={isMobileView ? '8237233960' : '5659758817'}
     ></ins>
   );
 };
