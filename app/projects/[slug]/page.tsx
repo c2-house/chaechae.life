@@ -5,6 +5,7 @@ import EvCharge from '@/components/Projects/EvCharge';
 import MessageBot from '@/components/Projects/MessageBot';
 import WeddingCard from '@/components/Projects/WeddingCard';
 import SideStickyAds from '@/components/AdSense/SideStickyAds';
+import InarticleAds from '@/components/AdSense/InarticleAds';
 
 interface Props {
   params: {
@@ -35,12 +36,14 @@ const Page = ({ params: { slug } }: Props) => {
             <p className="lead !my-5 md:!my-6">{project.description}</p>
           </header>
           <hr className="!my-0" />
+          <InarticleAds />
           <section>
             <Mdx code={project.body.code} />
             {slug === 'wedding-card' && <WeddingCard />}
             {slug === 'ev-charge' && <EvCharge />}
             {slug === 'messagebot' && <MessageBot />}
           </section>
+          <InarticleAds />
         </article>
       </div>
 

@@ -2,6 +2,7 @@ import { Post } from 'contentlayer/generated';
 import Mdx from '../Mdx';
 import { Tags } from './Tags';
 import Author from './Author';
+import InarticleAds from '../AdSense/InarticleAds';
 
 const Post = ({ post }: { post: Post }) => {
   return (
@@ -14,9 +15,11 @@ const Post = ({ post }: { post: Post }) => {
         <Tags tags={post.tags} />
       </header>
       <hr className="not-prose my-8 lg:my-10" />
+      <InarticleAds />
       <section>
         <Mdx code={post.body.code} />
       </section>
+      <InarticleAds />
     </article>
   );
 };
