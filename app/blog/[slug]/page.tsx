@@ -29,7 +29,7 @@ const PostPage = ({ params: { slug } }: Props) => {
       <div className="mx-auto max-w-[650px] lg:ml-0 lg:max-w-[730px]">
         <Post post={post} />
         <PostNavigation allPosts={allPosts} currentIndex={currentIndex} />
-        <Comments slug={slug} title={post.title} />
+        <Comments />
       </div>
       <div className="hidden h-[600px] w-[160px] pt-10 lg:sticky lg:top-16 lg:block">
         <SideStickyAds />

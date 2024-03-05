@@ -1,25 +1,25 @@
 'use client';
 
-import { DiscussionEmbed } from 'disqus-react';
+import { useEffect, useRef } from 'react';
 
-interface Props {
-  slug: string;
-  title: string;
-}
+const Comments = () => {
+  const ref = useRef<HTMLDivElement>(null);
 
-const Comments = ({ slug, title }: Props) => {
-  if (!process.env.NEXT_PUBLIC_DISQUS_SHORTNAME) return null;
+  useEffect(() => {
+    const script = document.createElement('script');
 
-  return (
-    <DiscussionEmbed
-      shortname={process.env.NEXT_PUBLIC_DISQUS_SHORTNAME}
-      config={{
-        url: `https://chaechae.life/blog/${slug}`,
-        identifier: slug,
-        title,
-      }}
-    />
-  );
+    script.src = 'https://utteranc.es/client.js';
+    script.async = true;
+    script.setAttribute('repo', process.env.NEXT_PUBLIC_GITHUB_REPO_NAME || '');
+    script.setAttribute('issue-term', 'pathname');
+    script.setAttribute('label', 'blog-comment');
+    script.setAttribute('theme', 'github-light');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    ref.current && ref.current.appendChild(script);
+  }, []);
+
+  return <div ref={ref}></div>;
 };
 
 export default Comments;

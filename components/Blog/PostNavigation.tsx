@@ -9,7 +9,7 @@ interface Props {
 
 const PostNavigation = ({ allPosts, currentIndex }: Props) => {
   return (
-    <nav className="mb-10 flex flex-wrap items-center justify-between gap-x-4 gap-y-6 border-y border-gray-200 py-8">
+    <nav className="mb-4 flex flex-wrap items-center justify-between gap-x-4 gap-y-6 border-y border-gray-200 py-8">
       {currentIndex < allPosts.length - 1 && (
         <Link href={`/blog/${allPosts[currentIndex + 1].slug}`} className="group flex flex-col">
           <span className="ml-7 text-xs text-slate-500">이전 글</span>
