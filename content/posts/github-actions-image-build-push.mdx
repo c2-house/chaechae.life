@@ -1,0 +1,110 @@
+---
+title: Github Actions - Docker 이미지 빌드 및 푸시하기
+description: 이미지를 빌드하고 레지스트리로 푸시하는 작업은 귀찮은 작업입니다. Github Actions를 이용해 이 작업을 자동화할 수 있는 방법을 알아보겠습니다. Github Actions MarketPlace에는 다양한 Action들이 있는데요. 제가 자주 사용하는 방법을 공유해 보도록 하겠습니다.
+tags: [GithubActions]
+author: mingke
+thumbnail: /thumbnails/github-actions-logo.png
+date: 2024/03/07
+---
+
+<Image src="/thumbnails/github-actions-logo.png" alt="Github Actions Image Build Push" />
+
+### 목차
+
+## 인트로
+
+Docker를 이용한 개발을 하는 경우에 이미지를 빌드하여 레지스트리에 저장하는 프로세스 반드시 필요한 작업입니다. Docker의 장점인 이식성이 레지스트리 덕분에 더 높아진 것도 있죠. 하지만 이미지를 빌드하고 레지스트리로 푸시하는 작업은 귀찮은 작업입니다. **Github Actions**를 이용해 이 작업을 자동화할 수 있는 방법을 알아보겠습니다. Github Actions MarketPlace에는 다양한 Action들이 있는데요. 제가 자주 사용하는 방법을 공유해 보도록 하겠습니다.
+
+## docker-build-push
+
+제가 애용하는 Action입니다. SO EASY하게 이미지 빌드 및 푸시작업을 실행할 수 있습니다. 여러 Registry를 지원합니다. 사용법을 알아보겠습니다. 매우 간단합니다.
+
+### Docker Hub
+
+```yaml
+name: Docker hub registry Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v2
+      - name: Build and Push to Docker Hub
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: ${{ secrets.DOCKER_HUB_USERNAME}}/image-name
+          tags: ${{ steps.commit.outputs.short }}, latest
+          registry: docker.io
+          dockerfile: Dockerfile
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+```
+
+- 우선 도커 허브의 아이디와 비밀번호를 Repository Secret으로 등록합니다. Github Repository에서 Secret으로 등록하시거나
+
+<Image src="/github-actions-image-build-push/01.png" alt="Github Actions Repository Secrets" />
+
+- VSCode를 사용한다면 Github Actions Extension을 사용해서 추가할 수도 있습니다.
+
+<Image src="/github-actions-image-build-push/02.png" alt="Github Actions VSCode Extension" />
+
+- image는 **docker hub username / image name** 형식으로 넣어줍니다.
+- tags는 원하는 태그를 넣으면 되고 ,(콤마)를 이용해서 복수의 태그를 달 수 있습니다.
+  - 예제에서는 commit 해시 와 latest를 넣었습니다.
+- 나머지는 위의 예시에서 보이는대로 고정입니다.
+
+### ECR
+
+ECR도 크게 다르지 않습니다.
+
+```yaml
+name: ECR Build and Push
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: commit
+        uses: pr-mpt/actions-commit-hash@v2
+      - name: Build and Push to ECR
+        uses: mr-smithers-excellent/docker-build-push@v6
+        with:
+          image: image-name
+          tags: ${{ steps.commit.outputs.short }}, latest
+          registry: [aws-account-number].dkr.ecr.[region].amazonaws.com
+          dockerfile: Dockerfile
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
+
+- image는 docker hub에 저장할 때와 다르게 image이름만 적어줍니다. ex) fastapi-project
+  - ECR의 Repository 이름 이기도 합니다.
+- tags는 docker hub에 적용한 방법과 동일합니다.
+- registry는 이렇게 생긴 ECR URI를 넣어주면 됩니다. ex)123456789012.dkr.ecr.ap-northeast-2.amazonaws.com
+- `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` 를 secret 으로 넣어주면 됩니다.
+  - Private Registry와 관련하여 IAM ROLE에 ECR관련 권한이 필요하니 추가해야합니다.
+  - 아래 이미지는 ecr관련 정책을 생성한 예시입니다.
+
+<Image src="/github-actions-image-build-push/03.png" alt="ECR Role" />
+
+## 마무리
+
+Docker 이미지를 Github Actions를 이용해 Docker Hub와 ECR에 제가 자주 사용하는 Action을 이용해서 저장하는 방법을 알아봤습니다. 공유드린 내용 이 외에 더 알아보고 싶은 분들은 아래 링크에서 살펴보시기 바랍니다. Market Place를 찾아보면 이미지 빌드와 관련해서 더 많은 action들이 존재하니 더 많이 찾아보고 싶은 분들은 찾아봐도 좋겠습니다.
+
+<Link url="https://github.com/mr-smithers-excellent/docker-build-push" />
