@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import { allProjects } from 'contentlayer/generated';
-import { openGraph } from '@/app/shared-metadata';
+import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
   params: {
@@ -14,7 +14,7 @@ export const generateMetadata = async ({ params: { slug } }: Props): Promise<Met
   if (!project) return {};
 
   const { title: projectTitle, description } = project;
-  const title = `${projectTitle} - 개발자 부부 채채`;
+  const title = `${projectTitle} - ${baseTitle}`;
 
   return {
     title,

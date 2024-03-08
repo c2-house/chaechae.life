@@ -1,4 +1,5 @@
 import Logo from './logo.svg';
+import LogoIcon from './logo-icon.svg';
 import MenuIcon from './menu.svg';
 import CloseIcon from './close.svg';
 import GlobeIcon from './globe.svg';
@@ -16,6 +17,7 @@ import ProfileMingkeIcon3 from './profile-mingke-3.svg';
 
 export {
   Logo,
+  LogoIcon,
   MenuIcon,
   CloseIcon,
   GlobeIcon,

@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { allPosts } from 'contentlayer/generated';
+import { title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
   params: {
@@ -21,7 +22,7 @@ export const generateMetadata = async ({ params }: Props): Promise<Metadata> => 
       title,
       description,
       url: `/blog/${slug}`,
-      siteName: '개발자 부부 채채',
+      siteName: baseTitle,
       locale: 'ko_KR',
       type: 'article',
       publishedTime: date,

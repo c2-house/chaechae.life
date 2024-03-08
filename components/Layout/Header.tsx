@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { navLinks } from '@/constants/pages';
-import { Logo, MenuIcon } from '@/public/icons';
+import { LogoIcon, MenuIcon } from '@/public/icons';
 import Drawer from './Drawer';
 
 const Header = () => {
@@ -38,7 +38,7 @@ const Header = () => {
         <div className="container-lg py-3 md:py-5">
           <div className="flex items-center justify-between">
             <Link href="/">
-              <Logo />
+              <LogoIcon className="h-8 w-8" />
             </Link>
 
             <nav className="hidden md:block">
