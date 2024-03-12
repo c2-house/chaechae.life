@@ -1,0 +1,132 @@
+---
+title: FastAPI Settings - Pydantic Settings 관리하기
+description: FastAPI에서는 Django 처럼 기본 Setting을 지원해주는 것이 없기 때문에 프로젝트에 필요한 셋팅들을 직접 만들어줘야 합니다. DB 주소, AWS키 등 프로젝트에서 사용될 환경변수나 상수값 같은 것들을 말이죠. pydantic_settings를 많이 사용합니다. 이번 포스팅에서 pydantic_settings로 FastAPI에서 setting을 관리하는 방법을 알아보겠습니다.
+tags: [FastAPI, Pydantic]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/03/12
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Logo fastapi settings pydantic settings" />
+
+### 목차
+
+## 인트로
+
+FastAPI에서는 Django 처럼 기본 Setting을 지원해주는 것이 없기 때문에 프로젝트에 필요한 셋팅들을 직접 만들어줘야 합니다. DB 주소, AWS키 등 프로젝트에서 사용될 환경변수나 상수값 같은 것들을 말이죠. pydantic_settings를 많이 사용합니다. 이번 포스팅에서 pydantic_settings로 FastAPI에서 setting을 관리하는 방법을 알아보겠습니다.
+
+## 기본 사용법
+
+### 설치
+
+```bash
+pip install pydantic-settings
+```
+
+### BaseSettings
+
+`BaseSettings` 를 상속받아 Setting 값들을 선언합니다. `BaseSettings` 를 사용하게 되면 각 속성에 Type도 반드시 넣어주어야 합니다. 예시코드는 다음과 같습니다.
+
+```python
+# config.py
+from pydantic import MySQLDsn
+from pydantic_settings import BaseSettings
+
+
+class AppSettings(BaseSettings):
+    DEBUG: bool = True
+    OPENAPI_URL: str | None = "/openapi.json" if DEBUG else None
+    API_PREFIX: str = "/api"
+    DB_URL: MySQLDsn = "mysql+pymysql://admin:root@127.0.0.1:3306/admin"
+    TIMEZONE_LOCATION: str = "Asia/Seoul"
+
+    AWS_ACCESS_KEY_ID: str = "qqqqqqqqeqweqeqweweqeqw"
+    AWS_SECRET_ACCESS_KEY: str = "3131231231231231312313"
+
+settings = AppSettings()
+
+# 다음과 같이 사용가능합니다
+# main.py
+from config import settings
+from fastapi import FastAPI
+
+app = FastAPI(openapi_url=settings.OPENAPI_URL)
+```
+
+## Setting 종류 별로 구분하기
+
+프로젝트 진행됨에 따라 사이즈가 커질 경우, 사용하는 setting 값들이 아주 많아지기도 합니다. 코드도 길어지고 나중에 어떤 셋팅이 어디쯤 위치해 있는지 찾기도 어려워 집니다. 이럴 때 제가 사용하는 방법을 공유하도록 하겠습니다.
+
+### BaseModel
+
+바로 Pydantic `BaseModel`을 이용해서 Setting을 분리하여 선언하는 것입니다. 사용방법을 알아보도록 하겠습니다.
+
+```python
+from pydantic import BaseModel
+
+# JWT setting 분리
+
+class JWT(BaseModel):
+    ALGORITHM: str = "HS256"
+    SECRET_KEY: str = "YtGHVqSAzFyaHk2OV5XQg3"
+    ACCESS_TOKEN_EXPIRE_TIME: int = 60
+    REFRESH_TOKEN_EXPIRE_TIME: int = 60 * 60
+
+
+class AppSettings(BaseSettings):
+    DEBUG: bool = True
+    OPENAPI_URL: str | None = "/openapi.json" if DEBUG else None
+    API_PREFIX: str = "/api"
+    DB_URL: MySQLDsn = "mysql+pymysql://admin:root@127.0.0.1:3306/admin"
+    TIMEZONE_LOCATION: str = "Asia/Seoul"
+
+    AWS_ACCESS_KEY_ID: str = "qqqqqqqqeqweqeqweweqeqw"
+    AWS_SECRET_ACCESS_KEY: str = "3131231231231231312313"
+    JWT: JWT = JWT()
+```
+
+위와 같이 적용했을 때 다음과 같이 사용이 가능해집니다. 이런 방식으로 설정하면 `AppSettings` 클래스의 길이가 너무 길어 지지도 않아 좋은것 같습니다.
+
+```python
+jwt_algorithm = settings.JWT.ALGORITHM
+```
+
+## 환경변수에서 불러오기
+
+최상단에 보면 AWS관련된 설정들이 존재합니다. **실제 AWS_ACCESS_KEY 같은 경우는 매무 민감한 정보로 유출되면 안되는 정보**입니다. 이럴때 환경변수로 관리하게되고 pydantic_settings는 환경변수에서 쉽게 값을 불러올 수 있도록 지원합니다.
+
+### 환경변수
+
+예시로 알아보겠습니다. 환경변수가 담긴 파일의 이름은 아무거나 해도 되지만 일반적으로 사용하는 `.env` 로 하겠습니다.
+
+```python
+# .env
+AWS_ACCESS_KEY_ID="qqqqqqqqeqweqeqweweqeqw"
+AWS_SECRET_ACCESS_KEY="3131231231231231312313"
+```
+
+### SettingsConfigDict
+
+`SettingsConfigDict`를 `model_config`에 오버라이드 합니다.
+
+```python
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+class AppSettings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    DEBUG: bool = True
+    OPENAPI_URL: str | None = "/openapi.json" if DEBUG else None
+    API_PREFIX: str = "/api"
+    DB_URL: MySQLDsn = "mysql+pymysql://admin:root@127.0.0.1:3306/admin"
+    TIMEZONE_LOCATION: str = "Asia/Seoul"
+
+    AWS_ACCESS_KEY_ID: str
+    AWS_SECRET_ACCESS_KEY: str
+
+```
+
+이때 `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` 는 값 없이 속성이름과 타입만 넣어주면 됩니다. pydantic_settings가 .env파일을 불러와서 대응대는 값을 넣어줄 것입니다. 이렇게하면 환경변수로 Setting을 다루기가 한결 편리해집니다.
+
+## 마무리
+
+pydantic-settings를 이용해서 FastAP에서 Setting을 다루는 방법을 알아봤습니다. 이 방법만 사용해야하는 것은 아니지만 FastAPI 공식문서에도 pydantic-settings에 대한 소개가 있기 때문에 신뢰성 높은 방법이라고 생각이 됩니다.
