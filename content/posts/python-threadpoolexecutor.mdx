@@ -1,0 +1,87 @@
+---
+title: Python ThreadPoolExecutor - concurrent.futures 파이썬 비동기
+description: 오늘은 Python에서 어떠한 작업들을 동시에 처리할 수 있는 방법들 중에 하나인 ThreadPoolExecutor에 대해서 알아보도록 하겠습니다. 멀티스레딩을 쉽게 구현할 수 있게 해주며, 주로 I/O 바운드 작업에서 성능을 개선하기 위해서 사용됩니다. I/O 바운드 작업은 프로그램의 실행 속도가 입출력 작업에 의해서 결정되는 작업입니다. 디스크에 접근하거나, 네트워크 통신을 하는 경우를 말합니다. 이 정도 개념만 알고 코드 넘어가겠습니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/03/13
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python Logo python-threadpoolexecutor" />
+
+### 목차
+
+## 인트로
+
+오늘은 Python에서 어떠한 작업들을 동시에 처리할 수 있는 방법들 중에 하나인 `ThreadPoolExecutor`에 대해서 알아보도록 하겠습니다. 멀티스레딩을 쉽게 구현할 수 있게 해주며, 주로 **I/O 바운드 작업**에서 성능을 개선하기 위해서 사용됩니다. I/O 바운드 작업은 프로그램의 실행 속도가 입출력 작업에 의해서 결정되는 작업입니다. 디스크에 접근하거나, 네트워크 통신을 하는 경우를 말합니다. 이 정도 개념만 알고 코드 넘어가겠습니다.
+
+## ThreadPoolExecutor
+
+I/O 바운드 작업을 동시에 처리하여 성능을 개선하기 위해 사용하는 ThreadPoolExecutor를 알아보겠습니다. 이 녀석은 `concurrent.futures` 모듈에 속해 있습니다. 비동기 실행을 위한 고수준 인터페이스를 제공합니다. **future는 비동기 실행의 결과를 나타내는 객체**라고 생각하면 됩니다.
+
+코드를 살펴보겠습니다. 아주 쉽습니다.
+
+```python
+import time
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+start_time = time.time()
+
+base_url = "https://chaechae.life/blog"
+
+path_list = ["/fastapi-settings", "/github-actions-image-build-push", "/developers-writing"]
+
+def check_url_status(url):
+    try:
+        response = requests.get(url)
+        return response.status_code == 200
+    except requests.exceptions.RequestException:
+        return False
+
+full_urls = [base_url + path for path in path_list]
+
+with ThreadPoolExecutor(max_workers=len(path_list)) as executor:
+    results = list(executor.map(check_url_status, full_urls))
+
+end_time = time.time()
+
+print(f"실행 시간: {end_time - start_time:.2f}초")
+# 실행 시간: 0.19초
+```
+
+해당 블로그 주소가 정상인지 아닌지 확인하는 코드를 작성했습니다. 단순하게 get 요청을 보내서 정상 url이면 True 아니면 False를 반환합니다.
+
+- ThreadPoolExecutor는 with 문과 함께 사용됩니다.
+- max_workers라는 속성을 가지고 있으며, 실행할 thread의 수 입니다.
+- map 메소드를 가지고 있으며 Callable한 함수와, 인자로 사용될 값을 넣어주면 됩니다.
+- 실행시간도 한 번 측정해 봤습니다. 0.19초가 걸렸네요
+
+만약 동기적으로 실행하면 얼마나 걸릴까요?
+
+```python
+# 위 코드는 모두 동일
+results = []
+for url in full_urls:
+    result = check_url_status(url)
+    results.append(result)
+
+end_time = time.time()
+
+print(f"실행 시간: {end_time - start_time:.2f}초")
+# 실행 시간: 0.46초
+```
+
+ThreadPoolExecutor를 사용한 것이 성능이 훨씬 잘 나오는 것을 확인할 수 있습니다.
+
+## 마무리
+
+파이썬에서 비동기처리를 할 수 있는 `ThreadPoolExecutor` 에 대해서 알아봤습니다. Firebase-sdk를 이용해서 푸시 기능을 개발하다가 **firebase-admin** 라이브러리에서 푸시메세지를 전송할 때 `ThreadPoolExecutor` 를 사용하는 것을 보고 블로그 주제로 한 번 다뤄야겠다고 생각했었습니다.
+
+<Image
+  src="/python-threadpoolexecutor/01.png"
+  alt="python threadpoolexecutor code in firebase-admin"
+  caption="firebase-admin messaging 코드 중"
+/>
+
+**구글 오픈소스**에서도 사용하는 `ThreadPoolExecutor` 를 써서 성능을 개선해 볼까요? 그렇다고 무작정 아무대나 사용하면 오히려 성능 저하를 일으킬 수도 있으니, 상황에 맞게 사용하면 되겠습니다. CPU 바운드 작업같은 경우에는 Python의 **GIL** 때문에 `ThreadPoolExecutor` 보단 `ProcessPoolExecutor` 를 사용하는 것이 좋습니다.
