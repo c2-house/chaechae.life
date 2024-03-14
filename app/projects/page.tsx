@@ -12,7 +12,6 @@ const Page = () => {
         {projects.map((project) => (
           <ProjectListItem key={project.slug} project={project} />
         ))}
-
         <li className="flex aspect-square max-w-[470px] flex-col items-center justify-center rounded-xl border-2 border-gray-100">
           <WebsiteIcon className="mb-5 h-36 w-36 lg:mb-7 lg:h-44 lg:w-44" />
           <p className="text-xl text-slate-500 lg:text-2xl">
@@ -28,14 +27,8 @@ const Page = () => {
             ))}
           </p>
         </li>
-
-        <li className="flex max-w-[470px]">
-          <ResponsiveAds />
-        </li>
-        <li className="flex max-w-[470px]">
-          <ResponsiveAds />
-        </li>
       </ul>
+      <ResponsiveAds />
     </main>
   );
 };
