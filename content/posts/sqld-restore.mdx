@@ -1,0 +1,75 @@
+---
+title: SQLD 자격 만료 복원하기 SQLD 보수교육
+description: SQLD 자격은 유효기간이 2년입니다. 최근 만료된 SQLD 자격은 보수교육을 이수하면 영구 자격으로 전환된다는 것을 알게되었습니다. 오늘은 SQLD 자격 만료를 복원하는 방법을 포스팅 해보도록 하겠습니다.
+tags: [SQLD]
+thumbnail: /sqld-restore/01.jpg
+author: mingke
+date: 2024/03/24
+---
+
+### 목차
+
+## 인트로
+
+2020년에 데이터분석을 공부하면서 **SQLD자격증**을 취득했었습니다. 그런데 SQLD 자격은 유효기간이 2년입니다. 2022년에 자격은 만료되었고 회사를 이미 다니고 있었기에 만료된 자격증에 대해서 크게 신경쓰지 않았습니다. 최근 **만료된 SQLD 자격은 보수교육을 이수하면 영구 자격으로 전환**된다는 것을 알게되었습니다. 오늘은 SQLD 자격 만료를 복원하는 방법을 포스팅 해보도록 하겠습니다.
+
+## 데이터자격검정
+
+데이터자격검정에 접속하여 로그인을 진행하고 4시간짜리 보수교육을 시청하면 됩니다.
+
+<Link url="https://www.dataq.or.kr/www/main.do" />
+
+마이페이지에서 **자격증관리**에 들어오면 아래와 같은 화면을 볼 수 있습니다. SQLD를 확인해보면 유효기간이 찍혀있는 것을 볼 수 있습니다.
+
+<Image src="/sqld-restore/01.jpg" alt="sqld 자격증 페이지" />
+
+마이페이지의 **보수교육**으로 이동해봅니다. 들어야할 보수교육인 **SQLD 보수교육**이 교육 진행중에 나타납니다.
+
+<Image src="/sqld-restore/02.jpg" alt="sqld 보수교육 페이지" />
+
+보수교육을 클릭하면 아래와 같이 동영상이 실행되고 4시간 교육을 이수하면 됩니다. 다 듣고 퀴즈같은 것도 없기 때문에 관심이 없다면 뭐 알아서 하시면 되겠죠? 아쉽지만 플레이어에서 배속은 지원하지 않습니다.
+
+<Image src="/sqld-restore/03.jpg" alt="sqld 보수교육 동영상" />
+
+교육을 다 듣고나면 **교육 진행중**에서 **교육 완료**로 넘어가게 되고 SQLD 자격증은 **영구** 자격으로 전환됩니다.
+
+<Image src="/sqld-restore/04.jpg" alt="sqld 보수교육 이수 후 화면" />
+
+## 마무리
+
+오늘은 만료된 SQLD 자격증을 영구 자격증으로 전환하는 방법에 대해서 알아봤습니다. SQLD 자격증은 유효기간이 있어서 아쉽다라고 생각했는데 영구 전환하는 방법이 있어서 참 다행이라는 생각이 드네요.
+
+<details>
+  <summary>듣기 귀찮은 사람에게 개발자식 꿀팁</summary>
+  <p>
+    솔직히 SQLD 자격증 하나 살리자고 4시간 강의를 듣기 귀찮은 사람이 많을 것이라고 생각합니다. 저도
+    그랬습니다.
+  </p>
+  <p>
+    여기서 ‘<strong>Video Player에 배속이 있으면 좋겠다</strong>’ 라고 생각합니다. 보통 Video는 HTML
+    video Tag로 되어있습니다.
+  </p>
+  <p>
+    이 교육 영상도 그렇습니다. 그렇다면{' '}
+    <strong>브라우저의 개발자 도구를 열어 DOM을 조작해 영상을 배속 재생할 수 있을지도</strong>{' '}
+    모르겠습니다.
+  </p>
+  <p>
+    <strong>AI</strong>에게도 한번 물어봤습니다.
+  </p>
+  <p> element 확인</p>
+  <img src="/images/blog/sqld-restore/06.jpg" alt="console element 확인" />
+  <p>
+    <code>document.querySelector, document.getElementById, document.getElementsByTagName</code> 등
+    원하는 것으로 video 태그를 가져오세요. 저는 <code>document.getElementsByTagName</code>을
+    사용했습니다.
+  </p>
+  <p>32배속은 지원이 안되네요.</p>
+  <img src="/images/blog/sqld-restore/07.jpg" alt="비디오 32배속 실패" />
+  <p>16배속까지 지원이 됩니다.</p>
+  <img src="/images/blog/sqld-restore/08.jpg" alt="16배속 확인" />
+  <p>
+    이렇게하면 16배속으로 빠르게 들을 수 있습니다. 240/16 == 15 , 약 15분이면 다 끝낼 수 있습니다…
+    이상으로 마치겠습니다.
+  </p>
+</details>
