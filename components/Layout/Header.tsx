@@ -16,6 +16,8 @@ const Header = () => {
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
+
+    handleScroll();
     window.addEventListener('scroll', handleScroll);
 
     return () => {
@@ -29,10 +31,7 @@ const Header = () => {
         className={clsx(
           'inset-x-0 top-0 z-10 w-full transition-colors duration-300',
           currentPath === '/' ? 'fixed' : 'sticky',
-          {
-            'bg-transparent': currentPath === '/' && scrollY <= 0,
-            'border-b border-gray-100 bg-white/70 backdrop-blur-lg': scrollY > 0,
-          },
+          scrollY <= 0 ? 'bg-transparent' : 'border-b border-gray-100 bg-white/70 backdrop-blur-lg',
         )}
       >
         <div className="container-lg py-3 md:py-5">
