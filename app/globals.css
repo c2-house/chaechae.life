@@ -3,6 +3,19 @@
 @tailwind utilities;
 
 @layer base {
+  .prose #목차 {
+    @apply mb-0 w-fit rounded-t-md bg-slate-200 px-4 tracking-wider;
+  }
+
+  .prose #목차 + ul {
+    @apply rounded-md rounded-tl-none border border-slate-200 py-2 pr-2;
+  }
+
+  .prose h2,
+  .prose h3 {
+    @apply scroll-mt-16 md:scroll-mt-20;
+  }
+
   .prose mark {
     @apply bg-yellow-100;
   }
@@ -15,17 +28,8 @@
     @apply my-0;
   }
 
-  .prose #목차 {
-    @apply mb-0 w-fit rounded-t-md bg-slate-200 px-4 tracking-wider;
-  }
-
-  .prose #목차 + ul {
-    @apply rounded-md rounded-tl-none border border-slate-200 py-2 pr-2;
-  }
-
-  .prose h2,
-  .prose h3 {
-    @apply scroll-mt-16 md:scroll-mt-20;
+  .prose details summary {
+    @apply my-2 cursor-pointer;
   }
 }
 
