@@ -3,17 +3,20 @@ const Hero = () => {
     <section className="bg-gradient-light bg-gradient-to-b">
       <div className="flex h-[100svh] items-center justify-center">
         <div className="px-6 text-center">
-          <h1 className="mb-5 text-5xl font-bold md:mb-8 md:text-7xl lg:mb-12 lg:text-8xl">
+          <div className="mx-auto mb-4 flex w-fit flex-col lg:mb-5">
             <span
-              className="mb-4 block animate-fade-in md:mb-5 lg:mb-6"
+              className="bg-gradient-dark animate-fade-in rounded-full text-xl tracking-wider text-white md:py-1 md:text-2xl lg:text-3xl"
               style={{ animationDelay: '0.1s' }}
             >
-              개발자 부부
+              개발자 부부 채채의
             </span>
-            <span className="bg-gradient-text animate-fade-in" style={{ animationDelay: '0.3s' }}>
-              채채
-            </span>
-          </h1>
+            <h1
+              className="bg-gradient-text my-3 animate-fade-in text-5xl font-bold tracking-tight md:my-4 md:text-7xl lg:my-5 lg:text-8xl"
+              style={{ animationDelay: '0.3s' }}
+            >
+              채채라이프
+            </h1>
+          </div>
           <p
             className="animate-fade-in text-lg text-slate-700 md:text-xl md:!leading-relaxed lg:text-2xl"
             style={{ animationDelay: '0.5s' }}
