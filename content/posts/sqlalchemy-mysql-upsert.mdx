@@ -1,0 +1,60 @@
+---
+title: SQLALCHEMY MYSQL UPSERT on_duplicate_key_update
+description: 데이터가 존재하면 업데이트를 하고, 존재하지 않으면 데이터를 삽입하는 방법이 있습니다. 이것을 Upsert라고 부릅니다. 얼마전 사용할 일이 있어서 사용했는데, 블로그로도 한 번 공유 해볼까 합니다. 데이터베이스는 MySQL 기준으로 작성합니다.
+tags: [SQLAlchemy]
+author: mingke
+thumbnail: /thumbnails/sqlalchemy-logo.png
+date: 2024/03/31
+---
+
+<Image src="/thumbnails/sqlalchemy-logo.png" alt="sqlalchemy mysql upsert" />
+
+### 목차
+
+## Update or Insert - Upsert
+
+데이터를 삽입하려고 하는데 데이터가 만약에 존재하고 있다면, 중복 허용이 되지 않았다면 Integrity 에러가 발생할 것입니다. 이 경우에 에러를 발생시키지 않고 데이터가 존재하면 업데이트를 하고, 존재하지 않으면 데이터를 삽입하는 방법이 있습니다. 이것을 **Upsert**라고 부릅니다. 얼마전 사용할 일이 있어서 사용했는데, 블로그로도 한 번 공유 해볼까 합니다. 데이터베이스는 MySQL 기준으로 작성합니다.
+
+`INSERT ... ON DUPLICATE KEY UPDATE` 을 사용하면 됩니다.
+
+예시코드를 살펴보겠습니다.
+
+```sql
+INSERT INTO inventory (product_id, quantity)
+VALUES (101, 10)
+ON DUPLICATE KEY UPDATE quantity = quantity + VALUES(quantity);
+```
+
+101 product_id가 존재하면 수량을 업데이트치고 없으면 삽입합니다.
+
+## SQLALCHEMY on_duplicate_key_update
+
+Upsert에 대해서 Raw Query로 알아봤는데요. SQLALCHEMY에서 사용하는 방법을 알아보도록 하겠습니다. insert를 import하는 방법이 좀 달라집니다.
+
+```python
+from sqlalchemy.dialects.mysql import insert as mysql_insert
+
+query = (
+		mysql_insert(MODEL)
+		.values([{COL: VALUE, ...}, ...])
+		.on_duplicate_key_update(COL==VALUE)
+)
+```
+
+`from sqlalchemy import insert` 에서 import를 하면 안됩니다. `on_duplicate_key_update` 는 MYSQL에만 있기 때문에 기본 insert에는 존재하지 않습니다. `from sqlalchemy.dialects.mysql import insert as mysql_insert` 에서 MySQL에만 있는 기능들을 사용할 수 있습니다.
+
+### 추가
+
+**중복된 데이터가 있을 때 업데이트가 아니라 SKIP하고 중복되지 않은 데이터들만 삽입하는 경우**는 다음과 같이 사용할 수 있습니다. **IGNORE** 키워드를 사용하는 것입니다.
+
+```python
+query = (
+    mysql_insert(MODEL)
+    .values([{COL: VALUE, ...}, ...])
+    .prefix_with("IGNORE")
+)
+```
+
+## 마무리
+
+SQLALCHEMY에서 Upsert 하는 방법에 대해서 알아봤습니다. 앞서 설명한 방법으로 데이터의 중복을 피하면서도 필요한 데이터를 데이터베이스에 삽입하거나 업데이트 할 수 있습니다. 처음 사용할 때 Django orm 보다 많이 불편하다 싶었는데 SQLALCHEMY도 점점 익숙해져가고 있는 것 같습니다.
