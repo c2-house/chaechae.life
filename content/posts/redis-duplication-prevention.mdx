@@ -1,0 +1,191 @@
+---
+title: Redis 따닥 방지(중복 방지) 하기 - FastAPI
+description: 최근 면접에서 받았던 질문 내용을 가지고 블로그 글을 작성하고 있습니다. 이번에는 Redis를 이용해서 클라이언트의 따닥을 방지하는 방법을 알아보겠습니다. 성공하든 실패하든 면접 많이 보는것은 도움이 되는 것 같네요. 임시 Token과 Redis를 이용해서 상태관리를 통해 처리할 수 있습니다.
+tags: [Redis, FastAPI]
+author: mingke
+thumbnail: /thumbnails/redis-logo.png
+date: 2024/04/02
+---
+
+<Image src="/thumbnails/redis-logo.png" alt="Redis Logo" />
+
+### 목차
+
+## Redis를 이용해서 따닥 방지하기
+
+최근 면접에서 받았던 질문 내용을 가지고 블로그 글을 작성하고 있습니다. 이번에는 Redis를 이용해서 클라이언트의 **따닥**을 방지하는 방법을 알아보겠습니다. 성공하든 실패하든 면접 많이 보는것은 도움이 되는 것 같네요. 임시 Token과 Redis를 이용해서 상태관리를 통해 처리할 수 있습니다.
+
+## 따닥 상황 예제 만들기
+
+따닥이라 함은 클라이언트에서 서버로 요청을 보낼 때 1번만 보내야할 요청을 **따닥** 클릭으로 여러번 보내는 상황을 말합니다. 완벽한 예시는 아니지만 4월10일 총선을 앞두고 있어 투표 상황을 예시로 만들어봤습니다.
+
+투표하기를 눌렀을 때 한 번만 투표를 해야지 2~3번 하면 안됩니다. 따닥 방지 기능 구현을 위해 만들어낸 억지 상황입니다. FastAPI를 이용해서 구현해보겠습니다.
+
+## 예제 코드 주요 부분 확인
+
+### SQLALCHEMY 모델
+
+- 별다른 제약조건 없이 만들었습니다.
+
+```python
+from sqlalchemy import Integer
+from sqlalchemy.orm import mapped_column
+from app.models.base import Base
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    id = mapped_column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = mapped_column(Integer)
+    candidate_id = mapped_column(Integer)
+
+```
+
+### Pydantic Schema
+
+- `token`이라는 속성을 만들어 `user_id`와 `candidate_id`를 결합해 고유한 토큰을 만들었습니다.
+- 이 토큰이 Redis에 저장할 때 키값으로 쓰일 것 입니다.
+- 이 키는 같은 투표에 대해서 동일한 값을 가집니다. 따라서 키를 확인하여 중복을 방지할 수 있습니다.
+
+```python
+from pydantic import BaseModel, model_validator
+
+class VoteRequest(BaseModel):
+    user_id: int
+    candidate_id: int
+    token: str | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_token(cls, values: dict) -> dict:
+        values["token"] = f"vote_lock:{values['user_id']}:{values['candidate_id']}"
+
+        return values
+
+```
+
+### Redis 객체
+
+- FastAPI에서 비동기 프로그래밍을 많이 사용하기 때문에 `aioredis`를 사용합니다.
+- redis 라이브러리를 설치하고 `redis.asyncio` 를 사용하면 됩니다.
+- redis 라이브러리에 통합되어 `aioredis` 라이브러리는 더이상 지원되지 않습니다.
+
+```python
+from redis import asyncio as aioredis
+from redis.asyncio import Redis
+
+async def get_redis() -> Redis:
+    """Redis 연결"""
+    redis = aioredis.from_url("redis://redis:6379/0")
+    return redis
+```
+
+### API 일반적 구현
+
+- token이 이미 등록된 토큰인지 확인
+- 등록된 토큰이 아니면 timeout 1초로 셋팅하고 값을 processing으로 저장
+  - Timeout은 여기서는 1초로 비교적 짧게 설정하였는데, 그 이유는 메인 로직이 실행되는데 아주 짧은 시간이 걸리기 때문입니다. 메인 로직의 실행 시간에 따라 Timeout 시간을 조절하면 될 것 같습니다.
+- token이 존재하여 400에러가 발생하는 경우가 아니라면 DB에 투표결과 저장
+- DB저장 후 토큰 삭제
+- `redis.pipeline` 을 사용했는데 이것은 redis에 보내는 네트워크 요청을 하나로 묶어서 보낼 수 있도록 합니다. 네트워크 지연시간을 감소시킬 수 있고 원자성을 유지할 수도 있습니다.
+
+```python
+@router.post("/")
+async def create_vote(data: VoteRequest, redis: GetRedis, db: DB):
+    async with redis.pipeline(transaction=True) as pipe:
+        # Redis를 사용하여 투표 토큰의 상태 확인
+        await pipe.get(data.token)
+        await pipe.setex(data.token, 1, "processing")
+        responses = await pipe.execute()
+
+        token_status = responses[0]
+
+        if token_status:
+            raise HTTPException(status_code=400, detail="중복 발생")
+        await vote_orm.create(db, user_id=data.user_id, candidate_id=data.candidate_id)
+
+    await redis.delete(data.token)
+    return {"message": "투표 완료"}
+
+```
+
+### 테스트 해보기
+
+- 따다다다닥을 날려봅니다.
+- `ThreadPoolExecutor`를 이용해서 멀티쓰레딩으로 5개의 요청을 동시에 날려봅니다.
+
+```python
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+def send_vote_request(url_data):
+    """투표 요청을 보내는 함수"""
+    url, data = url_data  # url과 data를 튜플에서 추출
+    response = requests.post(url, json=data)
+    return response.json()
+
+url = "http://localhost:8000/votes/"
+data = {
+    "user_id": 100,
+    "candidate_id": 1,
+}
+
+with ThreadPoolExecutor(max_workers=5) as executor:
+    results = executor.map(send_vote_request, [(url, data) for _ in range(5)])
+
+    for result in results:
+        print(result)
+```
+
+```python
+# 결과값
+{'detail': '투표 완료'}
+{'detail': '중복 발생'}
+{'detail': '중복 발생'}
+{'detail': '중복 발생'}
+{'detail': '중복 발생'}
+```
+
+## 분산락 이용해보기
+
+먼저 언급한 코드는 Not Exist를 확인하지 않고 있어 클라이언트의 요청이 많을 경우 문제가 발생할 수 있습니다.
+
+분산락은 복수의 컴퓨터 리소스에 대한 접근을 동기화합니다. 분산 시스템에서 여러 프로세스나 쓰레드가 동시에 동일한 자원을 변경하려고 할 때, 데이터 일관성을 위해 사용할 수 있습니다.
+
+레디스로 구현하기 위해서는 NX를 사용할 수 있습니다.
+
+<Callout emoji="💡">SET key value NX</Callout>
+
+- python으로 다음과 같이 구현할 수 있습니다.
+
+```python
+async def acquire_lock(redis: Redis, lock_key: str, timeout: int = 1):
+    """분산락 획득"""
+    lock_acquired = await redis.set(lock_key, "locked", ex=timeout, nx=True)
+    return lock_acquired
+
+async def release_lock(redis: Redis, lock_key: str):
+    """분산락 해제"""
+    await redis.delete(lock_key)
+
+# API
+
+@router.post("/distributed-lock/")
+async def create_vote_by_distributed_lock(data: VoteRequest, redis: GetRedis, db: DB):
+    lock_key = f"vote:{data.token}"
+    lock_acquired = await acquire_lock(redis, lock_key, 1)
+    if not lock_acquired:
+        raise HTTPException(status_code=400, detail="중복 발생")
+
+    try:
+        await vote_orm.create(db, user_id=data.user_id, candidate_id=data.candidate_id)
+    finally:
+        await release_lock(redis, lock_key)
+    return {"detail": "투표 완료"}
+```
+
+## 마무리
+
+FastAPI와 redis를 이용한 실습 위주로 Redis를 이용한 중복 생성 방지 처리에 대해서 간단하게 알아봤습니다. 전체 코드는 깃헙에서 확인할 수 있습니다. 모든 환경은 docker-compose로 구성되어 있습니다.
+
+<Link url="https://github.com/Jungminchae/fastapi-redis-duplication-prevention" />
