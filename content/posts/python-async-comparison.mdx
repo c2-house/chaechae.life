@@ -31,7 +31,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 ### 단점
 
-- **GIL(Global Interpreter Lock)**으로 인하여 CPU 바운드 작업에서는 효과가 미비하거나 오히려 저하될 수 있습니다.
+- **GIL**(Global Interpreter Lock)으로 인하여 CPU 바운드 작업에서는 효과가 미비하거나 오히려 저하될 수 있습니다.
 - **GIL은 한번에 하나의 스레드가 Python 바이트 코드를 처리하도록 합니다.** 따라서 CPU 바운드 작업에서스레드간 자원공유에 대한 문제가 발생할 수 있습니다.
 - 스레드가 너무 많으면 스레드 간 컨텍스트 스위칭 오버헤드가 발생할 수 있습니다.
 - 스레드를 생성하는 것도 메모리를 사용하기 때문에 메모리 제한적인 환경에서 제대로 동작하지 않을 수 있습니다.
