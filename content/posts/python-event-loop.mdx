@@ -1,0 +1,113 @@
+---
+title: Python 비동기 - 이벤트 루프 간단 정리
+description: 이전 글에 이벤트 루프 기반의 비동기와 멀티 스레딩 기반의 비동기를 비교하는 글을 작성했습니다. 이번 글에서는 비동기 프로그래밍의 핵심 요소, 이벤트 루프에 대해 자세히 알아보겠습니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/04/08
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python event loop" />
+
+### 목차
+
+## 이벤트 루프
+
+이전 글에 이벤트 루프 기반의 비동기와 멀티 스레딩 기반의 비동기를 비교하는 글을 작성했습니다. 이번 글에서는 비동기 프로그래밍의 핵심 요소, 이벤트 루프에 대해 자세히 알아보겠습니다. Python에서 **`asyncio`** 라이브러리를 통해 쉽게 접근할 수 있는 이벤트 루프는 프로그램이 효율적으로 여러 작업을 동시에 처리할 수 있게 해줍니다.
+
+비동기 프로그래밍은 작업 실행의 흐름이 차단되지 않고, 프로그램이 여러 작업을 효율적으로 처리할 수 있는 방식을 말합니다. 동기 프로그래밍에서 한 작업이 실행되면, 해당 작업이 완료될 때까지 프로그램의 다른 부분이 대기하는 것과 대비됩니다. **이처럼 비동기 프로그래밍에서 흐름이 차단되지 않도록 가능케하는 것이 이벤트 루프**입니다.
+
+그리고 이벤트 루프는 싱글스레드에서 동작합니다. 정리하면 **이벤트 루프는 싱글 스레드 환경에서 비동기 작업들을 효율적으로 관리하고 실행하는 메커니즘**입니다.
+
+## 이벤트 루프의 처리
+
+이벤트 루프는 비동기 함수들을 **스케쥴링**하여 처리합니다. 우리 개발자들이 이것을 스케쥴링하는 것은 아닙니다. **이벤트 루프가 각 작업의 실행 준비 상태를 확인하고, 준비된 작업부터 실행**합니다. 실행이 완료되면 `Future` 객체를 이벤트 루프 내부적으로 반환합니다.
+
+비동기 코드를 작성해서 실행해보신 분들은 아실겁니다. 여러 개를 같이 실행해도 결과를 받아보는 것은 실행 순서대로가 아니라는 사실을요. 시간이 많이 걸리는 I/O작업들은 해당 작업을 **대기 상태**로 두고 다른 작업을 먼저 실행함으로써 효율성을 극대화하기 때문입니다.
+
+```python
+import asyncio
+
+async def task1():
+    print("Task 1 시작")
+    await asyncio.sleep(2)
+    print("Task 1 완료")
+
+async def task2():
+    print("Task 2 시작")
+    await asyncio.sleep(1)
+    print("Task 2 완료")
+
+async def task3():
+    print("Task 3 시작")
+    await asyncio.sleep(3)
+    print("Task 3 완료")
+
+async def main():
+    await asyncio.gather(
+        task1(),
+        task2(),
+        task3(),
+    )
+
+asyncio.run(main())
+
+```
+
+위 코드를 실행해보세요. 저는 아래와 같이 실행 결과가 나왔습니다.
+
+```
+Task 1 시작
+Task 2 시작
+Task 3 시작
+Task 2 완료
+Task 1 완료
+Task 3 완료
+```
+
+## FastAPI 예제로 알아보기
+
+FastAPI로 작성하 비동기 API들이 이벤트 루프에서 어떻게 동작하는지 예제로 알아보겠습니다.
+
+우선 FastAPI에서는 uvicorn ASGI에서 이벤트루프가 자동관리 됩니다.
+
+실행되는 비동기 태스크들은 `async`를 달고 있는 코루틴 들입니다.
+
+```python
+import asyncio
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/fetch-data/")
+async def fetch_data():
+    # data 가져오는 로직이 2초 걸린다고 가정
+    await asyncio.sleep(2)
+    return {"detail": "Data fetched!"}
+
+@app.get("/fetch-data2/")
+async def fetch_data_2():
+    # data2 가져오는 로직이 1초 걸린다고 가정
+    await asyncio.sleep(1)
+    return {"detail": "Data2 fetched!"}
+
+```
+
+- `/fetch-data/` 와 `/fetch-data2/`API 호출이 순차적으로 들어오는데 0.1초 라고 가정합니다.
+- 이벤트 루프는 `/fetch-data/` 이벤트를 받아 실행합니다.
+- 0.1초 뒤에 `/fetch-data2/` 가 요청이 들어오게 됩니다.
+- `/fetch-data/` 실행중에 `await`를 만나면 대기로 전환하고 `/fetch-data2/` 를 실행합니다.
+- `/fetch-data2/` 도 `await`를 만나 대기로 전환됩니다.
+- `/fetch-data2/` 의 작업이 더 빠르기 때문에 먼저 종료되고 이벤트 루프는 제어권을 다시 `/fetch-data/` 로 넘겨 작업을 마무리 합니다.
+
+예시는 매우 간단한 상황을 가정했기 때문에 위와 같이 설명이 가능하지만, 실제 애플리케이션에서는 더 복잡하게 많은 요청이 엮여있어 이벤트 루프의 스케쥴링이 더 복잡할 것입니다.
+
+## 마무리
+
+이벤트 루프 내부의 코드 동작은 빼고 개념적으로만 알아봤습니다. 핵심 포인트를 다음과 같이 정리해봤습니다.
+
+- 이벤트 루프는 여러 비동기 태스크들을 관리합니다. 동시성을 띌 수 있는 이유는 이벤트 루프가 작업들을 효율적으로 스케쥴링하여 작업들을 빠르게 전환하면서 처리하기 때문입니다.
+- 작업들은 요청이 들어오는 순서대로 스케쥴링 되는 것이 아닙니다.
+- 이벤트 루프는 `await` 만나면 대기로 전환하고 작업 제어권을 넘겨 다른 작업들을 실행합니다.
+
+<Link url="https://chaechae.life/blog/python-async-comparison" />
