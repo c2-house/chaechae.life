@@ -1,0 +1,139 @@
+---
+title: Django selected_related, prefetch_related 면접 단골 질문
+description: Django에서 N+1 문제를 해결하는 방법을 알아 봅니다. 바로 select_related, prefetch_related 입니다. 이번 포스팅에서는 이 두 메소드에 대해서 알아보겠습니다.
+tags: [Django]
+author: mingke
+thumbnail:
+date: 2024/04/08
+---
+
+<Image src="" alt="django selected_related prefetch_related" />
+
+### 목차
+
+## select_related, prefetch_related
+
+Django를 사용하면 너무나 당연하게도 Django ORM을 사용합니다. 그리고 ORM을 사용하다보면 N+1 문제도 자연스럽게 한 번쯤은 마주하게 되는데요. 이 N+1 문제를 어떻게 풀것이냐에 대한 질문은 면접에서 거의 매번 받았던 것 같습니다. Django에서 ORM매니저에 이것을 해결할 수 있는 메소드를 제공해줍니다.
+
+바로 `select_related`, `prefetch_related` 입니다. 이번 포스팅에서는 이 두 메소드에 대해서 알아보겠습니다.
+
+## 예시 모델
+
+블로그를 예시로 **유저**와 **포스트,** **댓글** 모델을 생성했습니다.
+
+```python
+from django.contrib.auth.models import User
+from django.db import models
+
+class Post(models.Model):
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+
+class Comment(models.Model):
+    author = models.ForeignKey(User, related_name='comments', on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, related_name='comments', on_delete=models.CASCADE)
+    content = models.TextField()
+
+```
+
+## select_related 사용
+
+`select_related`는 `ForeignKey` **또는** `OneToOneField` 관계에서 정방향 참조시에 사용하면 됩니다.
+
+예시 모델에서 한 번 살펴보겠습니다. `Comment` 에 대한 정보를 가져올 때 `User` 정보도 함께 가져오려고 합니다. `Comment` 모델은 `author` 를 외래키로 연결했고 컬럼으로 가지고 있기 때문에 **정방향 참조**에 해당합니다.
+
+```python
+# 모든 Comment를 가져오면서 각 Comment의 작성자(User)에 대한 정보도 함께 가져옵니다.
+comments = Comment.objects.select_related('author').all()
+```
+
+## select_related 사용시 DB에 전달되는 쿼리
+
+`select_related`가 사용될 때 실제 DB로 전달되는 쿼리는 `INNER JOIN`을 통해 쿼리가 한 번 만 DB에 전달됩니다. `python manage.py shell` 을 이용해서 query를 찍어봤습니다.
+
+```python
+Comment.objects.select_related('author').all().query
+```
+
+```sql
+SELECT
+  "core_comment"."id",
+  "core_comment"."author_id",
+  "core_comment"."post_id",
+  "core_comment"."content",
+  "auth_user"."id",
+  "auth_user"."password",
+  "auth_user"."last_login",
+  "auth_user"."is_superuser",
+  "auth_user"."username",
+  "auth_user"."first_name",
+  "auth_user"."last_name",
+  "auth_user"."email",
+  "auth_user"."is_staff",
+  "auth_user"."is_active",
+  "auth_user"."date_joined"
+FROM
+  "core_comment"
+INNER JOIN
+  "auth_user"
+ON
+  ("core_comment"."author_id" = "auth_user"."id")
+```
+
+## prefetch_related 사용
+
+`prefetch_related` 는 관련 객체를 미리 로드하기 위해 별도의 데이터베이스 쿼리를 실행합니다. 이 메소드는 `ManyToManyField`와 `ForeignKey`로 **역방향 참조**에서 사용됩니다. 그리고 사용하는 방법이 2가지가 있습니다.
+
+```python
+# 1.Post와 관련된 모든 Comment를 prefetch_related를 사용하여 조회합니다.
+posts = Post.objects.prefetch_related('comments').all()
+
+# 2. Prefetch 객체를 사용하여 세밀하게 ORM을 컨트롤할 수 있습니다.
+from django.db.models import Prefetch
+
+posts = Post.objects.prefetch_related(
+    "comments", queryset=Comment.objects.filter(author_id=999)
+)
+
+```
+
+## prefetch_related 사용시 DB에 전달되는 쿼리
+
+`prefetch_related`는 관련 객체들을 가져오기위해 여러 개의 쿼리를 사용한 뒤, Python에서 가져온 데이터들을 조합합니다. `select_related` 같은 방법으로 찍어보긴 어렵습니다. 실행되는 여러개의 query 중 최초의 것만 print되기 때문입니다.
+
+`prefetch_related` 를 실행하면 대략적으로 다음과 같습니다.
+
+- 먼저 post 에서 데이터를 가져옵니다.
+
+```sql
+SELECT "post"."id",
+       "post"."title",
+       "post"."content"
+FROM "post"
+```
+
+- 가져온 데이터를 기반으로 comments 를 가져옵니다.
+
+```sql
+SELECT "comment"."id",
+       "comment"."content",
+       "comment"."post_id",
+       "comment"."author_id"
+FROM "comment"
+WHERE "comment"."post_id" IN (1, 2, ..., N)
+/*
+post_id를 IN 절에 집어 넣습니다.
+ */
+```
+
+쿼리를 통해 가져온 데이터를 Django 애플리케이션 단에서 결과를 조합합니다.
+
+## 마무리
+
+`select_related`와 `prefetch_related`에 대해서 정리해보았습니다.
+
+- 이 두가지를 언제 사용하나?
+- 두 메소드의 차이점은?
+- 이것을 실행할 때 실제 DB로 전달되는 Raw Query는 어떻게 되는가?
+
+이와 관련된 질문들은 3년 미만 기술 면접을 볼 때 자주 받았던 질문으로 기억에 남습니다. 혹시 이 글은 보신분들 중 신입을 준비하시는 분들이 있다면 반드시 이 내용을 알아두시는게 좋을 것입니다.
