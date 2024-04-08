@@ -8,6 +8,7 @@ export const authors = ['EKO', 'mingke'] as const;
 export const tags = [
   'AWS',
   'Certification',
+  'Django',
   'Docker',
   'FastAPI',
   'Github Actions',
