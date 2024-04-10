@@ -1,0 +1,121 @@
+---
+title: FastAPI 파일 다운로드 구현하기
+description: 특정 데이터들을 Excel로 다운로드 하거나, 이미지들을 다운로드 하는 등의 요청이 있었습니다. 이와 관련해서 FastAPI에서 파일 다운로드 방법을 이번 포스팅에 공유하고자 합니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/04/09
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI File Download" />
+
+### 목차
+
+## FastAPI 파일 다운로드
+
+최근 어드민과 관련된 기능들을 개발하면서 **파일 다운로드 기능**에 대한 요구를 꽤 여러번 받았습니다. 특정 데이터들을 Excel로 다운로드 하거나, 이미지들을 다운로드 하는 등의 요청이 있었습니다. 이와 관련해서 FastAPI에서 파일 다운로드 방법을 이번 포스팅에 공유하고자 합니다. **FastAPI**의 기능이라기보단 **starlette** 기능이라고 할 수 있겠습니다만, 한 번 알아보겠습니다.
+
+## FileResponse
+
+`FileResponse`를 이용하여 매우 쉽게 파일 다운로드를 구현할 수 있습니다. `FileResponse` 는 애플리케이션 **서버 디스크에 파일이 저장**되어 있어야합니다. 입력으로 **파일 경로**를 받습니다.
+
+- 프로젝트 **root**에 **test_execl.xlsx, test_image.jpg, test_pdf.pdf, text_text.txt**가 \*\*\*\*있습니다.
+- 다음과 같은 형태로 API를 구축할 수 있습니다
+
+```python
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+
+app = FastAPI()
+
+@app.get("/test/text/")
+async def download_test():
+    return FileResponse("./test_text.txt", filename="download_test.txt", media_type="text/plain")
+
+@app.get("/test/image/")
+async def download_image():
+    return FileResponse("./test_image.jpg", filename="download_test_image.jpg", media_type="image/jpeg")
+
+@app.get("/test/pdf/")
+async def download_pdf():
+    return FileResponse("./test_pdf.pdf", filename="download_test.pdf", media_type="application/pdf")
+```
+
+## StreamingResponse
+
+서버에 데이터가 저장되어 있는 경우도 있지만, 데이터베이스에서 데이터를 가져와서 파일을 만든다거나, 외부에서 이미지를 받아 가공해서 다운로드를 하게 한다거나, 그런 경우에는 서버에 파일이 저장되어 있지 않기 때문에 `FileResponse`를 사용할 수 없습니다. 물론 서버에 먼저 저장을 한 뒤 다운로드하면`FileResponse` 를 사용할 수 있지만, 굳이 그렇게 할 필요는 없습니다. `StreamingResponse` 를 사용하면 됩니다.
+
+- `StreamingResponse`는 header를 다음과 같이 채워주어야 합니다. `FileResponse` 에는 내부적으로 구현되어 있지만 `StreamingResponse`는 아니기 때문입니다.
+- 외부에서 이미지를 가져오는 경우 코드에서 제너레이터를 사용했습니다. 일반적으로 Streaming 할 땐 제너레이터 패턴을 많이 사용하는데 데이터 크기가 큰 경우 **chunk 단위**로 나눠서 스트리밍할 때 필요하기 때문입니다. 제너레이터를 사용하지 않아도 동작 합니다.
+
+```python
+import io
+import httpx
+from fastapi.responses import StreamingResponse
+
+@app.get("/test/text/bytes/")
+async def download_test_bytes():
+    with open("./test_text.txt", "rb") as f:
+	    # 파일경로가 아닌 메모리에 로드된 파일을 전송하기 위함
+        file_content = f.read()
+
+    headers = {
+        "Content-Disposition": "attachment; filename=download_test.txt",
+    }
+    return StreamingResponse(io.BytesIO(file_content), headers=headers, media_type="text/plain")
+
+@app.get("/test/image/bytes/")
+async def download_image_bytes():
+    # 외부에서 이미지를 읽어서 가져오는 경우
+    # 구글에서 Github 로고 검색함
+    response = httpx.get(
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/GitHub_Invertocat_Logo.svg/1200px-GitHub_Invertocat_Logo.svg.png"
+    )
+    file_content = response.content
+
+    def generate():
+        yield file_content
+
+    file_name = "download_test_image.png"
+    headers = {
+        "Content-Disposition": f"attachment; filename={file_name}",
+    }
+    return StreamingResponse(generate(), headers=headers, media_type="image/png")
+#   제너레이터 지우고 아래와 같이 사용해도 됨
+#   return StreamingResponse(io.BytesIO(file_content), headers=headers, media_type="image/png")
+
+```
+
+### 파일 이름에 한글이 포함될 경우
+
+파일 이름에 한글이 포함되어 있을 경우 다음과 같은 에러가 발생할 수 있습니다.
+
+```bash
+'latin-1' codec can't encode characters in position 21-24: ordinal not in range(256)
+```
+
+file 이름을 파싱해주고 UTF-8 인코딩을 사용하시면 됩니다.
+
+```python
+from urllib.parse import quote
+
+@app.get("/test/text/bytes/")
+async def download_test_bytes():
+    with open("./test_text.txt", "rb") as f:
+        file_content = f.read()
+
+    file_name = quote("다운로드.txt")
+    headers = {
+        "Content-Disposition": f"attachment; filename*=UTF-8''{file_name}",
+    }
+    return StreamingResponse(io.BytesIO(file_content), headers=headers, media_type="text/plain")
+
+```
+
+## 마무리
+
+FastAPI에서 파일 다운로드하는 방법을 알아봤습니다. 다양한 파일들을 이 방법을 응용만 하면 다운로드 시킬 수 있습니다.
+
+데이터의 크기가 크면 클수록 파일 다운로드의 시간도 길어집니다. API 타임아웃이나 클라이언트의 다운로드 속도 등에 따라 사용자 경험에 영향을 줄 수 있으므로 다양한 상황을 고려해서 만들어야합니다.
+
+<Link url="https://chaechae.life/blog/fastapi-streaming" />
