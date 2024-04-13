@@ -1,0 +1,130 @@
+---
+title: Rust 소유권(Ownership)과 차용(Borrowing)
+description: 최근에 취미로 Rust를 공부하고 있습니다. 러스트에는 소유권(Ownership)과 차용(Borrowing)이라는 생소한 개념이 있더라구요. 공부한 내용을 이번 포스팅에서 정리해보려고 합니다. 이 개념들은 메모리 관리와 안전성을 강화하기 위해 설계된 것이라고 합니다.
+tags: [Rust]
+author: mingke
+thumbnail: /thumbnails/rust-logo.png
+date: 2024/04/13
+---
+
+<Image src="/thumbnails/rust-logo.png" alt="Rust ownership and borrowing" />
+
+### 목차
+
+## 소유권과 차용
+
+최근에 취미로 Rust를 공부하고 있습니다. 러스트에는 **소유권(Ownership)**과 **차용(Borrowing)**이라는 생소한 개념이 있더라구요. 공부한 내용을 이번 포스팅에서 정리해보려고 합니다. 이 개념들은 메모리 관리와 안전성을 강화하기 위해 설계된 것이라고 합니다.
+
+## 소유권(Ownership)
+
+소유권은 Rust에서 가장 중요한 개념중에 하나 입니다. 그 의미를 말 뜻에서 유추해 볼 수 있습니다. **어떤 하나의 값에 대해서 그 값에 대한 소유권을 가지는 변수는 한 개 입니다.**
+
+소유권은 각 데이터에 대해 소유자를 명확하게 해서 메모리 누수를 방지하고 dangling pointers 문제를 방지합니다.
+
+그래서 소유자가 해당 스코프를 벗어나 버리면 값이 자동으로 해제됩니다. 이게 무슨 말인지 몰랐는데 코드로 보면 이해할 만 합니다.
+
+- **여기 Hello World 코드가 있습니다.** 정상적으로 동작합니다.
+
+```rust
+fn main() {
+    let s1:String = String::from("hello");
+
+    println!("{}, world!", s1);
+}
+```
+
+- 다음과 같이 코드를 변경해보겠습니다.
+
+```rust
+
+fn main() {
+    let s1:String = String::from("hello");
+    let s2:String = s1;
+
+    println!("{}, world!", s1); // 에러 발생
+}
+
+```
+
+에러가 발생합니다. s1에 있던 hello의 소유권이 s2로 넘어가버렸기 때문에 s1은 더 이상 유효하지 않습니다. 에러를 보면 move라는 표현이 나오는데, **소유권이 이동(move)**했다고 표현합니다.
+
+```rust
+// println!("{}, world!", s1);
+//                         ^^ value borrowed here after move
+```
+
+- 예제를 하나만 더 볼게요
+
+```rust
+fn main() {
+    let s1:String = String::from("World");
+
+    print_hello(s1);
+
+    println!("Hello {} again", s1); // 이 코드 없으면 정상 동작
+}
+
+fn print_hello(value: String){
+    println!("Hello, {}", value);
+}
+```
+
+위 코드는 에러가 발생합니다. 단순하게 생각하면 main에 다른 변수가 없어서 소유권 이동이 없는 것처럼 보이지만 잘 보면 소유권이 `print_hello` 의 파라미터인 `value`로 이동했습니다. 따라서 s1은 소유권이 없어서 더 이상 사용을 못합니다.
+
+## 차용(Borrowing)
+
+마지막 예제에서 문제를 해결하기 위해 차용을 이용해 볼 수 있습니다. 차용도 소유권과 마찬가지로 단어 뜻에서 의미를 유추해 볼 수 있습니다. **소유권 이동없이 빌리는 것**이라고 생각하면 쉬울 것 같습니다. 차용은 소유권 이전 없이 값에 대한 참조를 얻을 수 있는 방법입니다.
+
+차용에는 **가변 차용**과 **불변 차용**이 있습니다.
+
+### 불변 차용
+
+**불변 차용**은 차용한 값을 변경할 수 없습니다. 마지막 예제를 불변 차용을 이용해서 해결할 수있습니다.
+
+- 코드를 약간 수정해야합니다. 참조는 `&`를 사용합니다.
+
+```rust
+fn main() {
+    let s1: String = String::from("World");
+
+    print_hello(&s1);
+
+    println!("Hello {} again", s1);
+}
+
+fn print_hello(value: &String) {
+    println!("Hello, {}", value);
+}
+```
+
+### 가변 차용
+
+**가변 차용**은 차용한 값을 변경할 수 있습니다. 위 예제를 살짝 변경해서 가변 차용을 해보도록 하겠습니다.
+
+- 가변 차용을 사용하기 위해 `mut` 키워드를 사용해야합니다.
+- `mut` 은 mutable의 줄임입니다.
+- `!!!!!!!!!!!!!` 를 넣어 인사를 강력하게 해보겠습니다.
+
+```rust
+fn main() {
+    let mut s1: String = String::from("World");
+
+    print_hello(&mut s1);
+
+    println!("Hello {} again", s1);
+}
+
+fn print_hello(value: &mut String) {
+    value.push_str("!!!!!!!!!!!!!");
+    println!("Hello, {}", value);
+}
+
+```
+
+`value`를 변경하여 강력한 인사를 하였습니다. 다만 `s1`의 값도 변경된 것을 확인할 수 있는데 그것은 `value`와 `s1`이 같은 메모리 주소를 가리키고 있기 때문입니다.
+
+## 마무리
+
+소유권과 차용에 대해서 간단하게 공부해봤습니다. Python 개발자에겐 너무 생소한 개념이긴한데 또 공부해보니 못 할 정도는 아닌 것 같습니다. Rust로 Python라이브러리 개발해보고 싶은데 갈 길이 머네요.
+
+<Link url="https://chaechae.life/blog/rust-ownership-borrowing" />
