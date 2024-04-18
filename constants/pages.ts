@@ -7,6 +7,7 @@ export const authors = ['EKO', 'mingke'] as const;
 
 export const tags = [
   'AWS',
+  'Career',
   'Certification',
   'Django',
   'Docker',
@@ -24,5 +25,4 @@ export const tags = [
   'SQLAlchemy',
   'Swagger',
   'Writing',
-  'career',
 ] as const;
