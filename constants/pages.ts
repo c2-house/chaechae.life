@@ -24,4 +24,5 @@ export const tags = [
   'SQLAlchemy',
   'Swagger',
   'Writing',
+  '취업',
 ] as const;
