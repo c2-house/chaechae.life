@@ -1,0 +1,55 @@
+---
+title: django wtf - django 라이브러리 및 유용한 정보 모음
+description: Django는 역사가 긴 open-source라서 third-party 라이브러리도 굉장히 많습니다. 감 찾기에 앞서 Django에서 많이 사용되는 라이브러리들은 무엇이 있는지 알아볼까 합니다. 이것들을 정리해서 보기 좋게 정리해준 사이트가 있습니다.
+tags: [Django]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/04/19
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django 라이브러리 모음 django wtf" />
+
+### 목차
+
+## Django
+
+근 2년동안 Django vs FastAPI의 사용 비중이 2:8 정도 됐었습니다. Django 2버젼 3버젼으로는 몇 번의 프로젝트를 진행했었는데 그 뒤로 FastAPI만 거의 사용하다보니, 어느새 Django 5버젼이 되었더군요. 퇴사전 마지막 프로젝트로 만들었던 admin을 Django를 사용하긴 했습니다만 조금은 까먹은 상태…
+
+Python Backend로서 일자리를 얻으려면 FastAPI만 해서는 너무 힘들것 같아 Django의 감을 되찾기 위해 노력하는 중입니다. Django는 역사가 긴 open-source라서 third-party 라이브러리도 굉장히 많습니다. 감 찾기에 앞서 Django에서 많이 사용되는 라이브러리들은 무엇이 있는지 알아볼까 합니다. 이것들을 정리해서 보기 좋게 정리해준 사이트가 있습니다. 오늘은 그것에 대해 포스팅 해보겠습니다.
+
+## django.wtf
+
+앞서 언급했듯이 **Django의 third-party 라이브러리들을 찾을 수 있고 유용한 정보를 얻을 수 있는 사이트**입니다.
+
+<Link url="https://django.wtf/" />
+
+[https://djangopackages.org](https://djangopackages.org/) 도 유용합니다만 오늘은 django.wtf을 알아보겠습니다. 일단 개인적으로 도메인 이름이 마음에 듭니다.
+
+다음과 같은 특징들이 있습니다.
+
+- 메인에 보면 라이브러리 카테고리 태그 별로 검색해볼 수 있습니다.
+
+<Image src="/django-wtf/01.png" alt="django 라이브러리 카테고리" />
+
+- ex) **API**
+
+<Image
+  src="/django-wtf/02.png"
+  alt="django API 카테고리"
+  caption="너무 당연하게 drf가 1등인 모습"
+/>
+
+- Nav Bar에서 `TRENDING APPS` 를 클릭하면 **Django 라이브러리들의 트렌드**를 알 수 있습니다.
+
+<Image src="/django-wtf/03.png" alt="django 라이브러리 트렌드" caption="기간 설정도 가능합니다" />-
+`SOCIAL MEDIA NEWS` 를 클릭하면 Django와 관련된 커뮤니티에서 핫한 게시물들을 볼 수 있습니다. -
+2024년 4월 19일 기준 12위 글이 Django 5버젼에서 추가된 `GeneratedField` 예제에 대한 글인데 보고나서
+다음 블로그 주제로 삼아봐야 겠습니다.
+
+<Image src="/django-wtf/04.png" alt="django 커뮤니티 글" caption="Reddit 글이 많네요" />
+
+## 마무리
+
+django의 감을 되찾기 위해 `django.wtf` 을 둘러봤습니다. 위에 소개한 내용말고도 더 있으니 접속해서 한 번 살펴보시면 좋을 것 같습니다.
+
+<Link url="https://chaechae.life/blog/django-select_related-prefetch_related" />
