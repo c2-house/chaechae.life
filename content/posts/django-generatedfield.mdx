@@ -1,0 +1,163 @@
+---
+title: Django 5 신기능 GeneratedField 소개 및 활용 방법
+description: GeneratedField는 모델의 다른 필드들을 기반으로 값을 자동 계산하여 관리하는 기능을 제공합니다. 이 필드는 데이터베이스에 의해 값이 설정되고 업데이트 되며, Stored 컬럼과 Virtual 컬럼의 두 유형으로 구분됩니다.
+tags: [Django]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/04/23
+---
+
+### 목차
+
+<Image src="/thumbnails/django-logo.png" alt="django generatedfield" />
+
+## GeneratedField
+
+이전 글에서 언급했던 `GeneratedField`에 대해서 포스팅을 해보려고 합니다.
+
+GeneratedField는 모델의 다른 필드들을 기반으로 값을 자동 계산하여 관리하는 기능을 제공합니다. **자동**이라는 말 너무 좋지 않습니까?? 이 필드는 **데이터베이스에 의해 값이 설정되고 업데이트 되며**, **Stored** 컬럼과 **Virtual** 컬럼의 두 유형으로 구분됩니다. Django에서 `GeneratedField`를 사용함으로써 데이터 일관성을 유지하고 성능을 향상시킬 수 있습니다.
+
+`GeneratedField` 를 사용하면
+
+## GeneratedField 사용법
+
+예시 모델을 만들어서 알아보겠습니다. `GeneratedField` 사용에서 주요한 포인트는 다음과 같습니다.
+
+- `expression`은 실행할 ORM을 작성합니다.
+- `output_field` 는 Generation후 저장될 데이터의 필드 타입입니다.
+  - 예시에서는 간단한 ORM을 사용하였는데 복잡한 쿼리를 이용하려면 ORM사용법에 익숙해야 하겠습니다.
+- `db_persist` 는 DB에 컬럼으로 저장할 것인지 아닌지 여부입니다. False이면 DB에 값이 저장되지는 않고 조회할 때 값만 계산되어 보여집니다.
+
+### 예시 모델 및 설명
+
+- `django 5.0.4` `mysql 8.0.30`
+- `first_name`과 `last_name` 을 이용해서 `full_name` 을 `GeneratedField`로 생성할 수 있습니다.
+- `monthly_salary`를 이용해서 `annual_salary` 를 생성할 수 있습니다.
+
+```python
+from django.db import models
+from django.db.models import F, ExpressionWrapper, DecimalField
+from django.db.models.functions import Concat
+
+
+class Employee(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    full_name = models.GeneratedField(
+        expression=Concat('first_name', models.Value(' '), 'last_name'),
+        output_field=models.CharField(max_length=200),
+        db_persist=True,
+    )
+    monthly_salary = models.DecimalField(max_digits=7, decimal_places=2)
+    annual_salary = models.GeneratedField(
+        expression=ExpressionWrapper(F('monthly_salary') * 12, output_field=DecimalField()),
+        output_field=models.DecimalField(max_digits=9, decimal_places=2),
+        db_persist=True,
+    )
+
+```
+
+### 마이그레이션
+
+마이그레이션은 동일하게 할 수 있습니다.
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+마이그레이션 할 때 실제 쿼리가 어떻게 날아가는지 확인해보겠습니다. 면접에서 ORM이 실제 쿼리로 어떻게 변환되는지 물어보는 경우도 많으니 알아두면 좋을 듯 합니다.
+
+```bash
+# 예제를 위한 프로젝트에서 앱이름을 app이라고 함
+python manage.py sqlmigrate app 0001_initial
+```
+
+다음과 같이 작성됩니다.
+
+ORM 내부적으로 `GENERATED ALWAYS AS` 가 사용됩니다.
+
+```sql
+CREATE TABLE `app_employee` (
+    `id`             bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `first_name`     varchar(100) NOT NULL,
+    `last_name`      varchar(100) NOT NULL,
+    `full_name`      varchar(200) GENERATED ALWAYS AS (
+                      CONCAT_WS('', `first_name`, CONCAT_WS('', ' ', `last_name`))
+                      ) STORED,
+    `monthly_salary` numeric(7, 2) NOT NULL,
+    `annual_salary`  numeric(9, 2) GENERATED ALWAYS AS (
+                      (`monthly_salary` * 12)
+                      ) STORED
+);
+
+```
+
+### 데이터 생성
+
+데이터를 생성하여 확인해보겠습니다.
+
+```bash
+python manage.py shell
+```
+
+```python
+from app.models import Employee
+
+new_employee = Employee(
+     first_name="mingke",
+     last_name="J",
+     monthly_salary=5000.00
+ )
+
+new_employee.save()
+```
+
+`full_name`과 `annual_salary`가 입력하지 않아도 생성되었습니다.
+
+<Image
+  src="/django-generatedfield/01.png"
+  alt="django generatedfield 데이터 생성 Stored"
+  caption="db_persist=True 일 때"
+/>
+
+데이터를 수정하면?? `last_name`을 수정해봤습니다. `full_name`도 자동으로 수정됩니다.
+
+<Image src="/django-generatedfield/02.png" alt="django generatedfield 데이터 수정" />
+
+### model에서 db_persist가 False
+
+**STORED**가 **VIRTUAL**로 바뀌었습니다.
+
+VIRTUAL은 데이터를 데이터베이스에 저장하지 않고 조회될 때 계산해서 보여줍니다. 저장공간은 차지하겠지만 계산하는 시간이 걸릴테니, 사용한다면 요구사항에 맞는걸 쓰세요.
+
+```sql
+CREATE TABLE `apps_employee` (
+    `id` bigint AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    `first_name` varchar(100) NOT NULL,
+    `last_name` varchar(100) NOT NULL,
+    `full_name` varchar(200) GENERATED ALWAYS AS (
+        CONCAT_WS('', `first_name`, CONCAT_WS('', ' ', `last_name`))
+    ) VIRTUAL,
+    `monthly_salary` numeric(7, 2) NOT NULL,
+    `annual_salary` numeric(9, 2) GENERATED ALWAYS AS (
+        (`monthly_salary` * 12)
+    ) VIRTUAL
+);
+```
+
+VIRTUAL이지만 값이 보이는 화면은 STORED와 같습니다. 글의 서두에서 언급한 것처럼 데이터베이스에서 값이 설정되기 때문에 조회가 발생하면 계산이 시작되고 조회가 끝날 때 `GeneratedField`값(full_name, annual_salary)이 보여지게 되는 것입니다.
+
+<Image
+  src="/django-generatedfield/01.png"
+  alt="django generatedfield 데이터 생성 Virtual"
+  caption="db_persist=False 일 때"
+/>
+
+## 마무리
+
+이전 버전에서는 `GeneratedField` 와 비슷하게 만드려면 `Signal` 을 이용하거나 수동으로 계산해서 넣어주거나 했어야했는데 확실히 편리해진 것 같긴합니다. 데이터 처리는 가능하다면 DB에서 처리하는게 더 빠르고 효율적이기 때문에 속도면에서도 성능면에서도 이점이 있습니다.
+
+예제를 만들면서 sqlite로도 실행해봤는데 sqlite에서도 정상 동작합니다. 공식문서에서 DB마다 `expression` 지원하는게 다르니 잘 확인하라고 합니다.
+
+<Link url="https://chaechae.life/blog/django-wtf" />
