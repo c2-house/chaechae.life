@@ -1,0 +1,85 @@
+---
+title: FastAPI - JWT 로그인 쿠키 사용
+description: 오늘 다뤄볼 내용은 쿠키를 사용해서 JWT 로그인을 구현해보는 것입니다. 지난번 포스팅에서는 JWT 인증을 구현해서 Response Body에 토큰을 담는 방식으로 진행했습니다.
+thumbnail: /thumbnails/fastapi-logo.png
+tags: [FastAPI]
+author: mingke
+date: 2024/04/24
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI JWT cookie" />
+
+### 목차
+
+## FastAPI JWT 로그인
+
+3개월전에 FastAPI JWT 구현에 대해서 포스팅을 하나 했었습니다. 지금 그 글이 블로그에서 가장 많은 조회수를 기록하고 있습니다. 그래서 JWT와 관련된 추가 글을 하나 더 포스팅 해보려고 합니다.
+
+오늘 다뤄볼 내용은 쿠키를 사용해서 JWT 로그인을 구현해보는 것입니다. 지난번 포스팅에서는 JWT 인증을 구현해서 Response Body에 토큰을 담는 방식으로 진행했습니다.
+
+JWT 구현은 아래 링크에 적었기 때문에 이번 포스팅에서는 넘어가겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-jwt" />
+
+## 쿠키 사용 예제
+
+이 글은 쿠키가 무엇인지 설명하는 글은 아니기 때문에 설명은 생략합니다.
+
+이전 글에 나와있는 JWT 인증을 그대로 사용합니다. `perform_login` 을 약간 수정합니다.
+
+```python
+from fastapi.responses import JSONResponse
+...
+
+async def perform_login(user: Annotated[User, Depends(validate_user)]) -> User:
+    data = {"id": str(user.id)}
+    access_token = jwt_service.create_access_token(data)
+    refresh_token = jwt_service.create_refresh_token(data)
+
+    response = JSONResponse(content={"detail": "login success"}, status_code=status.HTTP_200_OK)
+    response.set_cookie(
+        key="access_token",
+        value=access_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        domain=".domain.com"
+    )
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        domain=".domain.com"
+    )
+    return response
+
+
+@router.post("/login")
+async def login(response: Annotated['JSONResponse', Depends(perform_login)]) -> JSONResponse:
+    return response
+
+```
+
+- `JSONResponse`를 임포트하여 Response Body를 만들어줍니다.
+- `set_cookie` 메소드를 이용하여 쿠키를 세팅합니다.
+  - `key` - 쿠키의 이름이 되는 값입니다. `access_token` `refresh_token`이라고 했지만 자유롭게 변경할 수 있습니다.
+  - `value` - 쿠키의 값을 넣어주면 됩니다.
+  - `httponly` - `True` 로 설정하면 해당하는 쿠키를 자바스크립트로 접근할 수 없게 합니다. 클라이언트 사이드에서 스크립트로 쿠키를 조작하는 것을 방지할 수 있습니다. XSS 공격으로부터 쿠키를 보호할 수 있습니다.
+  - `samesite` - `‘strict’` `’lax’` `’none’` 3가지가 있습니다.
+    strict는 최상위 도메인과 같은 출처에서 오는 요청에 대해서만 쿠키를 허용합니다. Template엔진을 이용해서 같은 프론트엔드까지 풀스택으로 개발하는게 아니라면 strict를 사용하면 쿠키를 사용할 수 없습니다.
+    lax는 strict보다 조금은 유연하지만 여전히 크로스 사이트의 POST요청에 대한 쿠키 전송은 허용하지 않습니다
+    none은 모든 크로스 사이트에 대한 쿠키 사용을 허용합니다. 백엔드와 프론트엔드가 분리된 환경에서 none으로 세팅합니다.
+  - `secure` - 보안을 위해 HTTPS 환경에서만 쿠키가 전송될 수 있도록 합니다. samesite가 none인 경우 secure는 반드시 `True` 입니다. 개발할 땐 편의를 위해 `False` 하고 개발해도 되겠습니다.
+  - `domain` - 쿠키가 허용될 도메인을 입력합니다. 클라이언트의 domain이 `chaechae.life` 이고 서버의 도메인이 `apis.chaechae.life` 라면 domain에 설정을 해줘야합니다. `.chaechae.life` .을 붙이는 것은`chaechae.life`의 모든 서브도메인에게 쿠키에 대한 접근 허용을 의미합니다.
+
+## 마무리
+
+FastAPI에서 JWT로그인을 쿠키에 담아서 전송하는 방법을 알아봤습니다. Response Body에 담아서 보낼 것인지 Cookie 담아서 보낼 것인지는 요구사항과 팀의 결정에 따라서 달라질 것 입니다.
+
+추가로 `set_cookie`에는 `max_age` `expires` 가 존재하는데 JWT는 그 토큰안에 만료시간이 저장되어 있기 때문에 이 2가지는 굳이 세팅하지 않았습니다. 하지만 보안을 위해서 JWT 안에 인코딩된 만료시간과 일치시켜 줘도 나쁘지 않을 것 같습니다. 결정하기 나름이겠죠.
+
+`set_cookie` 사용에 대한 공식문서 확인을 원하는 경우 **starlette** 공식문서를 이용해야 합니다.
+
+<Link url="https://www.starlette.io/responses/" />
