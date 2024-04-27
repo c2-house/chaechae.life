@@ -1,0 +1,88 @@
+---
+title: Django 프로젝트 구조  - 1 services
+description: 최근 프로젝트에서 제가 선택한 방법은 service 레이어를 따로 만드는 방법이었습니다. 프로젝트의 특징, 규모 등에 따라 구조잡는 법은 다양할 것입니다. 이번 포스팅에서는 제가 사용한 방법에 대해서 공유해보도록 하겠습니다
+tags: [Django]
+thumbnail: /thumbnails/django-logo.png
+author: mingke
+date: 2024/04/27
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django project structure" />
+
+### 목차
+
+## Django 프로젝트 구조
+
+Django하면 MVC, MVT 패턴이 가장 먼저 떠오릅니다. 여기에서 비즈니스 로직은 어디에 넣어야하나 하는 고민이 자연스럽게 생기기 시작했습니다. 최근 프로젝트에서 제가 선택한 방법은 service 레이어를 따로 만드는 방법이었습니다. 프로젝트의 특징, 규모 등에 따라 구조잡는 법은 다양할 것입니다. 이번 포스팅에서는 제가 사용한 방법에 대해서 공유해보도록 하겠습니다.
+
+## Service 레이어
+
+일반적으로 API를 개발할 때`startapp` 명령어로 app을 생성하고 `serializers.py`를 추가합니다. 아래 그림과 같겠죠.
+
+<Image src="/django-project-structure/01.png" alt="django project structure sample" />
+
+`model` 에서는 데이터 모델에 대한 정의를 다룹니다. `serializer` 는 데이터를 검증하고 Python 객체를 JSON으로 변경하거나 또는 그 반대로의 역할을 수행합니다. `view`는 API를 통해 클라이언트의 요청을 받고 응답을 처리합니다.
+
+비즈니스 로직을 그냥 view에 다 때려박기도 애매한 것 같습니다. 코드가 장황해질 수 있고 테스트 하기에도 너무 불편할 것 같습니다. 그래서 `services.py` 를 만들어서 추가했습니다.
+
+예시를 통해 알아보겠습니다.
+
+예를들어 상품을 관리하는 어드민을 만든다고 가정해봅니다. 고객사에 대한 정산서를 엑셀로 다운로드하는 기능을 개발해본다고 가정합니다.
+
+다음과 같은 방식으로 사용했습니다.
+
+```python
+# models.py
+class SA(models.Model): # Statements of Accounts
+    # Table column 정의
+    ...
+
+
+# serializers.py
+class SASerializer(serializers.Serializer):
+    # 요청 매개변수 선언
+    ...
+
+
+# services.py
+class SAService():
+    # 데이터를 가공하여 정산서를 만드는 로직
+    ...
+
+
+class SAExcelGenerator():
+    # 가공된 데이터를 Excel 파일로 변환하는 로직
+    ...
+
+
+# views.py
+class SAExcelView(APIView):
+    # 정산서 다운로드 API
+    def get(self, request, *args, **kwargs):
+        # 이런 흐름으로 진행
+        serializer = SASerializer(data=request.query_params)
+        ...
+
+        sa_service = SAService()
+        ...
+
+        excel = SAExcelGenerator()
+        ...
+        response = StreamingHttpResponse()
+        ...
+        return response
+```
+
+이런 흐름으로 개발을 진행했습니다. 코드가 각각의 역할에 맞게 실행되기 때문에 코드를 수정할 때 매우 용이했습니다. 어떤 내용이 어떤 코드에 담겨져 있는지 쉽게 파악이 가능하기 때문입니다. 그리고 **유닛테스트** 작성하기가 좋습니다. 아마 view안에 때려박았으면 정산서를 만드는 로직, 엑셀로 변환하는 로직 등을 한 번에 다 테스트해야하기 때문에 테스트 코드 작성하기도 까다로울 것이라고 예측됩니다.
+
+만약 하나의 앱에서 여러개의 service, view, serializer를 가진다면 폴더로 묶어서 개발할 수도 있을 것 같습니다.
+
+<Image src="/django-project-structure/02.png" alt="django project structure sample 2" />
+
+## 마무리
+
+사용했던 Django 프로젝트를 구조를 해보았습니다. 프로그래밍에 정답은 없다고 생각합니다. 상황에 맞게 필요한 걸 잘 사용하면 되지 않을까요?
+
+다양한 규모의 프로젝트 경험을 해보고 싶은 마음입니다. 옛날 영상이긴한데 도움이 되었던 유튜브 링크를 하나 남기도록 하겠습니다.
+
+<Link url="https://www.youtube.com/watch?v=yG3ZdxBb1oo" />
