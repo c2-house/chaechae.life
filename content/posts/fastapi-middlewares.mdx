@@ -1,0 +1,139 @@
+---
+title: FastAPI Middleware 적용 방법
+description: 이번 포스팅에서는 FastAPI에서 Middleware를 적용하는 방법들에 대해서 알아보겠습니다. 방법이 한가지가 아닙니다. 어려운 방법은 없으니 하나씩 알아보도록 하겠습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/04/30
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Middleware" />
+
+### 목차
+
+## FastAPI Middleware
+
+이번 포스팅에서는 **FastAPI에서 Middleware**를 적용하는 방법들에 대해서 알아보겠습니다. 방법이 한가지가 아닙니다. 어려운 방법은 없으니 하나씩 알아보도록 하겠습니다.
+
+## app.add_middleware
+
+`app.add_middleware` 를 사용해서 app이 선언된 후에 Middleware 객체를 하나 씩 추가할 수 있습니다. 공식문서에서 제안하는 방법을 응용했습니다.
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+...
+from app.config import settings # settings가 있다고 가정
+
+app = FastAPI()
+
+if settings.DEBUG:
+    app.add_middleware(CORSMiddleware, allow_origins=["*"])
+    ...
+else:
+    app.add_middleware(CORSMiddleware, allow_origins=["https://example.com"])
+    ...
+```
+
+개발서버와 운영서버에 적용하는 인자값이 다를 수 있는데, 저는 보통 위와 같이 사용했습니다. Django에서 사용하던 방식을 차용했습니다.
+
+## Middleware 클래스 사용
+
+FastAPI는 Starlette를 Wrapping한 프레임워크입니다. 그렇기 때문에 Starlette 방식을 사용할 수 있습니다.
+
+```python
+# middlewares.py
+from fastapi.middleware import Middleware
+from fastapi.middleware.cors import CORSMiddleware
+...
+from app.config import settings
+
+def get_middleware(debug: bool = settings.DEBUG) -> list[Middleware]:
+    if settings.DEBUG:
+        cors = Middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+    ...
+    else:
+        cors = Middleware(
+            CORSMiddleware,
+            allow_origins=["https://example.com"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
+
+    return [cors, ...]
+
+# main.py
+from fastapi import FastAPI
+from app.middlewares import get_middlewares
+
+app = FastAPI(
+    middleware=get_middlewares(),
+)
+```
+
+Middleware 객체를 따로 만들어서 관리해줄 수 있고 위와 같은 방식으로 app에 직접 Middleware 의존성을 직접 주입해줄 수 있습니다.
+
+저는 적용해야하는 **미들웨어가 많아지면 두번째 방법을 사용하고 적으면 첫번째 방법을 사용하는 편**입니다.
+
+## Custom Middleware 만들기
+
+포스팅이 짧은 것 같아 커스텀 미들웨어를 만드는 방법도 짧게 추가합니다.
+
+### decorator 방식
+
+다음과 같이 데코레이터를 이용해서 미들웨어를 만들 수 있습니다. 제일 간단한 방법입니다.
+
+```python
+@app.middleware("http")
+async def print_hello_world(request: Request, call_next):
+    print("Hello World")
+    response = await call_next(request)
+    return response
+```
+
+### Starlette BaseHTTPMiddleware 상속
+
+Starlette의 `BaseHTTPMiddleware` 를 상속받아 좀 더 복잡한 커스텀 미들웨어를 개발할 수 있습니다. `dispatch` 메소드를 오버라이드해서 사용하면 됩니다.
+
+```python
+from starlette.middleware.base import BaseHTTPMiddleware
+
+class PrintHelloWorldMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        print("Hello World")
+        response: Response = await call_next(request)
+        return response
+
+```
+
+`call_next` 는 다음 단계로 전달하는 함수입니다. 로직을 구현할 때 `call_next` 앞에 구현할 지 뒤에 구현할 지 잘 인지하세요.
+
+### 직접 구현
+
+ASGI 인터페이스에 맞춰서 `__call__` 메소드를 이용해 직접 구현할 수 도 있습니다. 굳이 직접 구현할 필요는 없겠죠.
+
+```python
+from starlette.types import ASGIApp, Message, Receive, Scope, Send
+
+class PrintHelloWorldMiddleware:
+    def __init__(self, app: ASGIApp):
+        self.app = app
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        await self.app(scope, receive, send)
+        print("Hello World")
+
+```
+
+## 마무리
+
+오늘은 FastAPI의 미들웨어 적용법과 커스텀 미들웨어 만드는 방법에 대해서 알아봤습니다. 상황에 맞게 필요한대로 잘 사용하면 될 것 같습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-settings" />
