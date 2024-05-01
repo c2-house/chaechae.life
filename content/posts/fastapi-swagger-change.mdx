@@ -1,0 +1,123 @@
+---
+title: FastAPI Swagger 수정하기
+description: FastAPI의 장점중의 하나는 자동으로 Swagger를 생성해준다는 것입니다. 기본 세팅이 되어 생성이 됩니다. 물론 개발자가 직접 수정할 수도 있습니다. 사용하다보면 수정해보고 싶은 마음이 생길 수도 있는데요. html, css를 직접 수정해서 UI를 변경할 수도 있는데 저는 html,css를 잘하는 편이 아니기 때문에, 간단하게 변경할 수 있는 방법을 이번 포스팅에서 다뤄보겠습니다.
+tags: [FastAPI, Swagger]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/05/01
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Swagger Change" />
+
+### 목차
+
+## FastAPI Swagger
+
+FastAPI의 장점중의 하나는 자동으로 **Swagger**를 생성해준다는 것입니다. 기본 세팅이 되어 생성이 됩니다. 물론 개발자가 직접 수정할 수도 있습니다. 사용하다보면 수정해보고 싶은 마음이 생길 수도 있는데요. html, css를 직접 수정해서 UI를 변경할 수도 있는데 저는 html,css를 잘하는 편이 아니기 때문에, 간단하게 변경할 수 있는 방법을 이번 포스팅에서 다뤄보겠습니다.
+
+## swagger_ui_parameters
+
+`FastAPI` 클래스에 `swagger_ui_parameters` 라는 속성이 있습니다. 여기에 swagger 속성을 `dict` 로 넣어주면 아주 간단하게 변경할 수 있습니다.
+
+속성이 너무 많기 때문에 몇개만 다뤄보도록 하겠습니다.
+
+다음은 예제 코드입니다. 아무 설정도 하지 않았을 때는 다음과 같습니다.
+
+```python
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/", tags=["root"])
+async def root():
+    return {"message": "Hello World"}
+
+@app.get("/items/{item_id}", tags=["items"])
+async def read_item(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
+
+@app.post("/items/{item_id}", tags=["items"])
+async def create_item(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
+
+@app.get("/items/{item_id}/name", tags=["items"])
+async def read_item_name(item_id: int, q: str = None):
+    return {"item_id": item_id, "q": q}
+
+```
+
+<Image
+  src="/fastapi-swagger-change/01.png"
+  alt="FastAPI Swagger default"
+  caption="Swagger 기본 화면"
+/>
+
+`swagger_ui_parameters` 을 다음과 같이 변경해보도록 하겠습니다.
+
+```python
+swagger_ui_parameters={
+    "deepLinking": True,
+    "displayRequestDuration": True,
+    "docExpansion": "none",
+    "operationsSorter": "method",
+    "filter": True,
+    "tagsSorter": "alpha",
+    "syntaxHighlight.theme": "tomorrow-night",
+}
+```
+
+몇 가지만 설명하겠습니다.
+
+- `docExpansion` 같은 경우는 API가 많아지면 none으로 설정하곤 합니다. none으로 설정하면 처음에 API가 모두 닫혀 있습니다.
+- `operationsSorter` 를 method로 설정하면 API가 method 별로 정렬됩니다. 처음엔 코드를 작성한 순서대로 나타납니다.
+- `tagsSorter` 를 alpha로 하면 태그가 알파벳 순서대로 됩니다. 예제에선 root가 items 아래로 내려가겠죠.
+
+스웨거 공식문서에서 보고 이것저것 넣어보시고 취향대로 선택하면 좋을것 같습니다.
+
+<Link url="https://swagger.io/docs/open-source-tools/swagger-ui/usage/configuration/" />
+
+## swagger header 변경
+
+title, decription 등도 쉽게 변경할 수 있습니다. 다음과 같은 코드를 추가합니다.
+
+```python
+SWAGGER_HEADERS = {
+    "title": "SWAGGER UI 변경 테스트",
+    "version": "100.100.100",
+    "description": "## SWAGGER 문서 변경 \n - swagger 문서를 변경해보는 테스트입니다. \n - 테스트 1234 \n - 테스트 5678",
+    "contact": {
+        "name": "CHAECHAE",
+        "url": "https://chaechae.life",
+        "email": "chaechae.couple@gmail.com",
+        "license_info": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT",
+        },
+    },
+}
+
+app = FastAPI(
+    swagger_ui_parameters={
+        "deepLinking": True,
+        "displayRequestDuration": True,
+        "docExpansion": "none",
+        "operationsSorter": "method",
+        "filter": True,
+        "tagsSorter": "alpha",
+        "syntaxHighlight.theme": "tomorrow-night",
+    },
+    **SWAGGER_HEADERS
+)
+```
+
+<Image
+  src="/fastapi-swagger-change/02.png"
+  alt="FastAPI Swagger change"
+  caption="Swagger 설정 변경 후 화면"
+/>
+
+## 마무리
+
+간단하게 FastAPI에서 제공해주는 기본 Swagger UI를 변경하는 방법을 알아봤습니다. 기본으로 제공해주는 것도 쓸만하지만 변경해보고 싶은 욕구가 있으신 분들은 이것저것 만져보시길 추천합니다.
+
+<Link url="https://chaechae.life/blog/fastapi-deployment-gunicorn" />
