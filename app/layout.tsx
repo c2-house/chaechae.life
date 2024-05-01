@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import Script from 'next/script';
 import clsx from 'clsx';
 import './globals.css';
@@ -8,7 +8,11 @@ import { title, description, openGraph } from '@/app/shared-metadata';
 import Header from '@/components/Layout/Header';
 import Footer from '@/components/Layout/Footer';
 
-const inter = Inter({ subsets: ['latin'] });
+const pretendard = localFont({
+  src: './fonts/PretendardVariable.woff2',
+  display: 'swap',
+  weight: '45 920',
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://chaechae.life'),
@@ -75,7 +79,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
         `}
       </Script>
     </head>
-    <body className={clsx('text-slate-900', inter.className)}>
+    <body className={clsx('text-slate-900', pretendard.className)}>
       <Header />
       {children}
       <Footer />

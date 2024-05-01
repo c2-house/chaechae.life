@@ -11,7 +11,7 @@ const Hero = () => {
               개발자 부부 채채의
             </span>
             <h1
-              className="bg-gradient-text my-3 animate-fade-in text-5xl font-bold tracking-tight md:my-4 md:text-7xl lg:my-5 lg:text-8xl"
+              className="bg-gradient-text my-3 animate-fade-in text-5xl font-semibold tracking-tight md:my-4 md:text-7xl lg:my-5 lg:text-8xl"
               style={{ animationDelay: '0.3s' }}
             >
               채채라이프
