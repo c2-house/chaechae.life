@@ -1,0 +1,57 @@
+---
+title: FastAPI CLI 업데이트 version - 0.111.0
+description: 오늘보니 FastAPI의 CLI 기능이 업데이트 되었더라구요. FastAPI에 CLI가 없어서 좀 아쉽다는 생각이 있었는데 0.111.0 버젼에서 추가되었습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/05/03
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI CLI Update" />
+
+### 목차
+
+## FastAPI CLI
+
+오늘보니 FastAPI의 CLI 기능이 업데이트 되었더라구요. FastAPI에 CLI가 없어서 좀 아쉽다는 생각이 있었는데 `0.111.0` 버젼에서 추가되었습니다. `fastapi-cli` 라는 라이브러리를 FastAPI의 개발자이신`tiangolo` 님이 직접만들어서 FastAPI에 의존성을 추가하셨더군요. 아직은 몇가지 기능은 없지만 한 번 살펴봤습니다. CLI가 있으면 좋겠다 싶어서 저는 직접 만들어서 사용하고 있었는데…
+
+<Link url="https://github.com/c2-house/fastapi-mctools" />
+
+## fastapi dev
+
+이 명령어는 단순하게 uvicorn 서버 실행을 wrapping한 명령어입니다. uvicorn cli가 길고 불편하다는 생각을 했었는데 다들 똑같았나봅니다.
+
+uvicorn의 기본 `127.0.0.1:8000`로 실행됩니다. 하지만 port, host 다 변경할 수 있습니다.
+
+```bash
+fastapi dev --host 0.0.0.0 --port 8080
+```
+
+보통 FastAPI app을 `main.py` 에 많이 선언하는데 그게 아니라 다른 이름을 쓰시는 분들은 파일이름을 넣어주어야 합니다.
+
+```bash
+# server.py에 있다고 가정
+fastapi dev server.py
+```
+
+`main.py`, `app.py`, `api.py` 중에 사용하신다면 아무 변경없이 쓸 수 있습니다.
+
+## fastapi run
+
+공식문서에는 prod모드에서 실행하는 명령어라고 합니다. IP를 `0.0.0.0` 에 mapping합니다. dev와 마찬가지로 `0.0.0.0:8000` 으로 시작하는데 port를 변경할 수 있습니다.
+
+```bash
+fastapi run --port 8080
+```
+
+prod모드에서는 gunicorn도 많이 사용하는데 아직 추가는 안되었지만 머지 않아 되지 않을까요? 저는 이 기능도 직접 개발해서 사용하고 있습니다.
+
+## 마무리
+
+`typer` 라이브러리를 이용해서 `fastapi-cli`가 개발되었는데 다음엔 `typer` 를 이용해서 cli를 개발해봐야겠다는 생각을 했습니다.
+
+uvicorn 으로 서버를 실행하는게 물론 몇 초 안걸리지만 1초~2초 더 쓰는것도 가끔 짜증나기 때문에 fastapi cli가 추가된 것은 좋은 소식인것 같습니다. 앞으로 cli로 편하게 서버를 실행하시기 바랍니다. 저는 기존에 쓰던게 있어서 아직은 잘 사용할 것 같지 않은 기능이지만요. 더 유용한 기능이 추가되길 기대해보겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-my-library" />
+
+<Link url="https://chaechae.life/blog/fastapi-middlewares" />
