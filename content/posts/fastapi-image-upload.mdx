@@ -1,0 +1,200 @@
+---
+title: FastAPI 이미지 업로드 (feat. 이미지 최적화)
+description: 오늘은 FastAPI에서 이미지를 업로드하는 하는 방법을 주제로 포스팅을 해볼까합니다. 최근 있었던 작업중에 클라이언트에서 업로드한 이미지를 받아서 클라우드 스토리지에 저장하는 것이 있었는데요. FastAPI로 작업했던 것은 아니었습니다. 그래서 FastAPI로도 하는 방법을 정리해보겠습니다.
+tags: [FastAPI]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/05/07
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Image Upload" />
+
+### 목차
+
+## FastAPI 이미지 업로드
+
+오늘은 FastAPI에서 이미지를 업로드하는 하는 방법을 주제로 포스팅을 해볼까합니다. 최근 있었던 작업중에 클라이언트에서 업로드한 이미지를 받아서 클라우드 스토리지에 저장하는 것이 있었는데요. FastAPI로 작업했던 것은 아니었습니다. 그래서 FastAPI로도 하는 방법을 정리해보겠습니다.
+
+## UploadFile과 File
+
+시작하기에 앞서 파일업로드를 실행하기 위해서는 `python-multipart` 라이브러리를 설치해줘야합니다.
+
+```bash
+pip install python-multipart
+```
+
+Image도 파일이죠. FastAPI에서 `UploadFile`과 `File` 은 file을 업로드할 때 세트처럼 붙어다닙니다. 어노테이션과 의존성의 관계로 생각할 수 있겠네요. 단어의 뜻이 너무 명확하니 헷갈리지는 않으실거라고 생각합니다.
+
+`UploadFile` 을 통해서 업로드된 파일의 메타데이터를 확인할 수 있습니다. 가진 속성과 메소드는 각자 코드 편집기에서 꼭 한 번 확인해보세요.
+
+우선 전체코드부터 공유하도록 하겠습니다.
+
+```python
+from fastapi import UploadFile, File
+from app.service import images
+
+# File을 그냥 Optional로 지정했음
+async def upload_image(file: UploadFile | None = File(None)):
+    """
+    이미지 업로드 테스트
+    - 1. 클라이언트에서 서버로 이미지를 업로드한다.
+    - 2. 이미지 확장자가 업로드 가능한지 확인한다.
+    - 3. 이미지 사이즈가 업로드 가능한 크기인지 확인한다.
+    - 4. 이미지 이름을 변경한다.
+    - 5. 이미지를 최적화하여 저장한다.
+    """
+    if not file:
+        return {"detail": "이미지 없음"}
+
+    file = await images.validate_image_type(file)
+    file = await images.validate_image_size(file)
+    file = images.change_filename(file)
+    filename = file.filename
+    image = images.resize_image(file)
+    image = images.save_image_to_filesystem(image, f"./{filename}")
+    return {"detail": "이미지 업로드 성공"}
+
+ImageUploader = Annotated[dict, Depends(upload_image)]
+
+@router.post("/upload")
+async def upload_image(image: ImageUploader):
+    return image
+
+```
+
+## 이미지 처리
+
+파이썬에서 대표적인 이미지처리 라이브러리인 PIL(pillow)을 사용했습니다. 이미지 업로드 이후부터 다뤄보겠습니다.
+
+```bash
+pip install pillow
+```
+
+### 이미지 확장자가 업로드 가능한지 확인한다
+
+- 요구사항에서 업로드 가능한 이미지가 제한적일 수 있습니다. 그럴때 업로드 가능한 **이미지 확장자**인지 확인하는 절차가 필요할 수도 있습니다.
+- 그리고 content-type도 한 번 확인해줍니다.
+
+```python
+import secrets
+import io
+from PIL import Image, ImageOps
+from fastapi import UploadFile, HTTPException, status
+
+async def validate_image_type(file: UploadFile) -> UploadFile:
+    if file.filename.split(".")[-1].lower() not in ["jpg", "jpeg", "png"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="업로드 불가능한 이미지 확장자입니다.",
+        )
+
+    if not file.content_type.startswith("image"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미지 파일만 업로드 가능합니다.",
+        )
+    return file
+
+```
+
+### 이미지 사이즈가 업로드 가능한 크기인지 확인한다
+
+- 요구사항에 따라 이미지 크기도 제한적일 수 있겠죠. 이미지 크기가 너무 크면 최적화를 하더라도 여러모로 무리가 될 수 있습니다.
+- 따라서 이미지 크기도 한 번 확인해 줍니다.
+
+```python
+async def validate_image_size(file: UploadFile) -> UploadFile:
+    if len(await file.read()) > 10 * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="이미지 파일은 10MB 이하만 업로드 가능합니다.",
+        )
+    return file
+
+```
+
+### 이미지 이름을 변경한다
+
+- 유저가 올리는 이미지 이름을 그대로 저장할 수도 있겠지만 Random한 이미지로 변경합니다.
+
+```python
+def change_filename(file: UploadFile) -> UploadFile:
+    """
+    이미지 이름 변경
+    """
+    random_name = secrets.token_urlsafe(16)
+    file.filename = f"{random_name}.jpeg"
+    return file
+
+```
+
+### 이미지를 최적화 하여 저장한다
+
+- 방법은 여러가지가 있겠지만 다음과 같은 방식으로 진행했습니다.
+  - 이미지 가로, 세로의 최대크기를 지정하고
+  - 이미지 비율을 유지하면서 축소
+  - png같은 경우는 `RGBA` 형태를 가지기 때문에 `RGB` 로 저장
+  - `exif_transpose` 함수를 사용하여 이미지를 자동으로 올바른 방향으로 조정
+  - 확장자를 `jpeg` 로 설정하고
+
+```python
+def resize_image(file: UploadFile, max_size: int = 1024):
+    read_image = Image.open(file.file)
+    original_width, original_height = read_image.size
+
+    if original_width > max_size or original_height > max_size:
+        if original_width > original_height:
+            new_width = max_size
+            new_height = int((new_width / original_width) * original_height)
+        else:
+            new_height = max_size
+            new_width = int((new_height / original_height) * original_width)
+        read_image = read_image.resize((new_width, new_height))
+
+    read_image = read_image.convert("RGB")
+    read_image = ImageOps.exif_transpose(read_image)
+    return read_image
+
+def save_image_to_filesystem(image: Image, file_path: str):
+    image.save(file_path, "jpeg", quality=70)
+    return file_path
+```
+
+## 테스트
+
+핸드폰으로 천장을 찍어보았습니다.
+
+- **4MB에 3024X4032** 입니다.
+
+<Image src="/fastapi-image-upload/01.jpg" alt="테스트 이미지 정보" caption="테스트 이미지 정보" />
+
+- 서버를 실행해서 Swagger에서 실행해봅니다.
+
+<Image
+  src="/fastapi-image-upload/02.jpg"
+  alt="이미지 업로드 스웨거"
+  caption="이미지 업로드 Swagger"
+/>
+
+- VSCODE를 확인해보니 아래와 같은 이름으로 이미지가 생성되었습니다.
+
+<Image
+  src="/fastapi-image-upload/03.png"
+  alt="업로드된 이미지 파일"
+  caption="업로드된 이미지 파일"
+/>
+
+- 저장된 이미지 정보를 확인해보니 **27KB 768X1024**가 되었습니다.
+
+<Image
+  src="/fastapi-image-upload/01.jpg"
+  alt="업로드 완료된 이미지 정보"
+  caption="업로드 완료된 이미지 정보"
+/>
+
+## 마무리
+
+이렇게 간단하게 FastAPI에서 이미지 업로드하는 방법을 알아봤습니다. 예제는 이미지를 filesystem에 저장하는 방식으로 진행했습니다. 하지만 그동안 실무를 할 때는 S3 같은 클라우드 스토리지를 이용했었습니다. 다음 포스팅에서는 Storage에 저장하는 방법으로 업데이트를 해보겠습니다.
+아래 링크에서 이미지를 다운로드시키는 방법도 확인할 수 있습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-download-api" />
