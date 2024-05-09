@@ -1,0 +1,148 @@
+---
+title: FastAPI 이미지 S3 업로드 (클라우드 스토리지)
+description: 지난번 포스팅에서 FastAPI 이미지 업로드 기능에 대해서 다뤘습니다. 단순히 업로드 받아서 서버의 파일시스템에 저장하는 방식으로 했었는데요. 이번 포스팅에서는 대표적인 클라우드 스토리지인 S3에 저장하는 방법을 다뤄보도록 하겠습니다.
+tags: [AWS, FastAPI]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/05/09
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Image Upload S3" />
+
+### 목차
+
+## 이미지 S3 업로드
+
+지난번 포스팅에서 FastAPI 이미지 업로드 기능에 대해서 다뤘습니다. 단순히 업로드 받아서 서버의 파일시스템에 저장하는 방식으로 했었는데요. 이번 포스팅에서는 대표적인 클라우드 스토리지인 S3에 저장하는 방법을 다뤄보도록 하겠습니다.
+
+사용하는 코드는 이전 포스팅에 이어서 진행합니다.
+
+<Link url="https://chaechae.life/blog/fastapi-image-upload" />
+
+## boto3
+
+S3에 업로드하기 위해 AWS SDK인 boto3를 사용합니다. boto3를 먼저 설치합니다.
+
+```bash
+pip install boto3
+```
+
+boto3를 설치한 후에 코드에 s3 클라이언트를 선언해주면 쉽게 사용할 수 있습니다. 다음과 같이 사용할 수 있습니다.
+
+```python
+from boto3 import client
+
+s3_client = client(
+    "s3",
+    aws_access_key_id="aws-access-key", # 본인 소유의 키를 입력
+    aws_secret_access_key="aws-secret-key", # 본인 소유의 키를 입력
+    region_name="ap-northeast-2",
+)
+
+def upload_to_s3(file: io.BytesIO, bucket_name: str, file_name: str) -> None:
+    s3_client.upload_fileobj(
+        file,
+        bucket_name,
+        file_name,
+        ExtraArgs={"ContentType": "image/jpeg"},
+    )
+```
+
+boto3에서 AWS를 사용하기 위해 AWS IAM에서 사용자를 추가하여 키 발급을 먼저 진행해줘야합니다. 테스트를 위해 아래와 같이 사용자 생성을 하였습니다.
+
+<Image src="/fastapi-image-upload-s3/01.jpg" alt="AWS IAM 사용자" fullWidth={false} />
+
+## 이미지 업로드 코드 수정
+
+이미지를 s3에 업로드하는 경우에는 클라이언트에서 업로드한 이미지를 파일시스템에 저장할 필요가 없습니다. bytes로 가지고 있다가 s3로 전달하면 됩니다.
+
+따라서 `save_image_to_filesystem` 함수를 `convert_image_to_bytes` 함수로 변경해줍니다.
+
+```python
+def save_image_to_filesystem(image: Image, file_path: str) -> str:
+    image.save(file_path, "jpeg", quality=70)
+    return file_path
+
+def convert_image_to_bytes(image: Image) -> io.BytesIO:
+    img_byte = io.BytesIO()
+    image.save(img_byte, "jpeg", quality=70)
+    img_byte.seek(0)
+    return img_byte
+
+```
+
+`upload_image` dependency는 다음과 같이 변경됩니다.
+
+```python
+async def upload_image(file: UploadFile = File(...)) -> dict:
+    """
+    이미지 업로드 테스트
+    - 1. 이미지를 업로드한다.
+    - 2. 이미지 확장자가 업로드 가능한지 확인한다.
+    - 3. 이미지 사이즈가 업로드 가능한 크기인지 확인한다.
+    - 4. 이미지 이름을 변경한다.
+    - 5. 이미지를 최적화하여 S3에 저장한다.
+    """
+    if not file:
+        return {"detail": "이미지 파일이 필요합니다."}
+
+    file = await images.validate_image_type(file)
+    file = await images.validate_image_size(file)
+    file = images.change_filename(file)
+    filename = file.filename
+    image = images.resize_image(file)
+    image = images.convert_image_to_bytes(image)
+    # bucket 이름은 test용으로 mingke-bucket-test-01
+    images.upload_to_s3(image, "mingke-bucket-test-01", filename)
+    return {"detail": "이미지 업로드 성공"}
+```
+
+하지만 아직 S3 버킷을 만들지 않았기 때문에 코드는 동작하지 않습니다.
+
+## S3 버킷 생성
+
+S3버킷 생성은 어렵지 않습니다. AWS 콘솔 접속하고 S3에 들어가서 버킷 생성 클릭하고 `모든 퍼블릭 액세스 차단` 이것만 해제해주고 기본 설정값 그대로 생성합니다.
+
+<Image src="/fastapi-image-upload-s3/02.jpg" alt="AWS S3 퍼블릿 설정" fullWidth={false} />
+
+## 이미지 S3 업로드 테스트
+
+그리고 돌아와서 Swagger에서 실행해봅니다.
+
+<Image src="/fastapi-image-upload/02.jpg" alt="Swagger 실행 화면" />
+
+S3에서 확인해보면 업로드가 정상적으로 된 것을 확인할 수 있습니다.
+
+<Image src="/fastapi-image-upload-s3/04.jpg" alt="AWS S3 객체 저장 화면" fullWidth={false} />
+
+업로드된 이미지를 클릭하고 들어가면 `객체URL` 이라는 이름으로 URL이 생성되는데 들어가면 Access Denied 됩니다. 위 이미지에서 보이는 권한을 클릭하고 스크롤 다운하여 `버킷 정책` 에 정책을 추가해주어야 합니다.
+
+```python
+{
+    "Version": "2012-10-17",
+    "Id": "Policy1715259059323",
+    "Statement": [
+        {
+            "Sid": "Stmt1715259057048",
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::mingke-bucket-test-01/*" # 버킷이름/*
+        }
+    ]
+}
+```
+
+`버킷 정책` 수정하고 나면 다음과 아래와 같이 이미지를 확인할 수 있습니다.
+
+<Image src="/fastapi-image-upload-s3/05.jpg" alt="AWS S3 업로드 결과" />
+
+## 마무리
+
+이번 포스팅에서는 FastAPI 이미지 S3 업로드에 대해서 알아보았습니다. `boto3`만 사용하면 쉽게 S3에 업로드할 수 있습니다. 업로드 뿐아니라 S3에서 가능한 동작 대부분을 `boto3`로 컨트롤할 수 있습니다. 공식 문서를 참고 해보세요.
+
+<Link url="https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html" />
+
+<Link url="https://chaechae.life/blog/boto3-ecs-service" />
+
+<Link url="https://chaechae.life/blog/fastapi-async-sqlalchemy" />
