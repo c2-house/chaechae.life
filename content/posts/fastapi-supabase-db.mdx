@@ -1,0 +1,196 @@
+---
+title: FastAPI - Supabase DB 사용해서 개발해보기
+description: Supabase는 PostgreSQL을 기반으로 한 오픈 소스의 Backend-as-a-Service(BaaS) 플랫폼으로, Firebase에 대한 오픈 소스 대안으로 알려져 있습니다. 이번 포스팅에서 Supabase에서 제공하는 DB와 Storage를 FastAPI와 함께 사용하는 방법에 대해서 간단하게 알아보겠습니다.
+tags: [FastAPI, Supabase]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/05/11
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI and Supabase" />
+
+### 목차
+
+## Supabase
+
+Supabase는 PostgreSQL을 기반으로 한 오픈 소스의 Backend-as-a-Service(BaaS) 플랫폼으로, Firebase에 대한 오픈 소스 대안으로 알려져 있습니다. **완전 관리형 서비스**이며 데이터베이스뿐만 아니라 인증, 스토리지, 리얼타임, Edge Function 등 백엔드와 관련된 여려 서비스를 제공합니다. 그래서 프론트엔드만 할 줄 알면 Supabase로 풀스택 개발이 가능합니다. 하지만 이번 포스팅에서 **Supabase에서 제공하는 DB와 Storage를 FastAPI와 함께 사용**하는 방법에 대해서 간단하게 알아보겠습니다.
+
+<Link url="https://supabase.com/" />
+
+supabase는 기본적으로 무료 요금제가 있습니다. 작은 서비스를 개발하는 경우는 무료 플랜을 그냥 사용하면 됩니다. 콘솔 사용도 아주 쉽습니다.
+
+가입하고 **프로젝트 생성**하면 됩니다. 생성 후 몇가지만 신경쓰면 됩니다.
+
+## Supabase Key
+
+콘솔 **Home**에서 스크롤 내리다보면 `Project API`가 있습니다.
+
+<Image src="/fastapi-supabase-db/01.png" alt="Supabase project api" />
+
+- **Project URL, API Key를 복사해서 저장**해줍니다. 이미지에 나온 것처럼 API Key는 public key입니다.
+- public이 아니 경우에 사용할 Key는 **here를 클릭해서 이동해줍니다.**
+- 이동한 화면에서 **service_role을 Reveal하여 복사해서 저장**해줍니다.
+
+  <Image src="/fastapi-supabase-db/02.png" alt="Supabase secret key" />
+
+## Supabase Python SDK
+
+Supabase에서 제공하는 SDK가 있습니다. AWS boto3처럼 사용할 수 있습니다.
+
+```bash
+pip install supabase
+```
+
+- 우선 init부터 합니다. `url`과 `key` 가 필요합니다.
+
+```python
+from supabase import create_client, Client
+
+url: str = "PROJECT URL"
+key: str =  "API KEY" # Public or Secret
+supabase: Client = create_client(url, key)
+```
+
+- 라이브러리 문서에 다양한 사용방법이 나와있습니다.
+
+<Link url="https://supabase.com/docs/reference/python/start" />
+
+FastAPI를 사용하는 개발자로서 Database를 사용할 땐 굳이 사용할 필요는 없어보입니다. 우리에겐 **SQLAlchemy**가 있으니까요.
+
+Supabase를 SQLAlchemy를 사용하기 위해서 콘솔에서 `Project Settings` → `Database` 에서 DB정보를 확인해야합니다.
+
+<Image src="/fastapi-supabase-db/03.png" alt="Supabase Database Settings" fullWidth={false} />
+
+**URI**로 저장해주세요. `YOUR-PASSWORD`는 프로젝트를 생성할 때 만들었습니다.
+
+## Supabase + Async SQLAlchemy
+
+다음과 같이 코드를 적용할 수 있습니다.
+
+PostgreSQL를 async로 사용하기 위해 다음과 같은 패키지들을 설치합니다.
+
+```python
+pip install psycopg2 or pip install psycopg2-binary
+pip install asyncpg
+```
+
+```python
+from typing import Annotated
+from fastapi import Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi_mctools.db.sqlalchemy import AsyncDB
+from app.models.base import Base
+
+
+DB_URL = "postgresql+asyncpg://postgres.wqfdggarmxdajmpfpdtz:[YOUR-PASSWORD]@aws-0-ap-northeast-2.pooler.supabase.com:5432/postgres"
+META = Base.metadata
+
+get_db = AsyncDB(DB_URL, meta=META, autocommit=False, autoflush=False, expire_on_commit=False)
+
+DB = Annotated[AsyncSession, Depends(get_db)]
+```
+
+## 테스트
+
+```python
+# 회원 등록 예제
+# routes.py
+@router.post("/")
+async def register_user(user: Annotated[User, Depends(register_user)]):
+    return user
+
+# -----------------------------
+# dependencies.py
+
+async def register_user(data: RegisterRequest, db: DB) -> User:
+    user = await create_user(db, data)
+    user_dict = jsonable_encoder(user)
+    user_dict.pop("password")
+    return user
+
+# -----------------------------
+# schemas.py
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    password2: str
+    name: str
+    created_at: datetime = Field(default_factory=lambda: datetime.now())
+
+    @field_validator("email")
+    @classmethod
+    def validate_email_form(cls, v):
+        validate_email(v)
+        return v
+
+    @field_validator("password2")
+    @classmethod
+    def validate_password2(cls, v, values):
+        if v != values.data["password"]:
+            raise ValueError("passwords do not match")
+        return v
+
+# -----------------------------
+# orms.py
+
+async def create_user(db: AsyncSession, data: RegisterRequest) -> User:
+    password_service = PasswordService()
+    user = User(
+        name=data.name,
+        email=data.email,
+        password=password_service.get_password_hash(data.password),
+        created_at=data.created_at
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
+# -----------------------------
+# models.py
+class User(Base):
+    __tablename__ = 'user'
+
+    id = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name = mapped_column(String(100), nullable=False)
+    email = mapped_column(String(100), unique=True, nullable=False)
+    password = mapped_column(String(255))
+    is_active = mapped_column(Integer, nullable=False, default=True)
+    created_at = mapped_column(DateTime, nullable=False)
+    updated_at = mapped_column(DateTime, nullable=True)
+    deleted_at = mapped_column(DateTime, nullable=True)
+    last_login = mapped_column(DateTime, nullable=True)
+
+
+# -----------------------------
+# services.py
+
+class PasswordService:
+    password_context: CryptContext = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    def get_password_hash(self, password: str) -> str:
+        return self.password_context.hash(password)
+
+    def verify_password(self, plain_password: str, hashed_password: str) -> bool:
+        return self.password_context.verify(plain_password, hashed_password)
+
+```
+
+- Swagger에서 실행해보았습니다.
+
+<Image src="/fastapi-supabase-db/04.png" alt="Supabase Database API TEST" />
+
+- Supabase 콘솔에서 `Table Editor` 를 확인해보니 데이터가 잘 생성된 것을 확인할 수 있었습니다.
+
+<Image src="/fastapi-supabase-db/05.png" alt="Supabase Database Results" />
+
+## 마무리
+
+FastAPI에 Supabase 데이터베이스를 적용하여 테스트해보았습니다. 작은 프로젝트나 서비스를 할 때, 빠르게 프로토타입 같은 것을 개발해볼 때 Supabase 무료 플랜으로 셋팅해서 쉽게 만들어 테스트해보기 딱 좋은 것 같습니다. 어떤 서비스냐에 따라
+운영에서도 사용가능하다고 보여집니다. 물론 무료플랜으로는 어려울 수 있겠지만요. 가격은 pricing에서 확인해보세요. 다음 포스팅에서는 Supabase **Storage**를 한 번 사용해보도록 하겠습니다.
+
+<Link url="https://supabase.com/pricing" />
+
+<Link url="https://chaechae.life/blog/redis-duplication-prevention" />

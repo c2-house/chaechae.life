@@ -23,6 +23,7 @@ export const tags = [
   'Redis',
   'Rust',
   'SQLAlchemy',
+  'Supabase',
   'Swagger',
   'Writing',
 ] as const;
