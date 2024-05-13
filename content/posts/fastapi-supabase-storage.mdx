@@ -1,0 +1,103 @@
+---
+title: FastAPI - Supabase Storage 사용해보기
+description: 지난번 포스팅에서 FastAPI와 Supabase DB를 사용해보았습니다. 이번 포스팅에서는 Supabase에서 제공하는 Storage 서비스를 사용해보겠습니다. AWS S3와 동일하지만 1GB까지 무료로 사용할 수 있습니다.  Supabase에서 제공하는 Python SDK를 사용하면 아주 쉽게 사용할 수 있습니다.
+tags: [FastAPI, Supabase]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/05/13
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI and Supabase Storage" />
+
+### 목차
+
+## Supabase Storage
+
+지난번 포스팅에서 FastAPI와 Supabase DB를 사용해보았습니다. 이번 포스팅에서는 Supabase에서 제공하는 Storage 서비스를 사용해보겠습니다. AWS S3와 동일하지만 1GB까지 무료로 사용할 수 있습니다. Supabase에서 제공하는 Python SDK를 사용하면 아주 쉽게 사용할 수 있습니다.
+
+아래 포스팅에서 사용된 코드를 Supabase Storage를 사용한 코드로 수정해보겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-image-upload-s3" />
+
+그리고 전 포스팅에서 언급했던 Project API 키와 Supabase SDK 설치도 다 되어있다고 가정하고 글을 작성하겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-supabase-db" />
+
+## Supabase Storage 이미지 업로드 코드
+
+```python
+import io
+from supabase import create_client, Client
+
+url: str = "SUPABASE URL"
+key: str =  "API KEY" # SECRET으로 사용합니다.
+supabase: Client = create_client(url, key)
+
+def upload_image_to_supabase(file: io.BufferedReader, bucket_name: str, file_name:str) -> None:
+    supabase.storage.from_(bucket_name).upload(file=file, path=file_name, file_options={"content-type": "image/jpeg"})
+
+async def upload_image(file: UploadFile = File(...)) -> dict:
+    """
+    이미지 업로드 테스트
+    - 1. 이미지를 업로드한다.
+    - 2. 이미지 확장자가 업로드 가능한지 확인한다.
+    - 3. 이미지 사이즈가 업로드 가능한 크기인지 확인한다.
+    - 4. 이미지 이름을 변경한다.
+    - 5. 이미지를 최적화하여 Supabase Storage에 저장한다.
+    """
+    if not file:
+        return {"detail": "이미지 파일이 필요합니다."}
+
+    file = await images.validate_image_type(file)
+    file = await images.validate_image_size(file)
+    file = images.change_filename(file)
+    filename = file.filename
+    image = images.resize_image(file)
+    image = images.save_image_to_filesystem(image, f"./{filename}")
+    # bucket 이름은 test용으로 mingke-bucket-test-01
+    with open(f"./{filename}", "rb") as f:
+        images.upload_image_to_supabase(f, "mingke-test-01", filename)
+        os.remove(f"./{filename}")
+    return {"detail": "이미지 업로드 성공"}
+
+```
+
+`upload_image_to_supabase` 함수를 보시면 SDK를 이용해서 업로드하고 있습니다.
+
+사용해보니 `io.BytesIO` 는 정상 동작하지 않아 **filesystem에 저장하고 업로드 후 삭제하는 방법을 적용했습니다**.
+
+코드는 매우 간단합니다.
+
+## Supabase Storage 세팅
+
+콘솔 좌측 navbar에서 Storage를 찾아 이동하고 `New bucket` 을 클릭하여 생성합니다. 예제에서는 이미지 저장 용도로 Public으로 생성했습니다.
+
+<Image src="/fastapi-supabase-storage/01.png" alt="Supabase Storage 생성" />
+
+버킷 생성 후 좌측 `CONFIGURATION` 에서 `Policy` 를 선택해줍니다.
+
+`Policies under storage.buckets` 에 다음 2개 정책을 넣어주었습니다.
+
+- 허가된 유저만 `insert` 가능
+  - 이것 때문에 key를 secret으로 사용함
+- 모든 유저 `read` 가능
+
+<Image src="/fastapi-supabase-storage/02.png" alt="Supabase Storage 정책" />
+
+추가하는 방법은 아주 쉽습니다. `New policy` 클릭하면 아래와 같은 화면이 등장하는데 `Get started quickly` 선택하면 Supabase에서 많이 사용하는 정책들을 템플릿으로 만들어 놓았는데 그것을 그대로 사용하면 됩니다.
+
+<Image src="/fastapi-supabase-storage/03.png" alt="Supabase Storage 생성" />
+
+원하는 정책 선택하고 `Use this template` 버튼 클릭해서 계속 넘어가면 됩니다. 변경할 것 없이 다음 화면 넘어가도 초록 버튼 누르면 됩니다.
+
+<Image src="/fastapi-supabase-storage/04.png" alt="Supabase Storage 정책 템플릿" />
+
+Storage 세팅완료하고 API 테스트해보면 Storage에 저장된 이미지를 확인해 볼 수 있습니다.
+
+<Image src="/fastapi-supabase-storage/05.png" alt="Supabase Storage 업로드 이미지" />
+
+## 마무리
+
+이번에는 Supabse에 Storage를 사용하는 방법을 알아봤습니다. 요즘 부트캠프들도 많아지고 개발 공부하는 분들도 많아진 것이 느껴집니다. Supabase가 무료로 제공하는 성능이나 저장 공간이 충분해서 학습용으로 너무 좋은것 같습니다.
+
+<Link url="https://chaechae.life/blog/python-threadpoolexecutor" />
