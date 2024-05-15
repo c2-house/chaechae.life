@@ -1,0 +1,179 @@
+---
+title: Python 클래스 딕셔너리처럼 만들기 (매직메소드 활용)
+description: Dictionary 이야기를 하려는 것은 아니고 Python의 클래스를 dict 처럼 만들어 사용할 수 있는데 문득 이 내용을 가볍게 정리하고 싶어 포스팅합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/05/15
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python class to dict" />
+
+### 목차
+
+## Python Dictionary
+
+Python의 **`dict`** 클래스는 Key-Value 데이터를 저장하는 데 사용됩니다. 사전(dictionary)이라는 명칭 그대로, 데이터 저장과 검색에 최적화되어 있습니다. **`dict`** 클래스는 해시 테이블을 기반으로 하여 O(1)의 시간 복잡도로 데이터를 검색할 수 있어 매우 효율적입니다.
+
+Dictionary 이야기를 하려는 것은 아니고 Python의 클래스를 `dict` 처럼 만들어 사용할 수 있는데 문득 이 내용을 가볍게 정리하고 싶어 포스팅합니다.
+
+## 기본 Class
+
+다음과 같은 클래스가 있다고 가정해봅니다.
+
+```python
+class ImClass:
+    def __init__(self, attribute_1, attribute_2):
+        self.attribute_1 = attribute_1
+        self.attribute_2 = attribute_2
+
+class_1 = ImClass("a", "b")
+
+print(class_1.attribute_1)
+print(class_1.attribute_2)
+```
+
+## 속성 접근 변경 (\_\_getitem\_\_, \_\_setitem\_\_)
+
+Python 객체에서는 `인스턴스.속성명` 으로 속성에 접근할 수 있습니다. 이것을 `dict` 에서처럼 `인스턴스[”속성명”]` 으로 접근가능하도록 만들어보고 싶습니다.
+
+`__getitem__` 과 `__setitem__` 을 사용하면 가능합니다.
+
+```python
+class ImClass:
+    def __init__(self, attribute_1, attribute_2):
+        self.attribute_1 = attribute_1
+        self.attribute_2 = attribute_2
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+class_1 = ImClass("a", "b")
+
+# Dictionary처럼 사용
+print(class_1["attribute_1"])  # "a"
+print(class_1["attribute_2"])  # "b"
+
+# Dictionary처럼 값 설정
+class_1["attribute_1"] = "c"
+print(class_1["attribute_1"])  # "c"
+
+```
+
+`__getitem__` 는 클래스가 `dict`처럼 속성에 접근할 수 있도록 해줍니다.
+
+`__setitem__` 는 클래스가 `dict`처럼 속성의 값을 변경할 수 있도록 해줍니다.
+
+`dict`처럼 사용할 수 있게 변경해도 여전히 `class_1.attribute_1` 처럼 사용하는 것도 유효합니다.
+
+## 반복 가능 객체로 변경
+
+`dict`의 또 하나의 특징은 반복문에서 사용이 가능합니다. 반복문에서 사용할 수 있으려면 `Iterable` 객체여야 합니다.
+
+`__iter__` 와 `iter()` 를 사용하면 아주 쉽게 가능합니다.
+
+```python
+class ImClass:
+    def __init__(self, attribute_1, attribute_2):
+        self.attribute_1 = attribute_1
+        self.attribute_2 = attribute_2
+
+    def __getitem__(self, key):
+        return getattr(self, key)
+
+    def __setitem__(self, key, value):
+        setattr(self, key, value)
+
+    def __iter__(self):
+        return iter(self.__dict__)
+
+    def __len__(self):
+        return len(self.__dict__)
+
+# 사용 예시
+class_1 = ImClass("a", "b")
+
+# 반복문 사용
+for key in class_1:
+    print(f"{key}: {class_1[key]}")
+
+# 길이 확인
+print(len(class_1))  # 2
+
+```
+
+`__len__` 은 속성의 길이를 측정할 수 있도록 해줍니다.
+
+## 마무리
+
+파이썬 클래스를 딕셔너리처럼 만드는 방법을 매직메소드(dunder메소드)를 이용해서 만들어보았습니다. 실무에서는 다음과 같이 활용했습니다. FastAPI에서 API 응답을 통일하기 위해 인터페이스를 만들고 `dict`처럼 변경했습니다. FastAPI API응답은 `dict`로 가능하기 때문입니다.
+
+```python
+import json
+from typing import Union
+
+ResultType = Union[dict, list[dict], list, str]
+
+class ResponseInterFace:
+    """
+    Represents a response interface.
+
+    Attributes:
+        result (ResultType): The result of the response.
+        kwargs (dict): Additional keyword arguments for the response.
+
+    Methods:
+        to_dict(): Converts the response to a dictionary.
+        to_str(): Converts the response to a string.
+    """
+
+    def __init__(self, result: ResultType, **kwargs) -> None:
+        self.result = result
+        self.kwargs = kwargs
+
+    def to_dict(self) -> dict:
+        """
+        Converts the response to a dictionary.
+
+        Returns:
+            dict: The response as a dictionary.
+        """
+        return {**self.kwargs, "result": self.result}
+
+    def to_str(self) -> str:
+        """
+        Converts the response to a string.
+
+        Returns:
+            str: The response as a string.
+        """
+        return json.dumps(self.to_dict(), ensure_ascii=False)
+
+    def __getitem__(self, key: str) -> Union[ResultType, str]:
+        return self.to_dict()[key]
+
+    def __iter__(self):
+        return iter(self.to_dict())
+
+    def keys(self):
+        return self.to_dict().keys()
+
+    def items(self):
+        return self.to_dict().items()
+
+# example api
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+)
+async def get_foo(some: SomeDependency):
+    ...
+    return ResponseInterFace(result=some, message="조회하였습니다.")
+
+```
+
+<Link url="https://chaechae.life/blog/fastapi-async-sqlalchemy-test" />
