@@ -1,0 +1,136 @@
+---
+title: Rust 관련 용어 정리 - 1
+description: Python이랑 Javascript 밖에 경험이 없어서 Rust에 나오는 용어들이 바로 쏙쏙 들어오지는 않아서 관련 용어들을 간단하게 정리해볼까 합니다.
+tags: [Rust]
+author: mingke
+thumbnail: /thumbnails/rust-logo.png
+date: 2024/05/16
+---
+
+<Image src="/thumbnails/rust-logo.png" alt="Rust ownership and borrowing" />
+
+### 목차
+
+## 관련 용어 정리 - 1
+
+최근 취미로 Rust를 조금씩 공부를 하고 있습니다. 공부하는대로 블로그에 적는게 쉽지는 않네요. Rust를 공부하면서 한 번 정리하고 가고 싶었던 내용을 이번 포스팅에 적어볼까 합니다. Python이랑 Javascript 밖에 경험이 없어서 Rust에 나오는 용어들이 바로 쏙쏙 들어오지는 않아서 관련 용어들을 간단하게 정리해볼까 합니다.
+
+자세한 정의는 공식 문서를 참고하세요.
+
+## Crate
+
+Crate(크레이트)는 Python으로 치면 라이브러리, 모듈 개념입니다. Rust가 독립적으로 컴파일할 수 있는 모듈의 단위라고 할 수 있습니다.
+
+- `Binary Crate` - 컴파일하여 실행할 수 있는 파일을 생성하는 역할을 합니다. `main function` 을 가지고 있습니다.
+- `Library Crate` - `main function` 이 없고 다른 크레이트에서 사용할 수 있는 crate입니다. random한 값을 생성할 때 사용했던 `rand` crate가 예시가 될 수 있습니다.
+
+## Cargo
+
+Cargo는 Rust의 패키지 매니저이자 빌드 시스템입니다. Python에서 `Poetry` 를 사용해봤다면 그것과 역할이 비슷하다고 느낄 것 같습니다. Crate의 의존성 및 메타데이터를 정의하고 관리할 수 있는 도구입니다. `Cargo.toml`에서 관리합니다. 사용한 의존성들의 버젼은 `Cargo.lock`에 저장됩니다.
+
+```toml
+# Cargo.toml
+
+[package]
+name = "my_rust"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+
+```
+
+## Mutability
+
+Mutability는 Rust만의 용어는 아닙니다. Mutability의 뜻은 변경가능성이죠. **Rust의 변수는 기본적으로 immutable**입니다. 변경가능하게 하려면 `mut` 를 사용해야합니다.
+
+```rust
+fn main() {
+    let mut x = 5;
+    x = 6;
+    println!("x is: {}", x); // x is 6
+}
+
+```
+
+## Trait
+
+Trait는 다른 언어에서 사용되는 인터페이스와 유사합니다. Rust에서 공통의 인터페이스를 정의하는 일종의 타입시스템입니다. **다중 Trait**도 가능합니다. Python에서 **다중 상속과 비슷**합니다.
+
+```rust
+trait Animal {
+    fn speak(&self) {
+        println!("HI~");
+    }
+}
+
+struct Dog;
+impl Animal for Dog {
+    // 오버라이드를 해도 되고 Trait에 정의된 것을 사용해도 됨
+}
+
+let dog = Dog;
+dog.speak();
+
+```
+
+## Macro
+
+Macro는 Rust 프로그래밍을 할 때 반복적이거나 복잡한 작업을 간단하게 만들어주는 도구라고 생각할 수 있습니다. 컴파일 타임에 실행되어 성능에 영향을 주지 않는다고 합니다.
+
+`!` 을 뒤에 붙여 사용합니다.
+
+```rust
+// 선언형 매크로
+macro_rules! say_hello_world {
+    () => {
+        println!("Hello World!");
+    };
+}
+
+fn main() {
+    say_hello_world!();
+}
+```
+
+## Enum Variant
+
+Enum은 다들 아실겁니다. 하지만 Rust의 Enum을 공부할 때 Variant라는 말이 나오는데 이것은 Enum을 정의할 때 사용되는 상태값을 의미합니다. `match` 와 함께 많이 사용됩니다.
+
+```rust
+enum Menu {
+    Pizza, // 얘네가 Variant
+    Pasta, // 얘네가 Variant
+    Salad, // 얘네가 Variant
+}
+
+fn choose_menu_item(item: Menu) {
+    match item {
+        Menu::Pizza => println!("You chose Pizza!"),
+        Menu::Pasta => println!("You chose Pasta!"),
+        Menu::Salad => println!("You chose Salad!"),
+    }
+}
+
+fn main() {
+    let my_choice = Menu::Pizza;
+    choose_menu_item(my_choice);
+
+    let my_choice = Menu::Pasta;
+    choose_menu_item(my_choice);
+
+    let my_choice = Menu::Salad;
+    choose_menu_item(my_choice);
+}
+
+```
+
+## Ownership & Borrowing
+
+이것은 먼저 공부한 내용입니다.
+
+<Link url="https://chaechae.life/blog/rust-ownership-borrowing" />
+
+## 마무리
+
+아주 간략하게 Rust에서 나오는 용어들을 1차로 공부해봤습니다. 공부할 수록 어렵긴한데 재미는 있는 것 같습니다.
