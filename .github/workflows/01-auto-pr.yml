@@ -1,0 +1,26 @@
+name: Automatically create PR
+
+on:
+  push:
+    branches:
+      - mingke/*
+      - pr-action
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+          commit-message: Create PR with changes
+          base: main
+          branch: ${{ github.ref }}
+          assignees: kec0130
+          title: BLOG POST UPDATE
+          body: 블로그 업데이트 되었습니다. 확인해주세용.
