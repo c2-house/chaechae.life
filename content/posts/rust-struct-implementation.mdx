@@ -1,0 +1,149 @@
+---
+title: Rust Struct(구조체) and implementation
+description: 오늘 소개할 Struct와 Implementation은 Rust에서 OOP패러다임을 적용해 볼 수 있도록 해줍니다. struct와 impl  키워드를 이용하면 됩니다.
+tags: [Rust]
+author: mingke
+thumbnail: /thumbnails/rust-logo.png
+date: 2024/05/24
+---
+
+<Image src="/thumbnails/rust-logo.png" alt="Rust struct implementation" />
+
+### 목차
+
+## struct 와 impl
+
+Rust의 **Struct**와 **Implementation**에 대해서 정리해보려고 합니다. Rust를 취미로 공부하고 있는데 Script언어만 다뤄본 저에게 역시 쉽지 않습니다. 하지만 오늘 소개할 Struct와 Implementation은 Rust에서 OOP패러다임을 적용해 볼 수 있도록 해줍니다. `struct`와 `impl` 키워드를 이용하면 됩니다.
+
+Python과 비교해가면서 공부했더니 조금은 쉽게 이해할 수 있었습니다. 비슷한 듯 다른 이 내용에 대해서 한 번 알아보겠습니다. 그리고 Python처럼 PascalCase와 snake_case를 사용해서 선언할 때 이질감이 좀 덜해지는 것처럼 느껴집니다.
+
+## Python과 비교하며 Struct 공부하기
+
+**Struct는 데이터 구조를 정의하기 위해 사용됩니다**. 한국어로 **구조체인 것**부터 감이 오시지 않나요?
+
+Python에서 dataclass만들때 모습이랑 비슷한 것 같습니다. 또는 class 생성시 \_\_init\_\_ 생성자에 클래스 속성값을 정의하는 것과 **유사**합니다. 제 느낌에 좀 더 비슷한 느낌은 추상클래스를 이용해서 **인터페이스**를 선언하는 것 같다고나 할까요?
+
+### 예제: RandomGenerator (Struct)
+
+- random한 문자열을 생성하는 것을 예제로 한 번 만들어보겠습니다.
+
+- **Rust** **구조체 선언**
+  - Struct(구조체)를 선언하고 단독으로 사용하는 방법은 다음과 같습니다.
+  - 구조체를 통해 만들어진 것이 인스턴스입니다.
+
+```rust
+struct RandomGenerator {
+    max_length: usize,
+}
+
+fn main() {
+    let generator: RandomGenerator = RandomGenerator { max_length: 12 };
+    let max_length: usize = generator.max_length;
+    println!("Max length: {}", max_length);
+}
+```
+
+- Python과 비교
+
+```python
+class RandomGenerator:
+    def __init__(self, max_length):
+        self.max_length = max_length
+
+generator = RandomGenerator(max_length = 12)
+max_length = generator.max_length
+print(f"Max length: {max_length}")
+```
+
+## Python과 비교하며 Implementation 공부하기
+
+implementation은 반드시 Struct하고만 쓰이는 것은 아니고, `Struct`를 비롯하여 `Enum`, `Trait`하고도 같이 쓰입니다. **메소드** 및 연관함수를 구현하고 적용하기 위해서 사용됩니다.
+
+Python에서 클래스에 메소드 구현하는 것과 **유사**합니다. `impl` 블록에서 함수를 만들고 인스턴스에서 호출 가능합니다.
+
+### 예제: RandomGenerator (Implementation)
+
+- 위 예제를 이어갑니다.
+
+- **Rust impl 선언**
+  - random을 사용하기 위해 rand 크레이트를 사용합니다.
+  - implementation하고자 하는 struct와 동일한 이름을 사용합니다.
+
+```rust
+use rand::Rng;
+
+struct RandomGenerator {
+    max_length: usize,
+}
+
+impl RandomGenerator {
+    fn new(max_length: usize, include_numbers: bool) -> Self {
+        let mut chars: Vec<char> = ('a'..='z').collect();
+        chars.extend('A'..='Z');
+        if include_numbers {
+            chars.extend('0'..='9');
+        }
+        Self { max_length, chars }
+    }
+
+    fn generate_string(&self) -> String {
+        let mut rng = rand::thread_rng();
+        let random_string: String = (0..self.max_length)
+            .map(|_| {
+                let idx = rng.gen_range(0..self.chars.len());
+                self.chars[idx]
+            })
+            .collect();
+
+        random_string
+    }
+}
+
+fn main() {
+    let generator = RandomGenerator::new(12, true);
+    let random_string = generator.generate_string();
+    println!("Generated string: {}", random_string);
+}
+
+```
+
+- `fn new` : new는 생성자 입니다.
+  - `new` 함수는 **연관함수**입니다. 연관함수는 **인스턴스를 필요로하지 않는 함수**입니다.
+    - Associated Function(연관함수), Python의 Static Method와 유사하네요.
+  - **연관함수**는 `::`를 사용하여 호출합니다.
+    - `RandomGenerator::new(12, true)` 이런식으로 사용됩니다.
+- `Self` : self를 보고 반가웠습니다. Python과 마찬가지로 인스턴스를 가리킵니다.
+
+  - self가 있는 함수들이 `method`이며 인스턴스가 필요하기 때문에 항상 `self`, `&self` 를 파라미터로 받습니다.
+
+- Python과 비교
+
+```python
+import random
+import string
+
+class RandomGenerator:
+    def __init__(self, max_length, include_numbers):
+        self.max_length = max_length
+        self.chars = list(string.ascii_lowercase + string.ascii_uppercase)
+        if include_numbers:
+            self.chars.extend(string.digits)
+
+    def generate_string(self) -> str:
+        return ''.join(random.choice(self.chars) for _ in range(self.max_length))
+
+generator = RandomGenerator(max_length = 12, include_numbers=True)
+random_string = generator.generate_string()
+print(f"Generated string: {random_string}")
+
+```
+
+## 마무리
+
+Rust의 `struct`와 `impl` 에 대해서 예제와 그리고 Python과 비교를 통해 정말 간단하게 알아봤습니다(이제 응용도 해봐야죠!).
+
+확실히 Python이 정말 편리하긴 한 것 같습니다.
+
+`struct`와 `impl`을 사용하여 class를 구현하듯 OOP 스타일의 코드를 작성할 수 있습니다.
+
+<Link url="https://chaechae.life/blog/rust-word-1" />
