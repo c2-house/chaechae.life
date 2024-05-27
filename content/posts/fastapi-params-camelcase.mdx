@@ -1,0 +1,88 @@
+---
+title: FastAPI - API 파라미터 camelCase로 변경하기 (feat. Pydantic Field)
+description: API 명세에서 CamelCase를 사용하고 백엔드 코드베이스에서는 snake_case를 유지하는 방법을 알아보도록 하겠습니다.
+tags: [FastAPI, Pydantic]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/05/27
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Params camelCase" />
+
+### 목차
+
+## snake_case & camelCase
+
+FastAPI를 사용하시는 분들은 곧 Python 개발자이니까 `snake_case` 를 사용하시는 분들이 대부분 일 것입니다. 그리고 대부분 백엔드 개발자이시겠죠.
+
+하지만 함께 협업하는 프론트엔드 개발자 분들은 Javascript를 사용하여 대부분 `camelCase` 를 사용할 것입니다. 그래서 API 명세가 `snake_case`로 되어 있다면 프론트엔드에서 불편감을 느낄 수도 있습니다.
+
+별거 아니지만 API 명세에서 `CamelCase`를 사용하고 백엔드 코드베이스에서는 `snake_case` 를 유지하는 방법을 알아보도록 하겠습니다.
+
+## Pydantic Field
+
+해결 방법은 간단합니다. pydantic에서 제공하는 `Field` 를 사용하면 됩니다.
+
+예시 코드와 함께 알아보겠습니다.
+
+블랙리스트를 등록하는 임시 코드가 있다고 가정합니다.
+
+```python
+...
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+class BlackListAddRequest(BaseModel):
+    name: str = Field(..., title="블랙리스트 대상자 이름", description="블랙리스트 이름을 입력합니다.")
+    reason: str = Field(..., title="블랙리스트 사유", description="블랙리스트 사유를 입력합니다.")
+    phone_number: str = Field(..., title="블랙리스트 대상자 전화번호", description="블랙리스트 대상자 전화번호를 입력합니다.", alias="phoneNumber")
+
+@router.post("/blacklist/")
+async def add_blacklist(data: BlackListAddRequest):
+    ...
+    print(data.phone_number)
+    detail = f"{data.name}님이 {data.reason} 사유로 블랙리스트에 추가되었습니다."
+    return {"detail": detail}
+```
+
+Body에 `name`, `reason` 같은 경우는 문제가 없지만 `phone_number`같은 경우는 2단어이기 때문에 `snake_case`가 사용됩니다.
+
+이럴 때 `Field` 에 `alias="phoneNumber"` 를 사용해주면 프론트엔드에서 `phoneNumber`로 요청을 보낼 수 있게 됩니다. 하지만 여전히 코드베이스에서는 `print(data.phone_number)` 이렇게 사용됩니다.
+
+<Image
+  src="/fastapi-params-camelcase/01.png"
+  alt="FastAPI API Body camelCase Swagger"
+  fullWidth={false}
+/>
+
+## 주의 사항
+
+validation이 들어가게 되면 주의할 점이 있습니다.
+
+```python
+class BlackListAddRequest(BaseModel):
+    name: str = Field(..., title="블랙리스트 대상자 이름", description="블랙리스트 이름을 입력합니다.")
+    reason: str = Field(..., title="블랙리스트 사유", description="블랙리스트 사유를 입력합니다.")
+    phone_number: str = Field(..., title="블랙리스트 대상자 전화번호", description="블랙리스트 대상자 전화번호를 입력합니다.", alias="phoneNumber")
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, value):
+        print(value) # '010-1234-1234'
+        return value
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate_name(cls, values):
+        print(values) # {'name': '테스터', 'reason': '못생김', 'phoneNumber': '010-1234-1234'}
+        return values
+```
+
+`field_validator` 는 상관없지만 `model_validator` 같은 경우는 전체 데이터가 `dict`로 넘어오면서 key값에 변경한 `alias`가 들어갑니다.
+
+이 부분만 주의하시면 됩니다.
+
+## 마무리
+
+프론트엔드 개발자에게 님이 `snake_case` 쓰라 할 수도 있겠지만, 저는 그동안 1인 백엔드로 일을 해왔어서 거의 `camelCase`로 맞춰줬습니다. 팀이라면 언제나 협의를 통해 잘 맞춰가는게 좋겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-pydantic-query-params" />
