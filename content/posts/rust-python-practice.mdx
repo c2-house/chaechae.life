@@ -1,0 +1,172 @@
+---
+title: Rust로 Python 라이브러리 만들어보기(PyO3)
+description: 취미로 Rust를 공부하고 있습니다. 이제 어느 정도 기본적인 문법을 익혔고, Rust코드를 조금은 읽을 수 있게되었습니다. 그래서 Rust로 Python 라이브러리 만들기 Hello World 정도를 한 번 해보려고 합니다.
+tags: [Python, Rust]
+author: mingke
+thumbnail: /thumbnails/rust-logo.png
+date: 2024/06/01
+---
+
+<Image src="/thumbnails/rust-logo.png" alt="Rust Python PyO3" />
+
+### 목차
+
+## PyO3
+
+취미로 Rust를 공부하고 있습니다. 이제 어느 정도 기본적인 문법을 익혔고, Rust코드를 조금은 읽을 수 있게되었습니다. 그래서 Rust로 Python 라이브러리 만들기 `Hello World` 정도를 한 번 해보려고 합니다. 그러기 위해서는 `PyO3` 크레이트가 필요합니다.
+
+`PyO3`은 Rust와 Python을 상호 연결해주는 다리같은 역할을 하는 크레이트라고 보면 됩니다. Rust로 작성한 코드를 Python에서 사용하게 해줍니다. 그 반대로도 됩니다.
+
+`PyO3`의 문서를 보면서 끄적끄적 해보았습니다.
+
+<Link url="https://pyo3.rs/v0.21.2/" />
+
+## Maturin
+
+`PyO3`만 필요한게 아니었습니다. Rust 크레이트를 Python 패키지로 빌드해주는 툴이 필요한데요. 바로 `Maturin` 입니다.
+
+`Maturin`을 사용하면 Rust로 작성된 코드를 손쉽게 Python 패키지로 변환하여 PyPI에 배포하거나, 로컬 개발 환경에서 사용할 수 있습니다.
+
+<Link url="https://www.maturin.rs/installation" />
+
+## Maturin 설치하기
+
+가장 먼저할 것은 `Maturin` 설치하기 입니다. MacOS 기준 `Homebrew`를 이용해서 설치하면 됩니다.
+
+```python
+brew install maturin
+```
+
+## 프로젝트 셋업하기
+
+- Python에서 가상 환경을 만들어줍니다.
+
+```bash
+python3 -m venv .venv
+
+sourse .venv/bin/activate
+```
+
+- Rust 프로젝트 생성
+  - cargo를 이용해도 되지만 `maturin`으로 맞춤으로 설정할 수 있습니다.
+
+```bash
+maturin init
+
+# pyo3 선택
+? 🤷 Which kind of bindings to use?
+  📖 Documentation: https://maturin.rs/bindings.html ›
+❯ pyo3
+  rust-cpython
+  cffi
+  uniffi
+  bin
+
+
+# .gitignore, Cargo.toml, pyproject.toml, src/, .github/가 생성됩니다.
+```
+
+- `Cargo.toml`과 `pyproject.toml`에 기본적인 정보가 셋팅되어 있습니다.
+
+## 코드 작성하기
+
+생성된 `src`안에 `lib.rs` 가 생성되는데 그곳에 코드를 작성해줍니다.
+
+기본적으로 `hello world` 급 코드가 작성되어 있는데 지우고 랜덤한 문자열을 생성하는 함수를 작성해보았습니다. (30분 이상걸림.. python으로 작성하면 30초면 될 것을..)
+
+```bash
+cargo add rand
+```
+
+```rust
+use pyo3::prelude::*;
+use rand::seq::SliceRandom;
+use rand::thread_rng;
+use rand::distributions::{Alphanumeric, DistString};
+
+const PUNCTUATION: &str = "!@#$%^&*()_+-=[]{}|;:'\",.<>/?";
+
+fn _generate_random_string(max_length: usize) -> String {
+    let mut rng = thread_rng();
+
+    let charset: Vec<char> = Alphanumeric
+        .sample_string(&mut rng, max_length)
+        .chars()
+        .chain(PUNCTUATION.chars())
+        .collect();
+
+    let result: String = (0..max_length)
+        .map(|_| {
+            *charset.choose(&mut rng).unwrap()
+        })
+        .collect();
+
+    result
+}
+
+#[pyfunction]
+fn generate_random_string(max_length: usize) -> PyResult<String> {
+    Ok(_generate_random_string(max_length))
+}
+
+/// A Python module implemented in Rust.
+#[pymodule]
+fn py_rust(m: &Bound<'_, PyModule>) -> PyResult<()> {
+    m.add_function(wrap_pyfunction!(generate_random_string, m)?)?;
+    Ok(())
+}
+
+```
+
+- `#[pyfunction]` 어노테이션으로 감싸진 함수가 python에서 함수로 사용됩니다.
+- `#[pymodule]` 어노테이션으로 감싸진 함수가 module을 선언하는 것이죠
+- 여기서 구현은 안했지만 class를 만들기 위해서는 struct를 만들어 `#[pyclass]` 어노테이션을 사용합니다.
+- 클래스의 method는 impl 블록 안에 구현하고 `#[pymethods]` 어노테이션을 사용합니다.
+- 위 예제에서는 파이썬에서 `from py_rust import generate_random_string` 로 사용할 수 있겠습니다.
+
+아무튼 위에 작성한 함수는 길이를 입력받아 랜덤한 문자열을 생성합니다.
+
+## 빌드하기
+
+`maturin`을 이용하여 python패키지로 빌드하고 가상환경에 설치합니다.
+
+명령어를 실행했을 때 여러 Warning이 나왔는데, 읽어보고 해결했더니 Warning없이 다음과 같이 잘 빌드가 되었습니다.
+
+```bash
+maturin develop
+
+py-rust maturin develop
+🔗 Found pyo3 bindings
+🐍 Found CPython 3.12 at /Users/minchae/DEV/projects/rust/py-rust/.venv/bin/python
+📡 Using build options features from pyproject.toml
+   Compiling py-rust v0.1.0 (/Users/minchae/DEV/projects/rust/py-rust)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.43s
+📦 Built wheel for CPython 3.12 to /var/folders/0t/b2cf43fs7154b6jb9mdc549w0000gn/T/.tmpDQ7jCD/py_rust-0.1.0-cp312-cp312-macosx_10_12_x86_64.whl
+✏️  Setting installed package as editabl
+```
+
+## Python에서 실행해보기
+
+- 코드
+
+```python
+import py_rust
+
+print(py_rust.generate_random_string(30))
+```
+
+- 실행
+
+```bash
+python main.py
+
+W@)TX@]_^#{l[AG&<G(<E*3IEc{}!}
+```
+
+와우 신기해!
+
+## 마무리
+
+Rust공부하기 시작하면서, 공부해서 Python 라이브러리를 만들고 싶다고 생각했었습니다. 오늘 Hello World를 해본 기분인데요. 아직 갈길이 멀지만 이렇게 코드를 작성해보니 정말 어렵지만 재밌습니다.
+
+<Link url="https://chaechae.life/blog/rust-struct-implementation" />
