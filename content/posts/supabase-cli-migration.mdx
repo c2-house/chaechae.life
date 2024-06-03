@@ -1,0 +1,185 @@
+---
+title: Supabase CLI활용 - Supabase CLI로 migration하기
+tags: [Supabase]
+description: Supabase에서 제공해주는 Supabase CLI를 이용하면 migration 작업을 좀 더 손쉽게 할 수 있었습니다. Migration 과정을 포스팅 해보도록 하겠습니다. Supabase를 이용해볼 수록 정말 잘 만들었다는 생각이 듭니다.
+author: mingke
+thumbnail: /thumbnails/supabase-logo.webp
+date: 2024/06/03
+---
+
+<Image src="/thumbnails/supabase-logo.webp" alt="supabase access token" />
+
+### 목차
+
+## Supabase CLI
+
+최근에 완료한 외주작업에서 DB를 Supabase를 사용했습니다. 개발단계에서 개인계정을 사용하여 프로젝트를 만들고 그 안에 DB 스키마들을 구성하여 개발하였습니다.
+
+개발을 완료하고 의뢰인에게 Supabase계정을 받아 DB를 옮겨야하는 과정 중에 일일히 스키마를 다시 구성하려니 너무 번거로웠습니다. 찾아보니 Supabase에서 제공해주는 `Supabase CLI`**를 이용하면 migration 작업을 좀 더 손쉽게 할 수 있었습니다.**
+
+**Migration 과정을 포스팅 해보도록 하겠습니다.**
+
+Supabase를 이용해볼 수록 정말 잘 만들었다는 생각이 듭니다.
+
+- 설치
+
+<Link url="https://supabase.com/docs/guides/cli/getting-started" />
+
+```bash
+# Homebrew로 설치
+# 다른 OS는 문서 참고
+brew install supabase/tap/supabase
+```
+
+## Access Token 받기
+
+CLI를 사용하기 위해 Login을 해야합니다. Login하기 위해 `Access Token` 이 필요합니다. 로그인하면 나오는 첫 화면 `DashBoard`에서 `Access Tokens` 탭에 들어가서 토큰을 생성합니다.
+
+**Token을 따로 저장**해둡니다.
+
+<Image src="/supabase-cli-migration/01.png" alt="supabase access token" />
+
+## supabase login
+
+`supabase login`을 입력합니다.
+
+```bash
+# access token을 --token 뒤에 입력합니다.
+supabase login --token sbp_b15e*********************
+
+# Response
+# You are now logged in. Happy coding!
+```
+
+- Token 생성을 까먹고 안했다면 자동으로 생성됩니다. `supabase login` 만 입력해도 됩니다.
+- `supabase logout` 으로 로그아웃할 수 있습니다.
+
+## supabase projects list
+
+`supabase projects list` 로 현재 존재하는 project 리스트를 확인할 수 있습니다.
+
+```bash
+supabase projects list
+
+# Response
+
+    LINKED │        ORG ID        │     REFERENCE ID     │    NAME     │         REGION         │  CREATED AT (UTC)
+  ─────────┼──────────────────────┼──────────────────────┼─────────────┼────────────────────────┼──────────────────────
+           │    organization ID   │     Reference ID     │ test        │ Northeast Asia (Seoul) │ 2024-04-11 09:14:05
+```
+
+- supabase를 로컬에서 실행할 수도 있습니다.
+  - Docker가 설치되어 있어야합니다.
+  - 전체 서비스를 로컬에서 실행하기 위해서 **7GB**의 메모리 여유가 있어야 한다고 합니다.
+  - 다음엔 로컬에서 supabase를 실행해봐야겠습니다.
+- LINKED가 비어있는 이유는 Local과 Remote가 연결이 안되어있다는 뜻입니다.
+
+## supabase init
+
+Local에서 supabase 프로젝트를 생성합니다. `supabase init` 을 사용합니다.
+
+```bash
+mkdir test_1 && test_1
+
+supabase init
+
+# Response
+Generate VS Code settings for Deno? [y/N] N
+Generate IntelliJ Settings for Deno? [y/N] N
+Finished supabase init.
+```
+
+- Deno를 사용하지 않아 N으로 했습니다.
+- `supabase` 라는 디렉토리가 생성됩니다.
+  - config.toml - config file
+  - seed.sql - seed query를 작성할 수 있습니다.
+
+## supabase link
+
+`supabase init`이 선행되어야 합니다. 생성한 Local 프로젝트와 Remote 프로젝트를 연결합니다. project를 선택하여 연결합니다.
+
+```bash
+supabase link
+
+# Response
+Selected project: 프로젝트 명
+Enter your database password (or leave blank to skip):
+Finished supabase link.
+```
+
+- database password는 project를 시작할 때 설정한 비밀번호입니다.
+- 잊었으면 콘솔에서 `Project Settings`에 database config로 이동하여 reset할 수 있습니다.
+
+## supabase db dump
+
+기존 프로젝트에 만들어져있는 스키마를 dump합니다.
+
+```bash
+supabase db dump -f supabase/schema.sql
+
+# Response
+Enter your database password:
+Dumping schemas from remote database...
+Dumped schema to supabase/schema.sql.
+```
+
+- 덤프 파일을 만들었으니 `logout`
+
+## supabase projects create
+
+콘솔에서 migration할 아이디로 로그인하고 `Access Token`까지 만들어줍니다.
+
+터미널에서 로그인하고 CLI로 새로운 아이디에 project를 생성해줍니다.
+
+```bash
+supabase login --token ~~
+
+supabase projects create --db-password qwer1234 --region ap-northeast-2
+```
+
+- `db-password` 를 설정합니다.
+- `region` 은 supabase는 AWS에서 돌아가는데 서울 `region` 을 선택합니다.`ap-northeast-2`
+
+프로젝트를 생성했으면 로컬에서 init과 link를 합니다.
+
+```bash
+mkdir test_2 && cd test_2
+
+supabase init
+
+supabase link
+```
+
+## supabase migration
+
+마지막으로 migration을 실행합니다.
+
+```bash
+# migration 생성
+supabase migration new migration
+
+# Response
+# Created new migration at supabase/migrations/20240603101431_migrations.sql
+```
+
+- dump한 schema.sql에서 내용을 전부 복사하여 생성된 migrations.sql에 붙여 넣어줍니다.
+
+이제 밀어 넣어주면 됩니다.
+
+```bash
+supabase migration up --db-url postgres://USER_ID:PASSWORD@aws-0-ap-northeast-2.pooler.supabase.com:6543/postgres
+
+Connecting to remote database...
+Applying migration 20240603101431_migrations.sql...
+```
+
+- `USER_ID`와 `PASSWORD`는 콘솔에 `Database Settings`에서 확인할 수 있습니다.
+- 또는 `Database Settings` 는 `Connection string` 의 URI에서 복붙하면 됩니다.
+
+## 마무리
+
+포스팅에 적으니 과정이 길어보이긴 합니다만, 익히고 나면 금새 할 수 있었습니다. 다음 작업에서 또 supabase를 사용한다면 금방 migration할 수 있을 것 같습니다. supabase cli를 살펴보니 다양한 기능이 많더군요. 추후 더 알아봐야겠습니다. 아직 알아봐야할게 많네요.
+
+<Link url="https://supabase.com/docs/reference/cli/supabase-init" />
+
+<Link url="https://chaechae.life/blog/fastapi-supabase-storage" />
