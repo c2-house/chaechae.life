@@ -1,0 +1,170 @@
+---
+title: FastAPI lifespan asynccontextmanager 직접 구현하기(feat.__aenter__, __aexit__)
+description: FastAPI에서 startup 이벤트와 shutdown를 구현하는 방법으로 lifespan을 사용하는 방법이 있습니다. 이번 포스팅에서 좀 더 객체지향적이고 사용성 좋은 방법으로 구현해보았습니다.
+tags: [FastAPI, Python]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/06/09
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI lifespan class" />
+
+### 목차
+
+## lifespan
+
+FastAPI에서 startup 이벤트와 shutdown를 구현하는 방법으로 `lifespan`을 사용하는 방법이 있습니다. 이전에도 포스팅했었는데요. `from contextlib import asynccontextmanager` 을 사용하도록 공식문서에서 설명합니다. 그 말은 우리 객체가 `asynccontextmanager`를 지원한다면 클래스로 구현해도 된다는 이야기입니다. 그래서 이번 포스팅에서 좀 더 객체지향적이고 사용성 좋은 방법으로 구현해보았습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-lifespan" />
+
+## \_\_aenter\_\_, \_\_aexit\_\_
+
+이 2가지 매직매소드를 사용하면 객체가 `asynccontextmanager` 를 지원하게 됩니다. `async with` 구문에서 사용할 수 있게 되죠
+
+```python
+class Lifespan:
+    async def __aenter__(self):
+        """Startup Event 실행"""
+        ...
+    async def __aexit__(self, exc_type, exc, tb):
+        """"Shutdown Event 실행"""
+        ...
+
+```
+
+간단한 방법입니다. Python은 편리함은 너무 달콤합니다.
+
+## lifespan 구현하기
+
+구현하는 내용은 다음과 같습니다
+
+- startup 이벤트 실행 구현
+- shutdown 이벤트 실행 구현
+- states 구현
+
+다음과 같이 구현했습니다.
+
+```python
+import asyncio
+from typing import Callable
+
+class EventExecutor:
+    def __init__(self):
+        self.events = []
+
+    def add_event(self, event: Callable, *args, **kwargs):
+        self.events.append((event, args, kwargs))
+
+    async def run(self):
+        for event, args, kwargs in self.events:
+            if asyncio.iscoroutinefunction(event):
+                await event(*args, **kwargs)
+            else:
+                event(*args, **kwargs)
+
+class Lifespan:
+    def __init__(self, timeout = None):
+        self.startup_events = EventExecutor()
+        self.shutdown_runner = EventExecutor()
+        self.timeout = timeout
+        self.__states = None
+
+    def add_startup(self, event, *args, **kwargs):
+        self.startup_events.add_event(event, *args, **kwargs)
+
+    def add_shutdown(self, event, *args, **kwargs):
+        self.shutdown_runner.add_event(event, *args, **kwargs)
+
+    @property
+    def states(self):
+        if self.__states is not None and not isinstance(self.__states, dict):
+            raise ValueError("States must be a dictionary or None")
+        return self.__states
+
+    @states.setter
+    def states(self, value):
+        if isinstance(value, Callable):
+            self.__states = value()
+        else:
+            self.__states = value
+
+    async def __aenter__(self):
+        if self.timeout:
+            async with asyncio.timeout(self.timeout):
+                await self.startup_events.run()
+        else:
+            await self.startup_events.run()
+        return self
+
+    async def __aexit__(self, exc_type, exc, tb):
+        if self.timeout:
+            async with asyncio.timeout(self.timeout):
+                await self.shutdown_runner.run()
+        else:
+            await self.shutdown_runner.run()
+        return None
+
+    async def lifespan(self, app):
+        await self.__aenter__()
+        try:
+            yield self.states
+        finally:
+            await self.__aexit__(None, None, None)
+
+# main.py
+async def async_hello(name):
+    print(f"Hello async world, {name}")
+
+def get_states():
+    return {
+        "state_1": "state_1",
+        "state_2": "state_2"
+    }
+
+lifespan = Lifespan()
+lifespan.add_startup(print, "Hello world")
+lifespan.add_startup(async_hello, name="mingke")
+lifespan.add_shutdown(print, "Goodbye world")
+lifespan.states = get_states
+
+app = FastAPI(lifespan = lifespan.lifespan)
+
+@app.get("/")
+async def read_root(request: Request):
+    print(request.state.__dict__)
+
+    return {"Hello": "World"}
+
+```
+
+- startup과 shoutdown이벤트는 여러 개 있을 수 있습니다. `EventExecutor` 를 만들어서 여러 이벤트들을 관리해주고 `Lifespan` 으로 주입해줍니다.
+- `__aenter__` 에서 startup 이벤트를 실행합니다.
+- `__aexit__` 에서 shutdown이벤트를 실행합니다.
+- `states` 는 yield되는 부분인데 `Request.state`에 저장이 되느 부분입니다. 반드시 `dict`를 넣어야 합니다.
+- `lifespan` 메소드를 만듭니다. app 객체를 받아야하는데 FastAPI 객체가 됩니다. 하지만 lifespan은 `starlette` 기능이죠. 실행 시킬때 어떤 로직으로 돌아가는지 아래 링크에서 확인해보세요. 723라인에 `lifespan`있습니다.
+  {' '}
+  <Link url="https://github.com/encode/starlette/blob/master/starlette/routing.py" />
+- `timeout`은 `lifespan`이 실행되거나 종료되는데 제한시간을 주는 것입니다. 무한 대기를 방지하고 안정성을 향상 시킬 수 있습니다. `lifespan`은 앱이 구동하기 전에 먼저 실행되죠.
+
+- 실행 결과
+
+```bash
+INFO:     Waiting for application startup.
+Hello world
+Hello async world, mingke
+INFO:     Application startup complete.
+{'_state': {'state_1': 'state_1', 'state_2': 'state_2'}}
+INFO:     127.0.0.1:53652 - "GET / HTTP/1.1" 200 OK
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+Goodbye world
+INFO:     Application shutdown complete.
+INFO:     Finished server process [31552]
+INFO:     Stopping reloader process [28491]
+```
+
+## 마무리
+
+`Lifespan`을 클래스로 구현해보았습니다. 굳이 그렇게 해야하냐고 물어보면, 그건 아니고 그냥 저의 취향대로 코딩한 것이니 그냥 이런 놈도 있군 하시면 될 듯 합니다.
+
+<Link url="https://chaechae.life/blog/python-class-to-dict" />
