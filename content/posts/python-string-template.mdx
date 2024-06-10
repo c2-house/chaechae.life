@@ -1,0 +1,80 @@
+---
+title: python 문자열 템플릿 알아보기
+description: 문자열 템플릿을 만드는 방법은 f-string 같은 포맷팅 방법 이외에 따로 파싱을 구현하여 사용할 수 있었습니다. 정규표현식을 사용을 위한re 라이브러리나 string 라이브러리를 이용하면 가능합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/06/10
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python string template" />
+
+### 목차
+
+## 문자열 템플릿
+
+FastAPI를 사용해서 개발하다보면 url의 path파라미터를 다음과 같은 방식으로 표현합니다.
+
+```python
+# FastAPI
+@app.get("/items/{item}/")
+async def read_item(item: int):
+    return {"item_name": item}
+```
+
+코드를 보면 문자열 안에 `{item}` 으로 item이 변수로 들어가 있습니다. Python에서 문자열 챕터에서 따옴표 앞에 f를 붙여 `f-string` 이라 불리는 방법을 사용한다고 배웠는데, 여긴 없습니다.
+
+`Langchain` 에서 prompt 입력할 때도 그렇고 이 방법은 무엇인가 궁금해서 한 번 찾아봤습니다.
+
+```python
+# Langchain tutorial
+from langchain_core.prompts import ChatPromptTemplate
+
+system_template = "Translate the following into {language}:"
+prompt_template = ChatPromptTemplate.from_messages(
+    [("system", system_template), ("user", "{text}")]
+)
+result = prompt_template.invoke({"language": "italian", "text": "hi"})
+
+result
+```
+
+문자열 템플릿이라고 부릅니다. 문자열 템플릿을 만드는 방법은 `f-string` 같은 포맷팅 방법 이외에 따로 파싱을 구현하여 사용할 수 있었습니다. 정규표현식을 사용을 위한`re` 라이브러리나 `string` 라이브러리를 이용하면 가능합니다.
+
+문자열 템플릿을 사용하면 여러가지 이점이 있습니다.
+
+- 템플릿을 만들어 재사용성을 높임
+- 유연하게 동적으로 사용가능
+- 유효성 검사 가능
+
+## 예제
+
+정규표현식을 이용한 방법은 `starlette` 코드에서 참고하면 좋을 것 같습니다. 125라인에 `compile_path` 함수 참고
+
+<Link url="https://github.com/encode/starlette/blob/master/starlette/routing.py" />
+
+`string`라이브러리를 이용해서 간단한 예제를 구현해보겠습니다
+
+```python
+from string import Formatter
+
+formatter = Formatter()
+
+template = "I'm, {name}! Today is {day}."
+values = {"name": "mingke", "day": "Monday"}
+
+formatted_string = formatter.vformat(template, (), values)
+print(formatted_string)
+
+# I'm, mingke! Today is Monday.
+```
+
+공식문서를 보면 더 자세한 내용을 배울 수 있습니다.
+
+<Link url="https://docs.python.org/ko/3/library/string.html#" />
+
+## 마무리
+
+당장 사용할 일은 없지만 문자열 템플릿에 대해서 그냥 궁금해서 찾아봤습니다. 문자열을 파싱하는 방법도 커스텀할 수가 있군요.
+
+<Link url="https://chaechae.life/blog/python-pathlib" />
