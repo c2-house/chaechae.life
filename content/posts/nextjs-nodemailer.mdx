@@ -1,0 +1,123 @@
+---
+title: Nextjs nodemailer로 mail전송하기
+description: 이번 포스팅에서 nodemailer를 이용해서 쉽게 이메일 전송하는 법을 알아보겠습니다
+tags: [Nextjs, Nodejs]
+author: mingke
+date: 2024/06/11
+---
+
+### 목차
+
+## Nodemailer
+
+최근 외주개발을 마무리 한 건이 있는데, 얼마전 의뢰인에게 **고객 문의가 들어오면 이메일로 받아 볼 수 있게 해줄 수 있냐**고 추가 요청이 왔습니다. `Nextjs + Supabase`로 구성된 웹사이트고 간단하게 생각해보면 supabase에 data를 insert하고 나서 error가 발생하지 않으면 email을 전송해주면 되는 간단한 작업이었습니다.
+
+이것을 쉽게 가능하게 해주는 `nodemailer` 라는 라이브러리가 있었습니다. `nodemailer` 홈페이지에 가면 easy as cake email sending 이라고 합니다. nodejs 모듈이라 사실 제목에서 언급한 Nextjs에만 해당하는 이야기는 아닙니다.
+
+이번 포스팅에서 `nodemailer`를 이용해서 쉽게 이메일 전송하는 법을 알아보겠습니다.
+
+## E-mail Provider
+
+Email을 전송 기능을 만드는 것은 회사에서 백엔드로 일할 때 몇 번 해봤던 작업입니다. 그 때는 항상 `AWS SES` 를 사용했습니다. 하지만 이번 의뢰인은 작업 업체를 운영하며 웹사이트는 부가적인 채널이기에 의뢰인의 **네이버 이메일**을 활용했습니다.
+
+Gmail이 가장 먼저 떠오르긴 했는데, 구글의 보안정책의 변경으로 앱 비밀번호를 만들어서 사용하는 방식이 생각처럼 잘 되지 않아 네이버 이메일로 빨리 옮겼습니다. (속도가 중요한 작업이기 때문에)
+
+Gmail을 쓸거면 Gmail API를 쓰는게 나은 것 같습니다.
+
+### 네이버 메일 설정
+
+네이버 메일에서 설정하는 방법은 아주 간단합니다.
+
+- 네이버 메일 접속 → 환경 설정 → IMAP/SMTP 설정 → 사용함 → 저장
+
+<Image src="/nextjs-nodemailer/01.jpg" alt="Naver email setting" />
+
+같은 화면에 아래 이미지와 같은 정보도 나옵니다. SMTP 서버를 사용할 것입니다. SMTP(Simple Mail Transfer Protocol)은 표준 이메일 전송 프로토콜입니다.
+
+<Image src="/nextjs-nodemailer/02.jpg" alt="Naver SMTP INFO" />
+
+이 설정을 먼저 진행하고 코드로 넘어갑니다.
+
+## 이메일 전송 코드
+
+- nodemailer를 먼저 설치합니다.
+- typescript를 사용했기 때문에 타입모듈도 함께 설치합니다.
+
+```bash
+npm install nodemailer
+npm install @types/nodemailer --save-dev
+```
+
+다음과 같이 코드를 작성했습니다.
+
+.env에 네이버 아이디와 비밀번호를 넣어주었습니다.
+
+이메일에서 사용될 html은 알아서 작성하면 됩니다. CSS도 inline style로 넣어주면 사용가능합니다.
+
+```tsx
+// mail.ts
+import nodemailer from "nodemailer";
+
+export const transporter = nodemailer.createTransport({
+  host: "smtp.naver.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.NEXT_PUBLIC_,NAVER_ID,
+    pass: process.env.NEXT_PUBLIC_NAVER_PW,
+  },
+});
+
+export const getMailContent = (html: string) => {
+  return {
+    from: process.env.NEXT_PUBLIC_EMAIL,
+    to: process.env.NEXT_PUBLIC_EMAIL,
+    subject: "문의사항이 도착했습니다.",
+    html,
+  };
+};
+
+export const getHtml = (title: string) => {
+  return `
+    <div>
+        <h1>문의사항이 도착했습니다.</h1>
+        <h2>${title}</h2>
+        <p>문의사항을 확인해주세요.</p>
+    </div>
+`;
+};
+
+// actions.ts
+...
+import { getHtml, getMailContent, transporter } from "./mail";
+...
+
+export const postInquiry = async (values: InquiryFormType) => {
+  const supabase: SupabaseClient<Database> = createClient();
+
+  const { agree, date, ...rest } = values;
+
+  const { error } = await supabase.from("inquiry").insert({
+    ...rest,
+    created_at: date?.toISOString(),
+    done: false,
+  });
+
+  if (error) {
+    return error;
+  } else {
+    const html = getHtml(values.title);
+    const mailContent = getMailContent(html);
+    await transporter.sendMail(mailContent);
+    return "/inquiry/success";
+  }
+};
+
+...
+```
+
+## 마무리
+
+`nodemailer` 공식문서에서 이야기한 것처럼 아주 쉽게 이메일을 보낼 수 있었습니다. 공식문서를 살펴보니 `AWS SES` 같은 다른 메일 공급자도 쉽게 연결이 가능해보입니다. 필요할 때 사용하면 될 것 같습니다.
+
+<Link url="https://nodemailer.com/" />
