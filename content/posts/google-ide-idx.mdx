@@ -1,0 +1,76 @@
+---
+title: IDX - Google이 만든 웹 기반 IDE 알아보기
+description: 얼마전에 보니 구글이 웹에서 실행할 수 있는 클라우드 IDE를 개발했더라구요. IDX라고 합니다. 간단하게 한 번 써봤는데요. 이번 포스팅에서 한 번 알아보도록 하겠습니다.
+tags: [Others]
+author: mingke
+thumbnail: /google-ide-idx/idx-icon.png
+date: 2024/06/14
+---
+
+<Image src="/google-ide-idx/idx-logo.jpg" alt="Google Project IDX" />
+
+### 목차
+
+## Project IDX
+
+개발할 때 Microsoft에서 만든 VSCode를 자주 사용하는 편입니다. 얼마전에 보니 구글이 **웹에서 실행할 수 있는 클라우드 IDE를 개발**했더라구요. **IDX**라고 합니다. 간단하게 한 번 써봤는데요. 이번 포스팅에서 한 번 알아보도록 하겠습니다. 아직 베타 버젼입니다. 이런거 나오면 한 번 써봐야죠.
+
+아래 링크로 가서 `Get started`로 시작하면 됩니다.
+
+<Link url="https://idx.google.com/" />
+
+## 홈 화면
+
+홈 화면으로 들어오니 아래와 같이 나왔습니다. 각 언어와 대표적인 프레임워크의 프로젝트 **템플릿을 제공**합니다.
+
+**Github Repository**에서도 import하는 것을 제공해줍니다.
+
+<Image src="/google-ide-idx/01.jpg" alt="Google Project IDX HOME" />
+
+## 템플릿과 UI
+
+기본적으로 셋팅된 템플릿들이 보입니다. Python은 **Flask**와 **Django**가있네요. **FastAPI**가 없는게 아쉽습니다.
+
+Python Django를 클릭하여 실행해보았습니다.
+
+<Image src="/google-ide-idx/02.jpg" alt="Google Project IDX Template" />
+
+프로젝트 이름을 실행하고 잠시 뒤에 프로젝트가 셋팅되고 runserver도 해줍니다.
+
+<Image src="/google-ide-idx/03.jpg" alt="Google Project IDX IDE" />
+
+- UI는 VSCode와 거의 동일합니다. Extension도 지원됩니다.
+- 코드 **에디터 안에서 웹**이 같이 실행되는데 아주 유용한 것 같습니다.
+  - 화면 공유로 같이 코드보면서 작업할 때 특히 유용할 것 같습니다.
+  - **요즘 부트캠프가 많은데 특히 웹개발 부트캠프에서 학생들 질문 받고 설명해줄 때 활용하면 더더욱 유용할 것 같네요.**
+- 터미널도 잘되나 django command를 한 번 실행해보았습니다. 아주 잘됩니다.
+  {' '}
+  <Image src="/google-ide-idx/04.jpg" alt="Google Project IDX Terminal" />
+- Gemini가 Copilot처럼 코드 제안도 해줍니다. Copilot이랑 사용법도 동일하네요. `cmd + i` 로 inline chat도 가능합니다.
+  {' '}
+  <Image src="/google-ide-idx/05.jpg" alt="Google Project IDX Gemini" />
+- 워크스페이스에 초대해서 공동작업하는 기능도 있습니다. VSCode Live Share랑 동일해보이는데, 기본 기능으로 탑재되어 있습니다. `cmd + shift + p` 하고 `share workspace`하면 됩니다. 이메일로 초대하면 됩니다.
+  {' '}
+  <Image src="/google-ide-idx/06.jpg" alt="Google Project IDX Share" />
+- Github 연결도 잘 됩니다. 연동하기 위해서 인증하는 과정도 화면에 나오는대로 따라가면 됩니다. github import하고 add,commit,push를 진행해 보았는데 잘 되네요.
+
+<Image src="/google-ide-idx/07.jpg" alt="Google Project IDX Github" />
+
+## 마무리
+
+IDX에 대해서 알아봤습니다. 느낀점은 다음과 같습니다.
+
+- 별도 설치없이 바로 사용해볼 수 있어서 좋음
+- VSCode에 익숙하면 이질감없이 사용 가능할 듯
+- 아직 베타라 그런가 VM 셋팅 되는데 다소 오래걸릴 때가 있음
+- Copilot은 유료인데 Gemini가 공짜로 코드 제안해주는 것은 아주 매력적임
+  - 잠깐 써봤지만 실력은 Copilot이 좀 더 나은듯
+- Gemini와 연동이 잘되는 것 같아보임
+- 자주 쓸지는 모르겠지만 특정 상황에서는 아주 유용할 것 같음
+- 공유가 아주 쓸만해보임
+
+결론적으로 제가 느끼기에는 베타치고는 나쁘지 않다? 주절주절 떠들긴했는데 IDX문서보면서 하나씩 실험해보는 것도 나쁘지 않을 것 같습니다.
+
+<Link url="https://developers.google.com/idx/guides" />
+
+<Link url="https://chaechae.life/blog/pre-commit-custom-hook" />
