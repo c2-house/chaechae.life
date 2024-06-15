@@ -1,0 +1,111 @@
+---
+title: Rust 문자열 타입 알아보기
+description: Rust를 취미처럼 공부하고 있습니다. 정말 난이도가 있다고 느껴집니다. 문자열 타입같은 경우, 다른 언어를 배울 때 가장 먼저 배우는 쉬운 타입인데 Rust에서는 그렇지가 않더군요. Rust 문자열에 대해서 한 번 알아보겠습니다.
+tags: [Rust]
+author: mingke
+thumbnail: /thumbnails/rust-logo.png
+date: 2024/06/15
+---
+
+<Image src="/thumbnails/rust-logo.png" alt="Rust String type" />
+### 목차
+
+## Rust 문자열 타입
+
+Rust를 취미처럼 공부하고 있습니다. 정말 난이도가 있다고 느껴집니다. 문자열 타입같은 경우, 다른 언어를 배울 때 가장 먼저 배우는 쉬운 타입인데 Rust에서는 그렇지가 않더군요. Rust 문자열에 대해서 한 번 알아보겠습니다.
+
+대표적으로 `String` 과 `str` 이 있습니다.
+
+## String
+
+`String` 타입이 우리가 다른 언어에서 알고 있던 문자열 타입입니다. 하지만 사용하는 방법은 조금 다릅니다. `String` 의 특징은 다음과 같습니다.
+
+- 소유권을 가집니다.
+- 문자열의 크기를 미리 알 수 없거나 문자열의 크기가 변경되어야하는 경우에 사용합니다.
+- **힙 메모리 영역**에 저장되기 때문에 크기를 동적으로 조정할 수 있습니다.
+- 따라서 우리가 다른 언어에서 기대할 수 있는 문자열 관련 메소드들을 지원합니다.
+
+### String예시
+
+- 1.String 타입에 문자열 할당
+- 2.사용자에게 입력을 받아 파일을 만드는 코드입니다.
+
+```rust
+// 1
+fn main() {
+  // String의 from 메소드 사용
+  let some_string = String::from("Hello, World!");
+  println!("{}", some_string);
+}
+
+// 2
+use std::fs::File;
+use std::io::{self, Write};
+
+fn write_to_file(file_path: &str, contents: &str) -> io::Result<()> {
+    let mut file = File::create(file_path)?;
+    file.write_all(contents.as_bytes())?;
+    Ok(())
+}
+
+fn main() {
+    print!("Enter file path: ");
+    io::stdout().flush().unwrap();
+    let mut file_path = String::new();
+    io::stdin().read_line(&mut file_path).unwrap();
+    let file_path = file_path.trim();
+
+    print!("Enter file contents: ");
+    io::stdout().flush().unwrap();
+    let mut file_contents = String::new();
+    io::stdin().read_line(&mut file_contents).unwrap();
+    let file_contents = file_contents.trim();
+
+    match write_to_file(file_path, file_contents) {
+        Ok(_) => println!("File written successfully"),
+        Err(e) => println!("Error writing file: {}", e),
+    }
+}
+```
+
+## str
+
+`str` 은 `String`과 반대로 고정된 크기의 문자열입니다. 다음과 같은 특징이 있습니다.
+
+- 고정된 문자열로 불편성을 가집니다. 읽기 전용입니다.
+- `UTF-8`인코딩을 보장합니다.
+- `str` 는 사용하지 않고 보통 `&str` 으로 참조 형태로 사용됩니다. 문자열 슬라이스라고 합니다.
+- 참조 형태로 **스택**에 저장됩니다.
+- 리터럴 문자열을 할당한다면 `&str` 입니다.
+  - `text: &str = “가나다라마바사”`
+
+### str 예제
+
+1. 정규표현식을 활용해서 한글을 찾는 예제
+
+```rust
+use regex::Regex;
+
+fn main() {
+    let text = "abcd가나다라1234";
+    let re = Regex::new(r"[가-힣]+").unwrap();
+    let result = re.find(text);
+
+    if let Some(m) = result {
+        println!("{}", m.as_str());
+    } else {
+        println!("No Korean characters found");
+    }
+}
+```
+
+## 스택과 힙
+
+- **스택**: 함수 호출 시 할당되는 고정 크기의 메모리 영역입니다. 빠른 접근이 가능하지만, 고정된 크기의 데이터만 저장 가능합니다. `&str`
+- **힙**: 동적으로 할당되는 메모리 영역으로, 동적이고 가변적인 데이터를 저장할 수 있습니다. 할당과 해제가 스택보다 느리지만, 큰 데이터를 저장할 수 있습니다. `String`
+
+## 마무리
+
+`String`과 `&str` 의 관계는 `Vec`와 `Array`의 관계와 유사합니다. Rust 간단하다고 생각했던 문자열도 어렵네요. 아주 재미있네요. 문자열을 나타내는 타입은 이 2가지만 있는 것은 아닙니다. 나중에 알아보도록 하겠습니다.
+
+<Link url="https://chaechae.life/blog/rust-python-practice" />
