@@ -1,0 +1,124 @@
+---
+title: django-ninja 사용해서 API 개발해보기
+description: Django Reddit을 둘러보다가 django-ninja 에 대한 게시물을 발견했습니다. 작년 말에 1버젼이 릴리즈 되었더라구요. 그래서 튜토리얼 느낌으로 한 번 사용해보았습니다.
+tags: [Django]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/06/16
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django ninja" />
+
+### 목차
+
+## django-ninja
+
+Django에서 API개발에는 거의 DRF(django-restframework)를 사용합니다. Django Reddit을 둘러보다가 `django-ninja` 에 대한 게시물을 발견했습니다. `django-ninja` 는 DRF의 대항마? 같은 느낌으로 Django API를 개발하는 프레임워크입니다. 작년 말에 1버젼이 릴리즈 되었더라구요. 그래서 튜토리얼 느낌으로 한 번 사용해보았습니다.
+
+## FastAPI와 닮았다?
+
+공식문서의 튜토리얼 페이지를 열자마자 느낀점은 **FastAPI와 닮았다?** 라는 것입니다. 그래서 좀 더 자세히 읽어보니 FastAPI에서 영감을 받았다고 하네요.
+
+```python
+# django-ninja
+from ninja import NinjaAPI
+
+api = NinjaAPI()
+
+@api.get("/hello")
+def hello(request):
+    return "Hello world"
+
+
+# FastAPI
+from fastapi import FastAPI
+
+app = FastAPI()
+
+@app.get("/hello")
+def hello():
+    return "Hello world"
+
+```
+
+- API를 개발하는 방식뿐만 아니라 API Schema를 구성하는데 `Pydantic`을 사용합니다. `BaseModel`를 상속받은 `Schema`라는 클래스가 있습니다.
+- `Router` 클래스를 사용하여 라우터를 분리 시킬 수 있습니다. FastAPI의 `APIRouter` 와 유사합니다.
+- **비동기 API를 지원합니다.**
+
+  ```python
+  from ninja import Schema
+  from pydantic import model_validator
+
+  class UserCreateRequest(Schema):
+      name: str
+      email: str
+      password: str
+      password_confirmation: str
+
+      # pydantic validator 사용 가능
+      # values에 DjangoGetter 객체가 들어오는데 아래와 같이 _obj을 사용하면 값을 받아 올 수 있음
+      @model_validator(mode="before")
+      @classmethod
+      def validate_password_confirmation(cls, values):
+          if values._obj["password"] != values._obj["password_confirmation"]:
+              raise ValueError("Password and password confirmation do not match")
+          return values
+
+  from ninja import Router
+  from users.schema import UserCreateRequest
+  from users.models import User
+
+  router = Router(tags=["Users"])
+
+  @router.post("/")
+  async def create_user(request, data: UserCreateRequest):
+      data = data.dict()
+      data.pop("password_confirmation")
+      user = await User.objects.acreate(**data)
+      return {"user_id": user.id}
+
+  ```
+
+- 비동기 API로 개발했을 경우 Uvicorn을 설치하여 실행시킬 수 있습니다. 아니면 그냥 runserver 명령어로 실행하면 됩니다.
+
+  ```bash
+  # project_ninja는 django프로젝트 생성시 지은 이름
+  uvicorn project_ninja.asgi:application --reload
+
+  # Uvicorn실행이 가능하니 gunicorn과 uvicorn워커로 함께 실행도 되겠죠
+  gunicorn project_ninja.asgi:application --workers 4 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
+  ```
+
+- FastAPI처럼 Swagger도 자동으로 생성해줍니다.
+  <Image src="/django-ninja-giving-a-shot/01.png" alt="django ninja Swagger" />
+- Type Hint와 Annotated 지원합니다.
+  ```python
+  @api.get("/annotated")
+  def annotated(request, data: Annotated[SomeData, Form()]):
+      return {"data": data.dict()}
+  ```
+- FastAPI에 없는 기능들도 있습니다. `api_operation` 은 FastAPI에도 추가되면 좋겠습니다.
+  ```python
+  @router.api_operation(["GET", "POST"], "/{user_id}")
+  async def get_or_update_user(request, user_id: int):
+      ...
+  ```
+
+## 느낀점
+
+짧게 써보고 느낀점은 다음과 같습니다.
+
+- `DX`가 DRF보다 좋은 것 같다. 일단 뭘 만드는게 심플합니다. DRF사용할 땐 설정하기 아주 귀찮은 Swagger도 만들어주고 게다가`INSTALLED_APPS`에 추가하지 않아도 사용이 가능한데 그냥 기분이 좋아집니다. 꽤 잘 만든 프레임워크 같습니다.
+- FastAPI와 Django를 같이 사용하는 느낌입니다. 특히 ORM을 Django로 사용할 수 있다는 것이 아주 좋습니다.
+- 공식 문서가 굉장히 잘 만들어져 있습니다. 쉽게 보고 참고 할 수 있어서 좋습니다.
+- 비동기 API를 쉽게 만들 수 있어 성능을 끌어 올릴 수 있다는 것이 매력적이었습니다.
+
+## 마무리
+
+`django-ninja`에 대해서 간단하게 살펴봤습니다. 확실히 `DRF` 와는 결이 많이 다름이 느껴집니다. `django-ninja` 를 다음 번 프로젝트에서 한 번 사용해보고 싶네요. 이미 정식 1버젼이 출시되었고 이미 많은 100개 이상의 기업에서 Production에 사용하고 있다고 합니다.
+
+DRF만 사용해보셨다면 `django-ninja`도 한 번 살펴보시는 것도 추천합니다.
+
+<Link url="https://django-ninja.dev/" />
+
+<Link url="https://chaechae.life/blog/google-ide-idx" />
