@@ -1,5 +1,5 @@
 ---
-title: Python 프로젝트 관리를 위한 Poetry 알아보기
+title: Poetry - Python dependency 매니저 알아보기
 description: Poetry는 Python 프로젝트 관리의 많은 작업을 간소화하는 아주 강력한 의존성 관리 및 패키징 도구입니다. 최근 poetry를 사용하지 않는 팀원에게 poetry를 사용하는 방법을 알려줬었는데, 블로그에도 글로 한 번 남겨봅니다.
 tags: [Python]
 author: mingke
@@ -14,6 +14,14 @@ date: 2024/01/05
 ## 소개
 
 Python 프로젝트를 관리하려면 다양한 의존성, 환경 설정 및 배포 구성을 처리해야 하는 경우가 많습니다. pip 및 requirements.txt를 사용하는 기존 방법은 작동할 수 있지만 자체적인 한계가 있습니다. 저는 꽤 오래전부터 poetry를 사용하고 있습니다. Poetry는 Python 프로젝트 관리의 많은 작업을 간소화하는 아주 강력한 의존성 관리 및 패키징 도구입니다. 최근 poetry를 사용하지 않는 팀원에게 poetry를 사용하는 방법을 알려줬었는데, 블로그에도 글로 남겨봅니다.
+
+## 설치
+
+MacOS를 사용한다면 Homebrew로 설치하면 아주 쉽습니다. 그 외에는 공식문서 설치 메뉴얼을 따르면 됩니다.
+
+```bash
+brew install poetry
+```
 
 ## Poetry 사용 이유
 
