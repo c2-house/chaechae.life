@@ -16,10 +16,10 @@ export const generateStaticParams = async () => {
 
 const TagPage = ({ params: { tagName } }: Props) => {
   const posts = allPosts
-    .filter((post) => post.tags.find((tag) => slugify(tag) === tagName))
+    .filter((post) => post.tags.find((tag) => slugify(tag) === decodeURIComponent(tagName)))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-  const currentTag = tags.find((tag) => slugify(tag) === tagName);
+  const currentTag = tags.find((tag) => slugify(tag) === decodeURIComponent(tagName));
 
   return (
     <main className="container-lg">

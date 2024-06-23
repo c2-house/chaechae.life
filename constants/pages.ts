@@ -29,4 +29,5 @@ export const tags = [
   'Supabase',
   'Swagger',
   'Writing',
+  '오름캠프',
 ] as const;
