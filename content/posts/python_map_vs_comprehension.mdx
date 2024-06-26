@@ -1,0 +1,110 @@
+---
+title: 오름캠프 - map함수와 list comprehension 비교
+description: map이냐 List Comprehension이냐는 개인 취향 같습니다. 그리고 둘 다 코드가 간결해지긴 하지만 너무 생략하면 오히려 가독성이 떨어지는 경우도 많아서 일반 for문을 사용하는 경우도 많습니다.
+tags: [Python, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/06/26
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python map list comprehension ormcamp" />
+
+### 목차
+
+## map 함수
+
+이 글이 올라가는 날은 반복문을 배운 날이지만 작성하고 있는 날에 파이썬 built-in 함수를 배웠습니다. 그 중에서 `map` 함수에 대해서 다뤄보려고 합니다.
+
+`map` 파이썬의 기본 내장되어있는 함수로써 `Iterable`한 객체와 함수를 입력받습니다. 객체의 첫번째 원소부터 순회하며 각각의 원소를 함수의 인자로 입력하여 반환되는 값을 저장합니다.
+
+```python
+# map example
+users = [
+    {
+        "first_name": "ORM",
+        "last_name": "CAMP",
+    },
+    {
+        "first_name": "OLRM",
+        "last_name": "CAMPING",
+    },
+]
+
+def get_full_name(user):
+    return f"{user['first_name']} {user['last_name']}"
+
+# map(함수, Iterable객체)
+# map함수는 map 객체를 반환
+map(get_full_name, users) # <map object at 0x102666e00>
+
+# 주의: 함수는 map함수가 내부에서 실행하기 때문에 get_full_name() 이런식으로 넣으면 안됩니다.
+
+# 새로운 Iterable한 객체를 만들기 위해서는 다음과 같이 실행
+full_names = list(map(get_full_name, users)) # ['ORM CAMP', 'OLRM CAMPING']
+full_names = tuple(map(get_full_name, users)) # ('ORM CAMP', 'OLRM CAMPING')
+full_names = set(map(get_full_name, users)) # {'OLRM CAMPING', 'ORM CAMP'}
+
+# lambda 함수 사용가능
+
+```
+
+- 맵을 사용하지 않는다면 다음과 같이 할 수 있겠습니다.
+
+```python
+full_names = []
+for user in users:
+    full_name = get_full_name(user)
+    full_names.append(full_name)
+```
+
+### map의 이점
+
+- for문을 사용하는 것보다 코드가 간결합니다.
+- 많은 양의 데이터를 다루는 경우 일반적인 for문을 사용하는 것보다 적게 사용하는 이점이 있습니다.
+
+## List Comprehension
+
+`List Comprehension` 은 파이썬에서 제공하는 강력한 기능 중에 하나입니다. 코드를 더 간결하게 작성하고 더 좋은 성능을 낼 수 있게 해줍니다.
+
+조건문을 넣어 필터링도 할 수 있습니다.
+
+```python
+# List Comprehension
+# some_things 안에서 하나씩 꺼내서 리스트에 넣습니다.
+_list = [i for i in some_things]
+
+# ex) 1 부터 100까지 원소를 가지는 리스트 생성합니다.
+one_to_hundred = [ i for i in range(1,101)]
+
+# 조건문 (필터)
+# 짝수만 필터
+even_numbers = [ i for i in one_to_hundred if i % 2 == 0]
+
+# if문에 else가 있으면 if문 위치가 변경됩니다.
+# 홀수는 'x'로 변경
+odd_number_x_list= [ i if i % 2 ==0 else "x" for i in one_to_hundred ]
+
+# map에서 사용했던 예제를 List Comprehension으로
+full_names = [ get_full_name(user) for user in users ]
+```
+
+### List Comprehension의 이점
+
+- 일반 for문을 사용하는 것보다 대개는 조금 더 빠릅니다. 파이썬 내부적으로 최적화가 되어있다고 합니다.
+- 코드가 간결합니다.
+- List Comprehension에 for를 중첩이 아니고 하나만 사용하는 경우에는 가독성도 더 뛰어납니다.
+
+## map vs List Comprehension
+
+map과 list comprehension을 보면 두개가 비슷해보입니다. map도 사용하기는 하지만 저는 개인적으로 List Comprehension을 더 많이 사용합니다. 그 이유는 다음과 같습니다.
+
+- for 문에 익숙해서 List Comprehension이 더 작성하기 편하고 직관적이라고 느낍니다.
+- 조건문과 결합하려 필터링이 쉽게 가능합니다. 필터를 걸려면 map이 아니라 `filter` 함수를 사용해야합니다.
+
+map과 lambda를 함께 쓰면 오버헤드가 발생하여 List Comprehension이 더 빠르다고 하는데 모든 상황에서 List Comprehension이 빠른 것은 아닙니다.
+
+## 마무리
+
+map이냐 List Comprehension이냐는 개인 취향 같습니다. 그리고 둘 다 코드가 간결해지긴 하지만 **comprehension같은 경우 너무 길어지면 오히려 가독성이 떨어지는 경우도 많아서** 일반 for문을 사용하는 경우도 많습니다.
+
+그래서 성능을 최대한 끌어올려야하는게 아니라면 개인취향이 아닌가 싶습니다. 상황에 맞게 사용하면 되겠습니다.
