@@ -121,6 +121,8 @@ export const postInquiry = async (values: InquiryFormType) => {
 
 ## 마무리
 
+위에 설명한대로 했는데도 로그인 인증 에러 메세지를 받는다면 2차 인증이 있는지 확인해보세요. **2차 인증이 걸려 있다면 위 방법대로 사용할 수 없습니다**.
+
 `nodemailer` 공식문서에서 이야기한 것처럼 아주 쉽게 이메일을 보낼 수 있었습니다. 공식문서를 살펴보니 `AWS SES` 같은 다른 메일 공급자도 쉽게 연결이 가능해보입니다. 필요할 때 사용하면 될 것 같습니다.
 
 <Link url="https://nodemailer.com/" />
