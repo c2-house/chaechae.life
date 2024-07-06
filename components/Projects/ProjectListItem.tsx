@@ -27,7 +27,7 @@ const ProjectListItem = ({ project }: { project: Project }) => {
               alt={project.title}
               width={400}
               height={228}
-              className="my-auto w-full flex-1 origin-bottom transition-transform duration-300 group-hover:scale-[0.9]"
+              className="my-auto w-full flex-1 flex-grow-0 origin-bottom transition-transform duration-300 group-hover:scale-[0.9]"
             />
           )}
         </article>
