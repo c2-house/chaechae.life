@@ -13,7 +13,7 @@ export const generateMetadata = async (
   { params: { tagName } }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
-  const tag = tags.find((tag) => slugify(tag) === tagName);
+  const tag = tags.find((tag) => slugify(tag) === decodeURIComponent(tagName));
   const title = `${tag} - ${baseTitle}`;
   const description = (await parent).description || '';
 
