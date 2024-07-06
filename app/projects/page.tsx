@@ -4,13 +4,13 @@ import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 import { WebsiteIcon } from '@/public/icons';
 
 const Page = () => {
-  const projects = allProjects.sort((a, b) => a.order - b.order);
+  const projects = allProjects.sort((a, b) => b.id - a.id);
 
   return (
     <main className="container-lg">
       <ul className="grid grid-cols-1 gap-5 py-6 md:grid-cols-2">
         {projects.map((project) => (
-          <ProjectListItem key={project.slug} project={project} />
+          <ProjectListItem key={project.id} project={project} />
         ))}
         <li className="flex aspect-square max-w-[470px] flex-col items-center justify-center rounded-xl border-2 border-gray-100">
           <WebsiteIcon className="mb-5 h-36 w-36 lg:mb-7 lg:h-44 lg:w-44" />

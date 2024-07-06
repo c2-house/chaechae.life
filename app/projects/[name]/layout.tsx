@@ -4,12 +4,12 @@ import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
   params: {
-    slug: string;
+    name: string;
   };
 }
 
-export const generateMetadata = async ({ params: { slug } }: Props): Promise<Metadata> => {
-  const project = allProjects.find((project) => project.slug === slug);
+export const generateMetadata = async ({ params: { name } }: Props): Promise<Metadata> => {
+  const project = allProjects.find((project) => project.name === name);
 
   if (!project) return {};
 
@@ -23,7 +23,7 @@ export const generateMetadata = async ({ params: { slug } }: Props): Promise<Met
       ...openGraph,
       title,
       description,
-      url: `/projects/${slug}`,
+      url: `/projects/${name}`,
     },
     twitter: {
       title,

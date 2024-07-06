@@ -1,16 +1,24 @@
 import type { Project } from 'contentlayer/generated';
 import Mdx from '@/components/Mdx';
+import InarticleAds from '@/components/AdSense/InarticleAds';
 import EvCharge from '@/components/Projects/EvCharge';
 import MessageBot from '@/components/Projects/MessageBot';
 import WeddingCard from '@/components/Projects/WeddingCard';
-import InarticleAds from '@/components/AdSense/InarticleAds';
 
 interface Props {
   project: Project;
-  slug: string;
+  name: string;
 }
 
-const ProjectDescription = ({ project, slug }: Props) => {
+const getContent = (name: string) => {
+  return {
+    'wedding-card': <WeddingCard />,
+    'ev-charge': <EvCharge />,
+    messagebot: <MessageBot />,
+  }[name];
+};
+
+const ProjectDescription = ({ project, name }: Props) => {
   return (
     <article className="prose prose-slate py-6 lg:prose-lg md:py-10">
       <header>
@@ -26,9 +34,7 @@ const ProjectDescription = ({ project, slug }: Props) => {
       <InarticleAds />
       <section>
         <Mdx code={project.body.code} />
-        {slug === 'wedding-card' && <WeddingCard />}
-        {slug === 'ev-charge' && <EvCharge />}
-        {slug === 'messagebot' && <MessageBot />}
+        {getContent(name)}
       </section>
       <InarticleAds />
     </article>

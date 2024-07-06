@@ -59,7 +59,7 @@ export const Project = defineDocumentType(() => ({
   filePathPattern: `projects/**/*.mdx`,
   contentType: 'mdx',
   fields: {
-    order: {
+    id: {
       type: 'number',
       required: true,
     },
@@ -81,7 +81,7 @@ export const Project = defineDocumentType(() => ({
     },
   },
   computedFields: {
-    slug: {
+    name: {
       type: 'string',
       resolve: (doc) => doc._raw.flattenedPath.split('/')[1],
     },

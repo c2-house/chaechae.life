@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import Image from 'next/image';
 
 interface VideoProps {
@@ -8,17 +9,26 @@ interface VideoProps {
 interface ImageProps extends VideoProps {
   alt: string;
   fullWidth?: boolean;
+  path?: string;
+  className?: string;
 }
 
-export const NextImage = ({ src, alt, caption, fullWidth = true }: ImageProps) => {
+export const NextImage = ({
+  src,
+  alt,
+  caption,
+  className,
+  fullWidth = true,
+  path = '/blog',
+}: ImageProps) => {
   return (
     <figure>
       <Image
-        src={`/images/blog${src}`}
+        src={`/images${path}${src}`}
         alt={alt}
         width={fullWidth ? 730 : 400}
         height={fullWidth ? 548 : 400}
-        className="mx-auto"
+        className={clsx('mx-auto', className)}
       />
       {caption && <figcaption className="text-center">{caption}</figcaption>}
     </figure>
