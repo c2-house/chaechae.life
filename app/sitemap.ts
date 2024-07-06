@@ -10,7 +10,7 @@ const sitemap = (): MetadataRoute.Sitemap => {
   }));
 
   const projects = allProjects.map((project) => ({
-    url: `https://chaechae.life/projects/${project.slug}`,
+    url: `https://chaechae.life/projects/${project.name}`,
     lastModified: new Date(),
   }));
 
