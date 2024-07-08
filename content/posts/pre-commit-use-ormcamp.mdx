@@ -1,0 +1,104 @@
+---
+title: pre-commit 사용법 - 오름캠프
+description: pre-commit 이라는 툴이 있어서 소개해 드리려고 합니다. pre-commit 의 기능은 이름에서 추측할 수 있습니다. commit 이전에, 그러니까 commit이 실행되기 전에 일련의 작업들을 실행하는 것입니다.
+tags: [pre-commit, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/pre-commit-logo.png
+date: 2024/07/08
+---
+
+<Image src="/thumbnails/pre-commit-logo.png" alt="pre-commit use" />
+
+### 목차
+
+## pre-commit
+
+오늘 `git`, `github` 사용법을 배웠습니다. 그와 관련하여 추가로 알아두면 좋을 법한 `pre-commit` 이라는 툴이 있어서 소개해 드리려고 합니다. `pre-commit` 의 기능은 이름에서 추측할 수 있습니다. **commit 이전**에, 그러니까 commit이 실행되기 전에 일련의 작업들을 실행하는 것입니다.
+
+`pre-commit` 을 사용하면 코드 스타일, 린터 검사, 테스트 등 여러가지 작업을 commit 이전에 자동으로 실행할 수 있습니다. 팀에서 정해 놓은 코딩 가이드라인들을 지키도록 `pre-commit` 으로 자동화 해놓으면 불필요한 에러를 방지할 수 있습니다. ‘**쉽게 생각하면 코드 품질을 일관성있게 유지 해준다’** 라고 생각하면 됩니다.
+
+## pre-commit 설치
+
+설치는 pip로 설치할 수 있습니다만 MacOS를 사용하시는 분들은 Homebrew 설치를 권장합니다.
+
+```
+pip install pre-commit
+
+brew install pre-commit
+```
+
+이렇게 하면 설치 끝입니다.
+
+아래 명령어로 잘 설치되었는지 확인해보세요.
+
+```
+pre-commit --version
+```
+
+## pre-commit 실행 선행조건
+
+반드시 `git init` 이 선언되어 있어야 합니다. 그러니까 `.git` 이 존재하고 있어야 합니다.
+
+## .pre-commit-config.yaml 만들기
+
+commit전에 어떠한 작업들을 실행할 지 `.pre-commit-config.yaml`에서 정의해줍니다.
+
+- 프로젝트 최상단에 `.pre-commit-config.yaml` 파일을 만들어줍니다.`README.md` 와 같은 위치에 두세요.
+- 다음 명령어를 실행해봅니다. or 직접 작성
+
+```bash
+pre-commit sample-config >> .pre-commit-config.yaml
+```
+
+- 실행할 작업들을 `hooks`라고 하는데 그것들을 `.pre-commit-config.yaml` 에 추가해줍니다.
+- 참고
+
+```yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v3.2.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+        args: [--line-length=140]
+  - repo: https://github.com/PyCQA/flake8
+    rev: 7.0.0
+    hooks:
+      - id: flake8
+        args: [--max-line-length=140]
+```
+
+- `hooks`들의 버젼이 이전 버젼이라면 다음 명령을 실행하세요(위 예시는 최신 버젼이 아닙니다.)
+  - 잘 동작한다면 굳이 업데이트를 안해도 됩니다.
+
+```bash
+pre-commit autoupdate
+```
+
+- `.pre-commit-config.yaml` 는 일종의 정의서인데, 작성이 끝나면 다음 명령어를 실행합니다. 그러면 정의서에 있는 `hooks` 가 등록됩니다.
+
+```bash
+pre-commit install
+```
+
+- 이제 commit을 하면 `hooks`가 먼저 실행됩니다.
+
+<Image src="/pre-commit-use-ormcamp/01.png" alt="pre-commit use" />
+
+## 마무리
+
+`pre-commit` 을 사용하면 프로젝트를 여러 명이 하더라도 동일한 코드 포맷터와 린트를 사용하여 코드 품질을 유지할 수 있습니다.
+
+그리고 예를들어 ‘나는 black formatter의 line-length를 100으로 사용해서 개발하는게 좋은데’ 팀은 140으로 한다? 그래도 내가 개발할 때 나에게 좋은 가독성을 위해 100으로 사용해도 됩니다. 왜냐면 `pre-commit` 이 commit전에 140으로 다시 변경해 줄 것이니까요.
+
+정말 다양한 hooks가 있고 뿐만 아니라 custom hooks를 만들어서 사용할 수도 있습니다. 궁금하시다면 아래 글도 확인바랍니다.
+
+<Link url="https://chaechae.life/blog/pre-commit-custom-hook" />
+
+<Link url="https://pre-commit.com" />
