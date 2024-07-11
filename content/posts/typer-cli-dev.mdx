@@ -1,0 +1,156 @@
+---
+title: Typer를 이용한 Python CLI 만들기
+description: Typer 타입힌트를 기반으로하는 CLI 개발 라이브러리입니다. FastAPI 개발자분이 만들었습니다. FastAPI와 비슷한 패턴으로 개발할 수 있다는 것이 아주 매력적입니다
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/07/11
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python CLI by Typer" />
+
+### 목차
+
+## Typer
+
+최근에 파이썬 교육 목적으로 파이썬 퀴즈를 CLI로 풀어볼 수 있도록 하는 프로젝트를 시작했습니다. 이전에는 CLI를 개발할 때 `click` 라이브러리를 사용했었는데요. `FastAPI`와 닮은 `Typer` 를 사용해보고 싶어서 공부하면서 만들어봤습니다.
+
+`Typer` 타입힌트를 기반으로하는 CLI 개발 라이브러리입니다. `FastAPI` 개발자분이 만들었습니다. `FastAPI`와 비슷한 패턴으로 개발할 수 있다는 것이 아주 매력적입니다. 공식문서도 잘 되어 있는편이고 사용법도 크게 어렵지 않습니다.
+
+이것을 이용해서 만들어본 CLI는 다음과 같습니다.
+
+<Link url="https://github.com/Jungminchae/orm-study" />
+
+## Typer CLI 앱 만들기
+
+Typer 사용법은 앞에서도 언급했지만 FastAPI와 정말 비슷합니다. 우선 app을 선언합니다.
+
+```python
+# typer
+from typer import Typer
+
+app = Typer()
+
+# fastapi
+from fastapi import FastAPI
+
+app = FastAPI()
+```
+
+## Command 선언하기
+
+command를 만드는 방법은 다음과 같습니다. FastAPI의 Router에 endpoint 만드는 방법이랑 흡사합니다.
+
+```python
+from typer import Typer
+
+app = Typer()
+
+@app.command()
+def start():
+    # quiz를 시작합니다.
+    chapter_input = select_chapter()
+    type_input = select_quiz_type()
+    quiz_answer_set = fetch_quiz(chapter_input, type_input)
+    quiz_num = select_quiz_num(len(quiz_answer_set))
+    quiz_answer_set = quiz_answer_set[:quiz_num]
+
+    print(f"[green bold]챕터 {chapter_input}: {CHAPTER[chapter_input]}\n")
+    user_answers = solve_quiz(quiz_answer_set)
+    display_results(chapter_input, user_answers)
+
+```
+
+이렇게 하면 예를들어 cli의 이름이 app이라고 가정했을 때 아래 명령으로 실행 가능합니다.
+
+- `app start`
+
+## Command에 Option 추가하기
+
+Option을 추가하는 법도 너무 쉽고 직관적입니다. Option은 `command —-option` 이런 방식으로 사용하는 것입니다.
+
+```python
+import time
+import typer
+from typing import Annotated
+from rich import print
+...
+
+@app.command(help="파이썬 퀴즈를 시작합니다.")
+def start(time_check: Annotated[bool, typer.Option(help="퀴즈 타이머 추가")] = False):
+    chapter_input = select_chapter()
+    type_input = select_quiz_type()
+    quiz_answer_set = fetch_quiz(chapter_input, type_input)
+    quiz_num = select_quiz_num(len(quiz_answer_set))
+    quiz_answer_set = quiz_answer_set[:quiz_num]
+
+    print(f"[green bold]챕터 {chapter_input}: {CHAPTER[chapter_input]}\n")
+    # 타이머 추가
+    start_time = time.time() if time_check else None
+    user_answers = solve_quiz(quiz_answer_set)
+    end_time = time.time() if time_check else None
+
+    if all([start_time, end_time]):
+        print(f"[red bold]소요 시간: {end_time - start_time:.2f}초")
+    display_results(chapter_input, user_answers)
+
+if __name__ == "__main__":
+    app()
+
+```
+
+이렇게 하면 `app start —-time-check` 으로 사용할 수 있습니다. python 파라미터이기 때문에 `time_check` 로 넣었지만 실 사용해서는 **underscore를 hyphen** 으로 변경해줍니다.
+
+만들고 `—-help` 를 해보면 Typer가 얼마나 친절한지 알 수 있습니다.
+
+## Argument 추가하기
+
+Argument는 사용자에게 어떤 값을 받을 때 사용합니다. 다음과 같이 사용할 수 있습니다.
+
+```python
+@app.command(help="파이썬 퀴즈를 시작합니다.")
+def start(
+    time_check: Annotated[bool, typer.Option(help="퀴즈 타이머 추가")] = False,
+    name: Annotated[str, typer.Argument(help="이름을 입력해주세요")] = "익명",
+):
+    # Argument를 받아서 이름 출력
+    print(f"[green bold]안녕하세요, {name}님! 파이썬 퀴즈를 시작합니다.")
+    ...
+```
+
+Argument를 추가하면 다음과 같이 사용합니다.
+
+- `app start myname -—time-check` 이런 식으로 사용할 수 있습니다. `myname`에 사용자가 입력합니다.
+
+## App 분리하기
+
+FastAPI에서 APIRouter분리하 듯 Typer의 App도 분리할 수 있습니다. 지금하고 있는 프로젝트에서는 명령어가 많지 않기 때문에 앱 분리를 할 필요는 없지만, Typer는 처음 사용해보기 때문에 익숙해질 겸 시도해 보았습니다.
+
+```python
+# quiz/command.py
+from typer import Typer
+
+app = Typer()
+...
+
+# main.py
+from typer import Typer
+from orm_study.quiz.command import app as quiz_app
+
+app = Typer()
+app.add_typer(quiz_app, name="quiz")
+```
+
+이렇게 작성하면 `app quiz start` 로 명령어 실행이 가능합니다. `add_typer` 메소드의 이름이 명령으로 사용됩니다.
+
+## 마무리
+
+Typer를 활용하니 빠르게 만드는게 가능했습니다. 타입힌트 기반으로 만들어져서 그런가 IDE에서 편리한 점도 너무 많았습니다. 앞으로 CLI를 또 만들어본다면 계속 Typer를 사용할 것 같습니다.
+
+교육목적으로 만들었지만 저 또한 배우는게 많았는데요. 만든김에 좀 그럴싸하게 발전시킬 수 있도록 노력해봐야겠습니다.
+
+더 많은 기능이 있기 때문에 고민좀 해보고 다양하게 써봐야겠습니다.
+
+<Link url="https://typer.tiangolo.com/" />
+
+<Link url="https://chaechae.life/blog/fastapi-lifespan-class" />
