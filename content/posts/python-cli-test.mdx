@@ -1,0 +1,88 @@
+---
+title: CLI 터미널 출력 테스트 하기(feat.pytest)
+description: 이번 프로젝트에서는 pytest로 테스트 코드를 작성해보았습니다. 터미널에 출력된 값을 테스트하는 것을 잘 몰랐는데요. 알아보니 아주 쉽게 할 수 있는 방법이 있어서 그 방법을 이번 포스팅에서 정리해보려고 합니다.
+tags: [Pytest, Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/07/12
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python CLI TEST" />
+
+### 목차
+
+## CLI Test하기
+
+최근 작업하고 있는 프로젝트가 CLI 프로그램입니다. CLI를 테스트 코드로 테스트 해본 경험이 이전에는 없었습니다. 이전에는 직접 실행하고 입력해보면서 테스트를 했었죠. 이번 프로젝트에서는 pytest로 테스트 코드를 작성해보았습니다. 터미널에 출력된 값을 테스트하는 것을 잘 몰랐는데요. 알아보니 아주 쉽게 할 수 있는 방법이 있어서 그 방법을 이번 포스팅에서 정리해보려고 합니다.
+
+## capfd fixture
+
+pytest에서 기본적으로 제공해주는 fixture인 `capfd`를 사용하면 터미널에 출력되는 내용을 테스트 해 볼 수 있습니다. `capfd` 는 **CaptureFileDescriptor**의 줄임말으로 추론됩니다. OS레벨에서 터미널에 출력되는 모든 것을 다 Capture합니다.
+
+예제로 한 번 알아보겠습니다
+
+```python
+# functions.py
+import sys
+import subprocess
+
+def print_in_terminal():
+    print("Hello, World!")
+
+def sys_write_in_terminal():
+    sys.stdout.write("Hello, World!\n")
+
+def echo_in_terminal():
+    subprocess.run(["echo", "Hello, World!"])
+
+# tests.py
+from functions import print_in_terminal, sys_out, echo_in_terminal
+
+def test_print_terminal(capfd):
+    print_in_terminal()
+    out, _ = capfd.readouterr()
+    assert out == "Hello, World!\n"
+
+def test_sys_write_in_terminal(capfd):
+    sys_write_in_terminal()
+    out, _ = capfd.readouterr()
+    assert out == "Hello, World!\n"
+
+def test_echo_in_terminal(capfd):
+    echo_in_terminal()
+    out, _ = capfd.readouterr()
+    assert out == "Hello, World!\n"
+
+```
+
+- `capfd.readouterr()` 로 출력을 캡쳐할 수 있습니다. **return은 (out, err) 튜플입니다.**
+- 모든 종류의 출력을 Capture하기 때문에 `print`, `sys.stdout.write` , `subprocess.run` 에서 출력을 모두 확인해보았습니다.
+
+## capsys fixture
+
+`capsys` fixture도 있습니다. 그런데 이것은 파이썬의 출력만 감지할 수 있습니다. `print` 나`sys.stdout.write` 에 대해서만 가능합니다. 따라서 위의 테스트에서 `test_echo_in_terminal` 는 테스트에 실패하게 됩니다. 사용법 `capfd`와 동일합니다. `capsys.readouterr()` 로 동일하게 사용합니다.
+
+```python
+def test_print_terminal(capsys):
+    print_in_terminal()
+    out, _ = capsys.readouterr()
+    assert out == "Hello, World!\n"
+
+def test_sys_write_in_terminal(capsys):
+    sys_write_in_terminal()
+    out, _ = capsys.readouterr()
+    assert out == "Hello, World!\n"
+
+def test_echo_in_terminal(capsys):
+    echo_in_terminal()
+    out, _ = capsys.readouterr()
+    assert out == "Hello, World!\n" # AssertionError !!!
+```
+
+## 마무리
+
+`capfd`나 `capsys`나 무엇을 쓰는게 좋을지 모르겠다 싶으면 그냥 `capfd` 사용하면 될 것 같습니다.
+
+이렇게 하면 CLI 프로그램의 터미널 출력을 쉽게 테스트할 수 있습니다. pytest의 기본적으로 내장된 fixture가 꽤 많이 있었고 상황에 맞게 잘 활용해봐야 겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-async-sqlalchemy-test" />
