@@ -1,0 +1,138 @@
+---
+title: Python PDM 사용법 알아보기
+description: FastAPI Repository에서 PDM이 사용되고 있는걸 발견했는데 궁금해서 저도 한 번 써봤습니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/07/20
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python pdm use" />
+
+### 목차
+
+## PDM이란?
+
+PDM은 PythonDependencyManager입니다. 비슷한 프로그램이 여러개 있는데 저는 Poetry를 사용하고 있었습니다. 그러다가 FastAPI Repository에서 PDM이 사용되고 있는걸 발견했는데 궁금해서 저도 한 번 써봤습니다.
+
+PDM은 PEP582에 기반한 유연한 접근 방식을 실험적으로 지원한다고 합니다. PEP582는 Rejected 되었더군요. PEP582는 가상환경을 설치하지 않고 `__pypackages__` 안에서 의존성들을 관리한다고 하는데요. PEP reject 되어서 그런지 IDE에서 빌트인으로 지원하지 않아서 개별적으로 설정이 필요한 듯합니다.
+
+<Link url="https://pdm-project.org/en/latest/" />
+
+## PDM설치
+
+Mac에서는 Homebrew 설치를 하면 됩니다. 다른 OS는 위 링크에서 설치 방법을 살펴보세요.
+
+```python
+brew install pdm
+```
+
+## PDM으로 프로젝트 시작하기
+
+Poetry와 명령어가 비슷해서 어렵지 않게 시작할 수 있었습니다.
+
+```bash
+pdm init
+
+# 출력결과
+Creating a pyproject.toml for PDM...
+Please enter the Python interpreter to use
+ 0. cpython@3.12 (/opt/homebrew/bin/python3)
+ 1. cpython@3.12 (/opt/homebrew/bin/python3.12)
+ 2. cpython@3.9 (/usr/bin/python3)
+ 3. cpython@3.12 (/opt/homebrew/Cellar/python@3.12/3.12.4/Frameworks/Python.framework/Versions/3.12/bin/python3.12)
+Please select (0):
+Virtualenv is created successfully at /Users/minchae/DEV/python/pdm-test/.venv
+Project name (pdm-test):
+Project version (0.1.0):
+Do you want to build this project for distribution(such as wheel)?
+If yes, it will be installed by default when running `pdm install`. [y/n] (n): y
+Project description (): test
+Which build backend to use?
+0. pdm-backend
+1. setuptools
+2. flit-core
+3. hatchling
+Please select (0): 0
+License(SPDX name) (MIT):
+Author name (jungminchae):
+Author email (minchae3618@gmail.com):
+Python requires('*' to allow any) (>=3.12):
+Project is initialized successfully
+
+```
+
+- 파이썬 인터프리터를 선택할 수 있는 것이 매우 좋았습니다.
+- 프로젝트 안에 가상환경도 자동으로 생성됩니다. poetry에서는 따로 config설정을 해줬는데 말이죠.
+- build할 것이냐는 질문에 y를 하면 build backend를 고르라고 하는데, FastAPI 따라서 `pdm-backend` 를 선택했습니다.
+- build 질문에 n을 선택하면 백엔드 선택 질문만 빠집니다.
+- `.pdm_python`안에 파이썬 인터프리터 경로가 저장됩니다. `pdm use` 로 인터프리터를 변경할 수도 있네요.
+
+## 의존성 설치
+
+`add` 로 설치 가능합니다.
+
+```bash
+# 일반 설치
+pdm add fastapi
+
+# github에 있는 프로젝트 설치하기
+pdm add git+https://github.com/Jungminchae/orm-study.git
+
+# dev 의존성 설치
+pdm add pytest --dev
+
+# 삭제
+pdm remove fastapi
+
+# 업데이트
+pdm update fastapi
+```
+
+- `pdm.lock` 파일과 `pyproject.toml` 에 추가됩니다.
+- 의존성 설치, 삭제, 업데이트는 poetry와 동일합니다.
+- `--dev` 옵션을 사용하면 dev dependency로 설치됩니다.
+
+## PDM Scripts
+
+scripts 명령어를 만들어 놓으면 쉽게 실행할 수 있습니다. 아주 유용한 기능이네요. npm scripts와 유사합니다.
+
+```bash
+[tool.pdm.scripts]
+start = "fastapi dev src/main.py"
+
+# 다음과 같이 실행 가능
+pdm start
+```
+
+- scripts의 다양한 사용법이 공식문서에 나와있어 필요따라 읽어보고 사용하면 되겠습니다.
+
+## PDM Export
+
+의존성을 requirements.txt로 export하는 방법입니다.
+
+```bash
+pdm export -o requirements.txt
+
+# hash 값 없이 생성
+pdm export -o requirements.txt --no-hashes
+```
+
+더 많은 CLI Reference
+
+<Link url="https://pdm-project.org/en/latest/reference/cli/" />
+
+## 마무리
+
+pdm에 사용법에 대해서 간단하게 알아봤습니다. 자주 쓸 것같은 명령어도 정리해봤습니다.
+
+poetry와 비교해서 좋았던 점은 다음과 같습니다.
+
+- 문서화가 훨씬 보기 편하게 잘 되어 있는 듯한 느낌을 받았습니다.
+- 파이썬 버젼을 다양하게 지원해준다는 것이 좋았습니다.
+- 의존성 설치할 때 속도가 더 빠르다고 느껴졌습니다.
+- pyproject도 뭔가 더 명료하게 작성해주는 것 같습니다.
+
+PEP582는 아직 사용안해봤지만, 지금 사용해 본 것도 충분히 좋았고 편리했습니다. 오늘 처음 써봤기 때문에 일단은 좀 더 써볼 것 같은데, 지금 느낌상 별 불편함 못느끼면 계속 사용할 것 같습니다.
+
+<Link url="https://chaechae.life/blog/pre-commit-use-ormcamp" />
