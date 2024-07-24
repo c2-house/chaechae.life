@@ -1,0 +1,140 @@
+---
+title: Ruff - Rust로 만들어진 Python linter&formatter 알아보기
+description: Python 프로젝트를 관리하다 보면 코드 스타일을 일관되게 유지하는 것이 중요합니다. 이것을 도와주는 파이썬에 다양한 linter와 formatter가 있습니다. 저는 그동안 flake8과 black의 조합으로 사용해왔습니다. 그러다가 이번에 Ruff로 옮기게 되어 Ruff에 대해 간단하게 정리해보려고 합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/07/24
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python linter formatter ruff" />
+
+### 목차
+
+## Ruff
+
+Python 프로젝트를 관리하다 보면 코드 스타일을 일관되게 유지하는 것이 중요합니다. 이것을 도와주는 파이썬에 다양한 linter와 formatter가 있습니다. 저는 그동안 flake8과 black의 조합으로 사용해왔습니다. 그러다가 이번에 Ruff로 옮기게 되어 Ruff에 대해 간단하게 정리해보려고 합니다.
+
+Ruff는 Rust로 작성된 linter이자 formatter입니다. flake8, black등 기존 라이브러리들의 규칙들을 대부분 지원해서 ruff하나만 있어도 프로젝트를 관리하는데 문제가 없습니다.
+
+Ruff 공식 사이트에 가서 보면 다음과 같이 한 줄 설명이 있습니다.
+
+<aside>
+💡 An extremely fast Python linter and code formatter, written in Rust.
+
+</aside>
+
+그리고 현존하는 Python linter와 formatter들 중에 10 ~ 100배 정도 빠르다고 합니다.
+
+VSCode같이 IDE에서도 지원하기 때문에 사용하기도 아주 쉽습니다. 저는 보통 pre-commit과 ci에서 linter와 formatter를 사용하는데요. 그것도 간단하게 정리해보겠습니다.
+
+## Ruff 사용 예시
+
+### pyproject.toml 설정하기
+
+`pyproject.toml` 이나 `ruff.toml` 에 설정을 할 수 있습니다. 처음 사용한다면 굳이 설정없이 기본 설정만 가지고도 충분한 것 같습니다. 사용하다가 필요에 의해 하나씩 적용해나가면 될 것 같습니다.
+
+```toml
+# pyproject.toml
+...
+[tool.ruff]
+line-length = 140 # 최대 길이를 140으로 늘려봤습니다.
+
+[tool.ruff.lint]
+select = [
+    "F",  # pyflakes
+    "I",  # isort
+    "UP",  # pyupgrade
+]
+ignore = ["E501"]
+```
+
+예시로 작성해보았는데 아래 링크에서 더 많은 설정을 확인해보시고 필요한대로 사용하면 됩니다.
+
+<Link url="https://docs.astral.sh/ruff/configuration/" />
+
+### CLI에서 사용하기
+
+기본적으로 pip로 설치하여 cli환경에서 사용할 수 있습니다.
+
+```python
+pip install ruff
+```
+
+터미널에서 다음과 같이 사용할 수 있습니다.
+
+```bash
+ruff check --fix
+
+ruff format
+```
+
+### pre-commit에서 사용하기
+
+저는 굳이 이렇게 사용하지 않고 pre-commit에 hook을 등록하여 사용합니다. pre-commit에서 다음과 같이 hook을 등록합니다.
+
+- 예시
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+```
+
+기존 프로젝트에서 `pre-commit run --all-files` 를 해보았습니다.
+
+```bash
+[INFO] Initializing environment for https://github.com/astral-sh/ruff-pre-commit.
+[INFO] Installing environment for https://github.com/astral-sh/ruff-pre-commit.
+[INFO] Once installed this environment will be reused.
+[INFO] This may take a few minutes...
+trim trailing whitespace.................................................Passed
+fix end of files.........................................................Passed
+check yaml...............................................................Passed
+check for added large files..............................................Passed
+ruff.....................................................................Passed
+ruff-format..............................................................Failed
+- hook id: ruff-format
+- files were modified by this hook
+
+4 files reformatted, 10 files left unchanged
+```
+
+### github actions에서 사용하기
+
+marketplace에 ruff action이 있었습니다. marketplace에 있는 것을 사용하면 쉽게 사용할 수 있지 싶습니다.
+
+```yaml
+name: Ruff
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  ruff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: chartboost/ruff-action@v1
+```
+
+또는 shellscript를 만들어서 사용해 볼 수도 있겠습니다. FastAPI 레포를 염탐해봤더니 lint.sh를 만들어서 CI에 사용되고 있는 것을 확인했습니다.
+
+## 마무리
+
+ruff를 간단하게 정리해보았습니다. 저는 사용해보니 사용하지 않을 이유를 못찾았네요. 새롭게 시작하는 프로젝트에서는 가능하다면 ruff를 쓸 것 같습니다. Rust를 주말에 조금씩 공부하고 있는데 쉽지 않습니다… 언젠가 Rust로 ruff같은거 만들어보고 싶네요.
+
+<Link url="https://chaechae.life/blog/pre-commit-use-ormcamp" />
