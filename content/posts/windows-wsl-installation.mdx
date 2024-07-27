@@ -1,0 +1,73 @@
+---
+title: WSL로 Windows 11에서 linux 세팅하기
+description: WSL은 Windows Subsysem for Linux의 약자로 윈도우에서 Linux의 파일시스템을 실행하고 CLI툴들을 사용하게 해주는 시스템입니다. 예전에는 세팅하는 것이 좀 까다로웠다고 하는데 이제는 아주 쉽습니다. 이번 포스팅에서 알아보도록 하겠습니다.
+tags: [Others, 오름캠프]
+author: mingke
+thumbnail: /windows-wsl-installation/00.png
+date: 2024/07/27
+---
+
+<Image src="/windows-wsl-installation/00.png" alt="WSL 세팅하기" />
+
+### 목차
+
+## WSL
+
+저는 MacOS를 사용하는 개발자입니다. 이번에 오름캠프 파이썬 Django 백엔드 2기에 멘토로 참여하고 있는데 훈련생분들을 보니 대부분 Windows를 사용하는걸 알게되었습니다. (그래서 윈도우 문제는 답변해주기가 어렵더군요…). 그래서 저도 이참에 윈도우 컴퓨터 하나 있으면 좋겠다 싶어서 구매했습니다.
+
+윈도우를 사용하더라도 백엔드 개발자는 리눅스와 친해질 필요가 있습니다. 대부분의 서버는 리눅스에서 실행되기 때문입니다. 윈도우에서도 리눅스를 사용할 수 있는 방법이 있습니다. **WSL을 이용하면 됩니다.**
+
+WSL은 Windows Subsysem for Linux의 약자로 윈도우에서 Linux의 파일시스템을 실행하고 CLI툴들을 사용하게 해주는 시스템입니다. 예전에는 세팅하는 것이 좀 까다로웠다고 하는데 이제는 아주 쉽습니다. 이번 포스팅에서 알아보도록 하겠습니다.
+
+## WSL 설치하기
+
+PowerShell에서 다음 명령 하나면 설치할 수 있습니다.
+
+```powershell
+wsl --install
+```
+
+너무 쉽습니다. 명령을 실행하는 아래와 같이 나왔습니다.
+
+<Image src="/windows-wsl-installation/01.png" alt="WSL 설치 실행" />
+
+status를 확인해보겠습니다.
+
+```powershell
+wsl --status
+```
+
+<Image src="/windows-wsl-installation/02.png" alt="WSL 상태 확인" />
+
+설치가 잘 되었네요. 설명도 아주 친절합니다.
+
+- 가상화가 사용이 허가 되어있는지 확인
+- 플랫폼을 설치
+
+위에 두 가지가 필요해 보입니다.
+
+작업 관리자 → 성능 → CPU에서 확인할 수 있습니다. 컴퓨터를 처음 켰을 때 확인한 것인데 가상화는 사용으로 되어 있었습니다. 가상화가 사용으로 안되어 있으면 BIOS에서 사용으로 변경할 수 있다고 합니다.
+
+<Image src="/windows-wsl-installation/03.png" alt="윈도우 가상화 확인" />
+
+그럼 이제 ubuntu를 설치해보겠습니다. 아래 명령으로 설치하면 됩니다.
+
+```powershell
+wsl.exe --install Ubuntu
+```
+
+<Image src="/windows-wsl-installation/04.png" alt="WSL 우분투 설치하기" />
+
+**Ubuntu 22.04.3 LTS**가 설치되었네요. 몇 번의 명령 실행으로 Windows에 Linux를 설치했습니다.
+
+`wsl --list --online` 명령을 실행하면 다른 설치가능한 리눅스 배포판 확인 가능합니다.
+
+## 마무리
+
+2018년에 처음 프로그래밍 시작할 때 리눅스 환경 만든다고 VM웨어 설치해서 씨름했던 기억이 솔솔납니다. 윈도우를 떠난지 5년만에 다시 접해보는 것인데요. WSL이 생겨서 리눅스 셋팅이 정말 편리해졌음을 느꼈습니다.
+
+WSL로 Linux GUI도 설치할 수 있다고 하는데.. 현재 저한테는 굳이..
+
+백엔드 부트캠프를 하시는 윈도우 유저 훈련생 분들 WSL설치해서 리눅스 공부도 함께 병행하시길 바랍니다. 백엔드 개발자는 리눅스도 반드시 알아야합니다. WSL에 대해서 더 궁금하다면 더 공부해보세요.
+
+<Link url="https://chaechae.life/blog/google-ide-idx" />
