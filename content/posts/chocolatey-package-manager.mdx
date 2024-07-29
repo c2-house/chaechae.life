@@ -1,0 +1,80 @@
+---
+title: Chocolatey 윈도우 패키지 매니저 사용하기
+description: Chocolatey라는 패키지 매니저가 있길래 설치해서 사용해보았습니다. 이번 포스팅에서 사용법을 정리해보려고 합니다.
+tags: [Others, 오름캠프]
+author: mingke
+thumbnail: /chocolatey-package-manager/00.png
+date: 2024/07/29
+---
+
+<Image src="/chocolatey-package-manager/00.png" alt="Chocolatey 사용하기" fullWidth={false} />
+
+### 목차
+
+## Chocolatey
+
+Mac을 포맷하거나 처음 샀을 때 개인적으로 항상 가장 먼저하는 것은 Homebrew부터 설치하는 것 입니다. MacOS에서 개발자들이 사용하는 패키지 매니저인데요. 이번에 윈도우 컴퓨터를 장만하게 되면서 윈도우에도 비슷한 것이 있는지 찾아봤습니다. **Chocolatey라는 패키지 매니저가 있길래 설치해서 사용해보았습니다. 이번 포스팅에서 사용법을 정리해보려고 합니다.**
+
+## Chocolatey 설치하기
+
+ExecutionPolicy가 `Restricted` 로 되어있으면 안됩니다. `관리자 모드 PowerShell`을 열어 아래 명령을 실행해서 확인해봅니다.
+
+```powershell
+Get-ExecutionPolicy
+```
+
+`Restricted` 로 되어 있으면 아래의 명령어를 실행합니다.
+
+```powershell
+Set-ExecutionPolicy AllSigned
+```
+
+그 다음으로 아래 명령어를 실행해서 설치합니다.
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+```
+
+설치가 완료되면 아래 명령어로 확인해봅니다.
+
+```powershell
+choco -?
+```
+
+명령이 `choco` 로 시작하다니 귀엽네요.
+
+설치는 이제 끝났으니 `choco` 로 무언가 설치해보겠습니다.
+
+## Chocolatey로 파이썬(Python) 설치하기
+
+아래 명령어 딸깍이면 설치 끝입니다.
+
+```powershell
+choco install python
+```
+
+설치 중간에 질문이 나오는데 읽어보고 Y 눌러서 진행하면 됩니다. **몇 초만에 설치가 끝났습니다.**
+
+PowerShell을 재실행해서 `python` 을 실행해보니 아래와 같은 모습을 확인할 수 있었습니다.
+
+<Image
+  src="/chocolatey-package-manager/01.png"
+  alt="Chocolatey python 설치"
+  caption="Python 실행화면"
+/>
+
+## 마무리
+
+chocolatey사용법에 대해서 알아봤습니다. 교육중에 보니, 프로그래밍 초심자분들이 제일 먼저 마주하는 부분이 환경설정, 세팅과 관련된 것이더군요. 이럴 때 chocolatey로 모두가 동일하게 설치하고 세팅하면 이 문제로 수업이 지연되는 경우는 줄어들지 않을까 생각이 됩니다.
+
+다양한 특징과 기능이 있어보입니다. 문서를 확인해보고 필요에 맞게 사용하면 될 것 같습니다.
+
+<Link url="https://docs.chocolatey.org/en-us/getting-started/" />
+
+설치하고자 하는 패키지가 chocolatey에서 지원되는지 확인해보고 설치하면 되겠습니다.
+
+<Link url="https://community.chocolatey.org/packages" />
+
+제가 느끼기엔 지원하는 패키지가 HomeBrew만 못하다는 느낌이긴한데, 꽤 많은 패키지가 있긴 합니다.
+
+<Link url="https://chaechae.life/blog/opensource-reason" />

@@ -20,11 +20,20 @@ export async function GET(request: NextRequest) {
     $('meta[name="description"]').attr('content');
 
   let image = $('meta[property="og:image"]').attr('content');
+
   if (image && !image.startsWith('http')) {
     image = new URL(image, url).href;
   }
 
+  if (image) {
+    const imageResponse = await fetch(image);
+    if (!imageResponse.ok) {
+      image = undefined;
+    }
+  }
+
   let favicon = $('link[rel="icon"]').attr('href') || $('link[rel="shortcut icon"]').attr('href');
+
   if (favicon && !favicon.startsWith('http')) {
     favicon = new URL(favicon, url).href;
   }
