@@ -1,0 +1,18 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GitHub Sync to Upstream Repository
+        uses: dabreadman/sync-upstream-repo@v1.3.0
+        with: 
+          upstream_repo: "https://github.com/c2-house/chaechae.life.git"
+          upstream_branch: "main"
+          downstream_branch: "main"
+          token: ${{ secrets.GITHUB_TOKEN }}
