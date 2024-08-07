@@ -1,0 +1,135 @@
+---
+title: Django Model 기초 공부하기 - 오름캠프
+description: 오름캠프에서 Django 수업이 시작되었습니다. 오늘 있었던 수업 내용 중에 Django Model과 관련하여 내용을 정리하는 포스트를 작성해보려고 합니다.
+tags: [Django, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/08/07
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django model basic" />
+
+### 목차
+
+## Django Model
+
+오름캠프에서 Django 수업이 시작되었습니다. 오늘 있었던 수업 내용 중에 Django Model과 관련하여 내용을 정리하는 포스트를 작성해보려고 합니다.
+
+**Django Model은 DB의 테이블을 Python으로 추상화하여 Python을 이용해서 DB작업을 쉽게 수행할 수 있게 해주는 도구**입니다. Django의 장점인 ORM(Object-Relational Mapping)을 Django Model이 있기에 사용할 수 있게 됩니다. DB에서 할 수 있는 작업의 대부분을 Django Model을 이용해서 할 수 있습니다.
+
+## Django Model Field
+
+Django Model을 정의하기 위해 Model Field를 이용해야합니다. 여기서 Field는 실제 DB 테이블의 Column과 연결됩니다. 테이블의 Column을 Django에서는 Field로 나타내는 것 입니다.
+
+```
+	다음과 같은 필드들이 있습니다.
+	•	CharField
+	•	TextField
+	•	IntegerField
+	•	FloatField
+	•	DecimalField
+	•	BooleanField
+	•	DateField
+	•	DateTimeField
+	•	TimeField
+	•	EmailField
+	•	URLField
+	•	FileField
+	•	ImageField
+	•   JSONField
+	•	ForeignKey
+	•	ManyToManyField
+	•	OneToOneField
+	...
+```
+
+이름들이 직관적이라 실제 테이블과 어떻게 대응되는지 파악하기도 쉽습니다.
+
+## Django Model 만들기
+
+django model은 `models.Model` 을 사용해서 만들 수 있습니다.
+
+```python
+from django.db import models
+
+# 수업 중 사용된 모델 일부분
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "Categories"
+
+class Post(models.Model):
+    title = models.CharField(max_length=200)
+    content = models.TextField()
+    created_date = models.DateTimeField(auto_now_add=True)
+    modified_date = models.DateTimeField(auto_now=True)
+    category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name="posts", null=True)
+
+    class Meta:
+        ordering = ["-created_date"]
+
+    def __str__(self):
+        return self.title
+```
+
+- `DateTimeField` 에 `auto_now_add`와 `auto_now` 를 주목할 필요가 있습니다.
+  - `auto_now_add` 는 데이터가 생성된 시간을 DB에 자동으로 저장합니다.
+  - `auto_now` 는 데이터가 수정된 시간을 DB에 자동으로 저장합니다.
+  - 이 두 요소를 사용하면 생성하거나 수정할 때 시간을 입력받을 필요가 없습니다.
+- `ForeignKey` 의 `related_name` 은 역참조할 때 사용되는 이름입니다.
+  - `related_name` 이 없어도 역참조는 가능합니다.
+  - `Post`에 category가 `ForeignKey` 로 연결이 되어있는데 `Category` 에서 `Post` 를 참조하는 것이 역참조입니다.
+  - `related_name`이 없으면 다음과 같이 역참조 합니다. 더미 데이터는 미리 만들었다고 가정합니다.
+    <Image
+      src="/django-orm-dev-tips/04.png"
+      alt="model 역참조"
+      caption="model 역참조"
+      fullWidth={false}
+    />
+  - `post_set` 으로 `Category`객체에서 참조가 가능합니다.
+  - 이때 `related_name="posts"` 가 되어있다면 post_set → posts로 변경됩니다.
+- `class Meta` 는 Model의 메타데이터를 정의하는 내부 클래스입니다. 모델 동작 방식이나 테이블 특성 및 제약조건 같은 것들을 정의할 수 있습니다. 알아두면 좋을 속성들을 몇가지 알아보겠습니다.
+  - `abstract` : True로 설정하면 추상모델이 되는데 다른 모델에 상속을 위한 모델로 사용될 때 필요합니다.
+  - `ordering` : 모델 객체가 조회될 때 정렬되는 순서를 정할 수 있습니다. `ordering = ["-created_date"]` 예시에 사용된 것은 생성일 내림차순으로 조회됩니다. `-` 가 있으면 내림차순이고 없으면 오름차순입니다.
+  - `verbose_name` : 모델의 단수를 표현하는 이름을 지정합니다.
+  - `verbose_name_plural` : 모델의 복수를 표현하는 이름을 지정합니다.
+  - `managed` : False로 설정하면 django에서 마이그레이션을 비활성화합니다.
+  - `indexes` : 데이터베이스 인덱스를 설정할 때 사용합니다. `indexes = [models.Index(fields=["title", "category"])]`
+  - `constraints` : 모델의 제약조건을 설정할 수 있습니다. 다음은 복합컬럼 유니크 인덱스를 설정하는 예시입니다.
+    ```python
+    # 위 예시를 다음과 같이 변경
+    class Meta:
+            ordering = ["-created_date"]
+            constraints = [
+                models.UniqueConstraint(
+                    fields=["title", "category"], name="unique_title_category"
+                )
+            ]
+    ```
+    - 위와 같이 변경한 후 마이그레이션을 하면 동일한 제목, 동일한 카테고리로는 데이터를 생성할 수 없습니다.
+  - `default_related_name` : `ForeignKey` 나 `ManyToManyField` 같은 것들을 사용할 때 기본 `related_name`을 정합니다. 이것을 설정하면 각 Field별로 따로 `related_name` 을 지정하지 않아도 됩니다.
+  - `db_table` : DB에 테이블을 생성할 때 이름을 지정합니다. 지정하지 않으면 **app이름\_model이름**으로 생성됩니다.
+- `__str__` 매직메소드는 모델이 출력될 때를 선언합니다. 예를들면 예시의 `Post` 모델은 출력될 때 제목이 나타납니다.
+
+```python
+# __str__ 선언 되지 않았 때
+posts= Post.objects.all()
+posts
+# <QuerySet [<Post: Post object (5)>, <Post: Post object (4)>, <Post: Post object (3)>, <Post: Post object (2)>, <Post: Post object (1)>]>
+
+# __str__ 선언 되었을 때
+posts= Post.objects.all()
+posts
+# <QuerySet [<Post: test>, <Post: A Post about Study Techniques>, <Post: A Post about Hobbies>, <Post: Second Post about Technology>, <Post: First Post about Technology>]>
+```
+
+## 마무리
+
+Django Model의 기초적인 내용을 한 번 정리해보았습니다. 수업 중 나간 내용과 더불어 추가적인 내용을 좀 더 담았습니다. Django Model은 Django로 개발을 하는데 있어 매우 중요한 내용이기 때문에 잘 알고 있는것이 좋습니다.
+
+<Link url="https://chaechae.life/blog/django-orm-dev-tips" />
