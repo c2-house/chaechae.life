@@ -81,6 +81,9 @@ class Post(models.Model):
   - `auto_now_add` 는 데이터가 생성된 시간을 DB에 자동으로 저장합니다.
   - `auto_now` 는 데이터가 수정된 시간을 DB에 자동으로 저장합니다.
   - 이 두 요소를 사용하면 생성하거나 수정할 때 시간을 입력받을 필요가 없습니다.
+- `ForeignKey` 의 `on_delete` 는 참조 객체가 삭제될 때 외래키의 객체들을 어떻게 처리하는가에 대한 옵션입니다.
+  - `models.CASCADE`는 참조 무결성을 유지하기 위해 많이 쓰는 방법인데, 참조 객체가 삭제되면 연결된 외래키의 객체들도 모두 삭제됩니다.
+  - 항상 `models.CASCADE`를 사용하는 것은 아니며 요구사항에 맞는 방법을 사용해야 합니다.
 - `ForeignKey` 의 `related_name` 은 역참조할 때 사용되는 이름입니다.
   - `related_name` 이 없어도 역참조는 가능합니다.
   - `Post`에 category가 `ForeignKey` 로 연결이 되어있는데 `Category` 에서 `Post` 를 참조하는 것이 역참조입니다.
@@ -104,12 +107,12 @@ class Post(models.Model):
     ```python
     # 위 예시를 다음과 같이 변경
     class Meta:
-            ordering = ["-created_date"]
-            constraints = [
-                models.UniqueConstraint(
-                    fields=["title", "category"], name="unique_title_category"
-                )
-            ]
+        ordering = ["-created_date"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["title", "category"], name="unique_title_category"
+            )
+        ]
     ```
     - 위와 같이 변경한 후 마이그레이션을 하면 동일한 제목, 동일한 카테고리로는 데이터를 생성할 수 없습니다.
   - `default_related_name` : `ForeignKey` 나 `ManyToManyField` 같은 것들을 사용할 때 기본 `related_name`을 정합니다. 이것을 설정하면 각 Field별로 따로 `related_name` 을 지정하지 않아도 됩니다.
