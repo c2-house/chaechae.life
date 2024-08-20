@@ -1,0 +1,82 @@
+---
+title: Django 테스트 데이터 쉽게 만드는 방법 - 오름캠프
+description: 이번 포스팅에서 ORM을 연습할 때 필요한 테스트 데이터(더미 데이터)를 쉽게 만드는 방법을 알아보려고 합니다. 테스트 데이터는 테스트 코드를 작성할 때도 필요하기 때문에 잘 알아두면 좋습니다.
+tags: [Django, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/08/20
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django test data 만들기" />
+
+### 목차
+
+## Django 테스트 데이터 생성
+
+어느 덧 오름캠프 Django 백엔드 과정이 2개월을 지나가고 있습니다. 훈련생분들 django를 열심히 배우고 있으신데요. 오늘 수업에서 Django ORM연습이 있었습니다. Django에서 제공하는 아주 강력한 ORM을 연습해보기 위해서는 데이터가 필요합니다. **이번 포스팅에서 ORM을 연습할 때 필요한 테스트 데이터(더미 데이터)를 쉽게 만드는 방법을 알아보려고 합니다.** 테스트 데이터는 테스트 코드를 작성할 때도 필요하기 때문에 잘 알아두면 좋습니다.
+
+파이썬에서 가짜데이터를 만드는 `faker` 라이브러리가 있는데 그것을 이용해서 더 쉽게 만들 수 있게하는 라이브러리 `mixer`와 django model의 더미 데이터를 쉽게 만들어주는 `model-bakery` 라이브러리에 대해서 알아보겠습니다.
+
+## mixer
+
+`mixer` 라이브러리는 django만 지원하는 것은 아니고 다양한 python ORM을 지원합니다. 2년전에 마지막으로 릴리즈되고 더 이상 업데이트는 되고 있지 않지만 잘 동작하고 있어서 한 번 알아보겠습니다.
+
+- 설치
+
+```bash
+pip install mixer
+```
+
+사용법은 아주 간단한데요. django shell에서 사용해보도록 하겠습니다. `blend` 메소드만 잘 기억하면 됩니다. 예제 코드로 알아보겠습니다.
+
+```python
+from todo.models import Task
+from mixer.backend.django import mixer
+
+# 데이터가 생성되고 List[Task] 형태로 tasks에 할당됩니다
+tasks = mixer.cycle(10).blend(Task, due_date=mixer.SKIP, list=mixer.SELECT, priority=mixer.RANDOM)
+# 데이터를 1개만 만들 때
+task = mixer.blend(Task, due_date=mixer.SKIP, list=mixer.SELECT, priority=mixer.RANDOM)
+```
+
+- `mixer.SKIP` 은 데이터를 생성하지 않고 넘어갑니다.
+- `mixer.SELECT` 은 외래키로 연결된 컬럼의 데이터를 하나 선택하여 생성합니다.
+- `mixer.RANDOM` 은 랜덤한 값을 넣습니다. 예시의 `priority` 는 선택지가 3개 입니다.
+
+기본적인 사용법은 이렇습니다. 모델의 각 필드 타입에 맞게 랜덤한 데이터가 생성됩니다.
+
+## model-bakery
+
+`model-bakery` 는 현재도 꾸준히 업데이트 되고 있고 강력한 API를 제공합니다. 과거 지원한 기업의 과제테스트를 봤을 때 테스트 코드에 `model-bakery`가 사용된 것을 본 경험도 있습니다.
+
+- 설치
+
+```bash
+pip install model-bakery
+```
+
+`model-bakery` 를 이용해서 django Model의 더미 데이터를 만드는 것도 아주 쉽습니다. `make` 메소드만 잘 알아두면 됩니다. 똑같이 `todo.Task` 를 예제로 사용법을 알아보겠습니다.
+
+```python
+import random
+from model_bakery import baker
+from todo.models import Task, List
+
+lists = baker.make(List, _quantity=10)
+tasks = baker.make(Task, _quantity=30, list= lambda : random.choice(lists), priority=lambda : random.choice([1,2,3]), completed=lambda random.choice([True, False]))
+```
+
+- `make` 메소드에서 `_quantity` 파라미터로 몇 개 생성할 것인지 정합니다. 없으면 1개만 생성합니다.
+- `lambda` 와 `random` 이용해서 각 컬럼에 들어갈 데이터의 값의 범위를 지정해 줄 수 있습니다.
+
+기본적인 사용법이 이게 끝입니다. 아주 쉽고 간단하기 때문에 테스트가 필요한 상황에 유용하게 사용될 수 있습니다.
+
+## 마무리
+
+소개한 것 이외에도 비슷한 기능을 하는 라이브러리는 있습니다. 하지만 저의 개인적인 의견으로는 이 두 가지가 제일 사용하기 좋았습니다. django를 쓸 때는 `model-bakery` 가 더 편하다고 느껴지네요. 수업시간에 ORM 많이 쳐보라는 권고가 있었는데 빠르게 테스트 데이터 만들어서 ORM 연습 많이 해보시 길 바랍니다.
+
+더 많은 기능은 아래 링크를 참고해주세요.
+
+<Link url="https://model-bakery.readthedocs.io/en/latest/index.html" />
+<Link url="https://mixer.readthedocs.io/en/latest/index.html" />
+<Link url="https://chaechae.life/blog/django-model-basic" />
