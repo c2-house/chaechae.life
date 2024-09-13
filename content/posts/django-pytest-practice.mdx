@@ -1,0 +1,146 @@
+---
+title: pytest로 django 테스트하기(feat.pytest-django) - 오름캠프
+description: 수업 중에 Django에 내장된 테스트 모듈로 테스트를 작성했습니다. 하지만 Python에서는 pytest라는 아주 좋은 테스트 프레임워크를 사용해서 테스트를 많이 작성합니다.
+tags: [Django, Pytest, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/09/13
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django pytest practice" />
+
+### 목차
+
+## django test vs pytest
+
+최근에 python django 오름캠프 DRF(DjangoRestFramework) 수업 시간에 테스트코드 작성을 배웠습니다. 수업 중에 Django에 내장된 테스트 모듈로 테스트를 작성했습니다. 하지만 Python에서는 `pytest`라는 아주 좋은 테스트 프레임워크를 사용해서 테스트를 많이 작성합니다. 이번 포스트에서 `pytest` 를 이용해서 DRF 테스트 코드를 작성하는 방법을 알아보겠습니다.
+
+django test 모듈이 있는데 `pytest`를 사용하는 이유는 다음과 같습니다.
+
+- `assert`로 간단하게 함수 사용없이 검증이 가능합니다.
+- 더 간결한 코드 작성이 가능합니다. django test 모듈은 `unittest` 라이브러리 기반으로 반드시 클래스 형태로 작성해야하지만 `pytest` 는 함수형으로 작성이 가능합니다.
+
+```python
+# unittest 기반
+class TestUserModel(TestCase):
+    def test_user_creation(self):
+        user = User.objects.create_user(username='test', password='pass')
+        self.assertEqual(user.username, 'test')
+
+# pytest 기반
+@pytest.mark.djanbo_db
+def test_user_creation(db):
+    user = User.objects.create_user(username='test', password='pass')
+    assert user.username == 'test'
+```
+
+- `pytest` 에는 정말 많은 plugins(플러그인)가 있습니다. Django를 테스트하기 위해 `pytest-django` 플러그인을 사용하면 쉽게 통합하여 테스트가 가능합니다.
+  <Link url="https://docs.pytest.org/en/stable/reference/plugin_list.html" />
+- 또 한 가지 더 좋은 점은 `fixture` 인데요. 테스트에 반복적으로 사용되는 코드를 `fixture` 로 만들어서 쉽게 재사용 할 수 있습니다. `fixture`는 테스트 코드에 파라미터로 쉽게 집어 넣어 사용 가능합니다.
+
+`pytest`를 사용하다 보면 이 밖에도 여러가지 장점을 느낄 수 있을 것입니다.
+
+## pytest-django
+
+django를 테스트할 때 `pytest-django` 플러그인이 필요합니다. django와 통합하는 것을 도와줍니다. django 테스트를 위한 `marker`와 여러가지 `fixture`를 제공해줍니다.
+
+- 설치
+
+```bash
+pip install pytest-django
+```
+
+설치를 마치면 `pytest.mark.django_db` 라는 데코레이터를 사용할 수 있게 됩니다.
+
+```python
+@pytest.mark.djanbo_db
+def test_user_creation(db):
+    user = User.objects.create_user(username='test', password='pass')
+    assert user.username == 'test'
+```
+
+이렇게 하면 테스트에서 데이터베이스에 접근이 가능하게 됩니다. 그리고 테스트가 끝나면 롤백을 실행하여 데이터베이스를 클린하게 유지해줍니다.
+
+매번 귀찮게 위와 같이 데코레이터를 붙여줄 필요가 없습니다. 이런 방법을 사용할 수 있습니다.
+
+```python
+import pytest
+...
+
+# 이렇게 선언하면 모든 테스트코드에 자동으로 mark가 부여됩니다.
+pytestmark = pytest.mark.django_db
+
+def test_user_creation(db):
+    user = User.objects.create_user(username='test', password='pass')
+    assert user.username == 'test'
+
+...
+```
+
+## django pytest연습하기
+
+아래 Repository에서 연습을 위한 코드 작성을 하고 있습니다. 간단한 상품 주문 API를 만들고 그것을 테스트합니다.
+
+<Link url="https://github.com/Jungminchae/django-pytest-practice" />
+
+### GIVEN-WHEN-THEN
+
+테스트 코드를 작성하는 방법은 여러가지가 있습니다. 그 중에 좀 쉽고 간단한 방법인 **GIVEN-WHEN-THEN 방식을 한 번 알아보겠습니다.**
+
+- GIVEN - 주어진 데이터, 상황
+- WHEN - 특정 행동 테스트
+- THEN - 테스트 한 결과
+
+```python
+import pytest
+
+pytestmark = pytest.mark.django_db
+
+def test_create_order_with_sufficient_stock(order_service, sample_user, sample_products):
+    # Given
+    order_data = {"items": [{"product": sample_products[0].id, "quantity": 2}]}
+
+    # When
+    order = order_service.create_order(sample_user, order_data)
+
+    # Then
+    assert order.total_price == 2000
+    assert order.items.count() == 1
+    assert order.items.first().product.stock == 8
+
+```
+
+‘어떤 데이터가 주어졌을 때 어떤 기능을 테스트하면 어떤 결과가 나와야한다. ‘ 라는 문맥으로 테스트를 작성하는 것입니다.
+
+**GIVEN-WHEN-THEN 패턴은 Behavior-Driven Development(BDD)에서 기원한 방법론입니다.** BDD는 테스트를 사용자 관점에서 이해하기 쉬운 구조로 만드는 것에 중점을 둡니다. 이 패턴을 사용하면 개발자는 기능을 명확히 정의하고, 테스트 대상 기능이 예상대로 동작하는지 쉽게 파악할 수 있습니다.
+
+다음은 같은 방식으로 API를 테스트하는 코드입니다.
+
+```python
+def test_create_order(client, sample_products):
+    # Given
+    items = [{"product": product.id, "quantity": 1} for product in sample_products]
+    data = {"items": items}
+
+    # When
+    response = client.post("/api/orders/", data, format="json")
+
+    # Then
+    assert response.status_code == 201
+```
+
+## 단위테스트와 통합테스트
+
+위에 나온 **예시 코드에서 첫 번째 나온 테스트는 단위테스트 입니다.** **다른 코드 의존성 없이** `order_service.create_order` **이 메소드만을 테스트하고 있습니다.** 특정 기능만을 테스트 하는 것이라고 볼 수 있습니다. 기본 로직, 비즈니스 로직을 단위 테스트로 안정적인지 검증해줍니다. 코드 단위가 작기 때문에 테스트를 실행보는 것도 빠르게 할 수 있습니다.
+
+그래서 작은 단위로 테스트를 작성합니다. **하나의 테스트 코드에서 많은 기능을 테스트하지 마세요.**
+
+**두 번째 나온 테스트는 통합테스트 입니다. 주문을 생성하는 API를 테스트하는데 API가 실행되기 위해서는 Serializer, View, Model 등 여러 의존성들과 상호작용이 문제없이 이루어져야 하기 때문에 통합테스트 입니다.**
+
+테스트 목적에 따라 다르겠지만 단위 테스트를 좀 더 중점적으로 테스트 해보는 것이 좋습니다. 작은 코드 단위에서 발생하는 문제들을 막을 수 있고 하나씩 견고하게 코드를 작성하는데 도움이 됩니다. 단위 테스트 만으로 전체 동작이 문제 없다고 보장할 수 없기 때문에 그 후에 전체 시스템이 내가 의도한 대로 동작하는지 통합테스트를 작성해줍니다.
+
+## 마무리
+
+수업시간에 다뤄지지 않았던 테스트에 대한 내용과 거기에 저의 의견을 담아서 짧게 다뤄봤습니다. 파이썬 개발자로 계속 나아가실 거라면 `pytest`는 친축해져야 하는 프레임워크라고 생각합니다. django만 사용한다고 해도 마찬가지 입니다. 관련해서 좀더 찾아보시고 공부해보시기를 추천드립니다.
+
+<Link url="https://chaechae.life/blog/python-cli-test" />
