@@ -1,0 +1,68 @@
+---
+title: supabase django에 연결하기 - 오름캠프
+description: 오름캠프에서 PostgreSQL에 대해서 조금 배웠습니다. 대부분의 훈련생 분들이 PostgreSQL을 파이널 프로젝트에 사용하려고 합니다. DRF로 백엔드를 구축하면서 PostgreSQL을 DB로 사용할 수 있는 방법은 여러가지가 있습니다.
+tags: [Django, Supabase]
+author: mingke
+thumbnail: /thumbnails/supabase-logo.webp
+date: 2024/09/14
+---
+
+<Image src="/thumbnails/supabase-logo.webp" alt="supabase django connection" />
+
+### 목차
+
+## Supabase
+
+오름캠프에서 PostgreSQL에 대해서 조금 배웠습니다. 대부분의 훈련생 분들이 PostgreSQL을 파이널 프로젝트에 사용하려고 합니다. DRF로 백엔드를 구축하면서 PostgreSQL을 DB로 사용할 수 있는 방법은 여러가지가 있습니다.
+
+1. 로컬 환경에 PostgreSQL을 설치하여 사용한다
+2. PostgreSQL 도커 컨테이너를 띄워서 사용한다
+3. 외부에 PostgreSQL 서비스를 사용한다
+
+이 포스팅에서 3번 방법인 외부 서비스를 사용하여 django와 연결하는 방법을 다뤄보겠습니다. 바로 `Supabase`입니다.
+
+`Supabase`에 대한 설명은 아래 링크에 간단하게 적어놨습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-supabase-db" />
+
+`Supabase` 는 PostgreSQL 서버를 제공해줍니다. 무료 플랜이 제공됩니다.
+
+## Django에 연결하기
+
+`Supabase`에서 제공하는 PostgreSQL 서버에 연결하는 방법은 아주 쉽습니다. 그래서 이번 포스팅은 아주 짧을 예정입니다.
+
+- `Supabase` 가입합니다. Github Login하면 됩니다.
+
+[Supabase | The Open Source Firebase Alternative](http://supabase.com/)
+
+- 프로젝트를 생성합니다. **생성할 때 비밀번호 입력하는데 그게 데이터베이스 비밀번호입니다.**
+- `Project Settings` → `Database` 로 이동합니다.
+- Connection parameters 에서 정보를 가져옵니다.
+
+  <Image
+    src="/fastapi-supabase-db/03.png"
+    alt="Supabase Connection parameters"
+    caption="Connection parameters 목록"
+    fullWidth={false}
+  />
+
+- django `settings.py`에 Database에 그대로 입력해 주면 끝입니다.
+
+```python
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "Connection parameters의 Database name",
+        "USER": "Connection parameters의 User",
+        "PASSWORD": "프로젝트 생성할 때 비밀번호",
+        "HOST": "Connection parameters의 Host",
+        "PORT": "Connection parameters의 Port",
+    }
+}
+```
+
+## 마무리
+
+위와 같이 입력한 뒤에 `makemigrations` , `migrate` 명령을 해보시면 잘 동작 할 것입니다. migration후 supabase 콘솔에서 확인해보세요. `Supabase`를 이용해서 초간단하게 django에 PostgreSQL을 연결하는 방법을 알아봤습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-supabase-storage" />
