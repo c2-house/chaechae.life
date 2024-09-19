@@ -1,0 +1,149 @@
+---
+title: PostgreSQL trigger django에서 사용하기(feat.django-pgtrigger) - 오름캠프
+description: PostgreSQL은 정말 다재다능한 DB이고 수업시간에 배운 것보다 많은 기능이 존재합니다. 이번 포스팅에서 PostgreSQL의 Trigger를 간단하게 알아보고 Django에서 사용하는 방법도 알아보겠습니다.
+tags: [Django, PostgreSQL, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/09/18
+---
+
+<Image src="/thumbnails/django-logo.png" alt="postgresql trigger django" />
+
+### 목차
+
+## PostgresSQL trigger
+
+데이터베이스를 배우는 시간에 `PostgreSQL`을 배웠었죠. `PostgreSQL`은 정말 다재다능한 DB이고 수업시간에 배운 것보다 많은 기능이 존재합니다. **이번** **포스팅에서 PostgreSQL의 Trigger를 간단하게 알아보고 Django에서 사용하는 방법도 알아보겠습니다.**
+
+트리거(Trigger)는 데이터베이스에서 특정 이벤트가 발생할 때 자동으로 실행되는 프로시저입니다. **사용자가 호출하는 게 아니고 트리거를 설정 해놓으면 어떤 이벤트(INSERT, UPDATE, DELETE, TRUNCATE) 등에 반응하여 데이터베이스가 미리 트리거로 정의된 함수를 실행하는 것 입니다. 보통의 트리거 함수는 SQL로 작성하지만 PostgreSQL은 Python과 같은 프로그래밍 언어로 만들어진 함수도 실행할 수 있습니다.**
+
+MySQL과 같은 다른 데이터베이스에도 있는 기능이지만 데이터베이스마다 차이는 좀 있습니다.
+
+### 트리거 종류
+
+트리거의 종류를 두 가지 기준으로 정리할 수 있습니다. **실행 시점을 기준**으로 `BEFORE`와 `AFTER`가 있습니다. **적용 범위를 기준**으로 `Row-Level`과 `Statement-Level` 이 있습니다.
+
+- 실행 시점 기준
+  - BEFORE 트리거: 변경 사항이 적용되기 실행됩니다.
+  - AFTER 트리거: 변경 사항이 적용되고 난 후에 실행됩니다.
+- 적용 범위 기준
+  - Row-Level 트리거: 각 Row에 대해서 실행되고 각 Row의 변경사항에 대해서 트리거가 동작합니다.
+  - Statement-Level 트리거: 특정 Statement(SQL)에 대해서 적용되며 한 번만 실행됩니다. 명령이 실행될 때 한 번 실행되는 것입니다.
+
+### 트리거 주의 사항
+
+트리거는 아주 유용하지만 다음과 같은 부분을 잘 생각해봐야 합니다.
+
+- 트리거는 데이터가 변경될 때마다 실행됩니다. 그래서 남발하면 데이터베이스 성능에 영향을 줄 수 있습니다. 사용하기 전에 반드시 필요한가 생각해 봐야 합니다.
+- 트리거는 데이터베이스 레벨에서 자동으로 실행되기 때문에 디버깅이 어려울 수 있습니다. 트리거를 작성하고 의도한 대로 잘 동작하는지 반드시 검토해야 합니다.
+
+## Django Signal과 닮았다?
+
+`Django Signal` 은 Model과 관련된 이벤트가 발생할 때 **애플리케이션 레벨에서 동작**합니다. 그래서 당연히 Django에서 Python으로 실행됩니다. Django 애플리케이션 서버를 반드시 통해야만 동작합니다.
+
+`PostgreSQL Trigger`는 앞서 설명한 것처럼 **데이터베이스 레벨에서 동작**합니다. Django를 통하지 않고 데이터베이스 툴이나 다른 클라이언트를 통해서 접근해서 작업하더라도 동작합니다. 하나의 DB가 Django에서만 쓰이라는 법은 없으니 상황에 따라 Signal과 Trigger를 선택하면 좋을지 생각해보면 되겠습니다.
+
+개발자는 정말 선택할 것이 많네요. 혹시 `Django Signal`을 잘 모르신다면 아래 블로그를 읽어보시기를 추천드립니다.
+
+<Link url="https://kyung-mini.tistory.com/entry/Django-Signals-%EC%82%AC%EC%9A%A9%EB%B2%95-%ED%94%84%EB%A1%9C%ED%95%84-%EC%9E%90%EB%8F%99-%EC%83%9D%EC%84%B1-%EC%A2%8B%EC%95%84%EC%9A%94-%EC%88%AB%EC%9E%90-%EA%B0%B1%EC%8B%A0signal-%ED%91%9C%EB%A1%9C-%EC%A0%95" />
+
+## django-pgtrigger로 trigger 만들어 보기
+
+django의 아주 넓은 third-party 생태계에 PostgreSQL에 트리거를 만드는데 도움을 주는 라이브러리가 있습니다. `django-pgtrigger`인데요. Model을 생성하면서 Django Level에서 트리거를 선언하고 `migration`하면서 DB에 트리거를 생성할 수 있도록 도와줍니다.
+
+- 설치
+
+```bash
+pip install django-pgtrigger
+```
+
+- settings.py 설정
+
+```python
+INSTALLED_APPS = [
+    ...
+    "pgtrigger",
+]
+```
+
+여기까지가 설정입니다. 설정이 끝나면 Django Model에 `triggers`라는 속성을 사용할 수 있게 됩니다.
+
+예제 코드를 한 번 보겠습니다.
+
+```python
+class Order(models.Model):
+    user = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = "order"
+        triggers = [
+            pgtrigger.ReadOnly(
+                name="read_only_created_at",
+                fields=["created_at"],
+            ),
+            pgtrigger.SoftDelete(name="soft_delete", field="is_active"),
+        ]
+
+class OrderItem(models.Model):
+    order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField()
+
+    class Meta:
+        db_table = "order_item"
+        triggers = [
+            pgtrigger.Trigger(
+                name="update_total_price_on_item_change",
+                operation=pgtrigger.Insert | pgtrigger.Delete | pgtrigger.Update,
+                when=pgtrigger.Before,
+                func=pgtrigger.Func(
+                    """
+                    BEGIN
+                        UPDATE "order"
+                        SET total_price = (
+                            SELECT COALESCE(SUM(p.price * oi.quantity), 0)
+                            FROM order_item oi
+                            JOIN product p ON oi.product_id = p.id
+                            WHERE oi.order_id = NEW.order_id
+                        )
+                        WHERE id = NEW.order_id;
+
+                        RETURN NEW;
+                    END;
+                    """,
+                ),
+            ),
+        ]
+
+```
+
+- `class Meta` 안에 `triggers`라는 속성이 있고 그 안에 트리거를 선언합니다.
+- `pgtrigger`에 미리 정의된 트리거를 사용할 수도 있고 직접 함수를 작성할 수도 있습니다.
+  - 예제에 `Order` 모델에서 `created_at` 을 데이터베이스 레벨에서 read_only로 만들었습니다. 생성된 날짜는 수정되면 안되겠죠
+  - SoftDelete도 트리거로 구현할 수 있습니다. 애플리케이션 레벨이 아니고 데이터베이스 레벨에서 구현하면 Model을 통하지 않은 Delete라도 SoftDelete가 보장됩니다.
+  - `OrderItem`에서는 직접 함수를 만들어서 적용했습니다. OrderItem이 추가, 변경, 삭제되면 트리거가 발동되어 `Order` 의 `total_price`가 다시 계산됩니다. 주문내역이 변경되면 총 가격도 바뀌는게 맞는 로직이겠죠.
+
+이렇게 작성하고 `makemigrations`와 `migrate` 명령을 실행해야 합니다.
+
+- `makemigrations`하신 후 아래 명령으로 실제 migration시 어떻게 Raw 쿼리가 날아가는지 확인 가능
+
+<Callout emoji="💡">python manage.py sqlmigrate app이름 마이그레이션번호(ex 0001)</Callout>
+
+Supabase를 사용해서 테스트 해보았습니다. Supabase에서 Trigger가 잘 생성된 것을 확인할 수 있습니다. Supabase 콘솔에서 `Database` → `Triggers` 에서 확인 가능합니다.
+
+<Image src="/postgresql-trigger-django/01.png" alt="supabase trigger view" />
+
+예제에 사용된 코드들은 BEFORE와 Row-Level 트리거입니다.
+
+## 마무리
+
+PostgreSQL Trigger와 Django에서 `django-pgtrigger` 라이브러리를 이용해서 쉽게 트리거를 만드는 방법 예제를 다뤄봤습니다. 예제 만들기가 어려워서 다루지 못한 것도 많이 있으니 `django-pgtrigger` 공식 문서를 한 번 읽어보시면 좋을 것 같습니다. 그리고 근본적으로는 PostgreSQL의 Trigger에 대해서 공부해보는 것도 좋을 것 같습니다.
+
+<Link url="https://django-pgtrigger.readthedocs.io/en/4.12.2/" />
+
+<Link url="https://www.postgresql.org/docs/current/trigger-definition.html" />
+
+<Link url="https://chaechae.life/blog/supabase-cli-migration" />
