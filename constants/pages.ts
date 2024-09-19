@@ -17,6 +17,7 @@ export const tags = [
   'Nextjs',
   'Nodejs',
   'Others',
+  'PostgreSQL',
   'pre-commit',
   'Programming',
   'Prompt Engineering',
