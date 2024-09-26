@@ -1,0 +1,123 @@
+---
+title: PostgreSQL Hstore를 Django에서 사용하기 - 오름캠프
+description: 오름캠프의 커리큘럼에는 없었지만 추가적으로 PostgreSQL의 Extension에 대해 다뤄보면 좋을 것 같아서 이번 포스팅을 작성합니다. 이번 포스팅에서 다뤄볼 Extension은 Hstore 입니다.
+tags: [Django, PostgreSQL, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/09/26
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django postgres hstore" />
+
+### 목차
+
+## PostgreSQL Hstore
+
+PostgreSQL의 장점 중에 하나는 Extension이 매우 많다는 것입니다. PostgreSQL은 DB의 기능을 확장할 수 있는 Extension이 매우 많이 있습니다. 오름캠프의 커리큘럼에는 없었지만 추가적으로 PostgreSQL의 Extension에 대해 다뤄보면 좋을 것 같아서 이번 포스팅을 작성합니다. 이번 포스팅에서 다뤄볼 Extension은 `Hstore` 입니다.
+
+Hstore Extension을 사용하면 `Key:Value` 형태의 데이터를 저장할 수 있게 됩니다. **구조가 명확하지 않고 유연한 구조를 원한다면 사용하기 좋습니다.**
+
+`Hstore`는 `Key:Value` 로 데이터가 저장되어 빠른 조회가 가능합니다. `JSON`과 유사한데 `JSON`은 중첩구조 가능하지만 `Hstore` 는 불가능합니다. 단순히 `Key:Value` 만 필요한 구조라면 `JSON`보다 `Hstore` 가 가볍고 빠르기 때문에 성능 측면에서 더 유리할 수 있습니다. **한 가지 더 `Hstore`의 특징은 모든 값이 문자열로 저장된다는 것입니다.**
+
+그리고 `django`에서 `HStoreField` 로 이미 지원하고 있기 때문에 사용하기도 매우 쉽습니다.
+
+## Django Hstore 사용법
+
+django에서 hstore를 사용하기 위해서 몇 가지 단계가 필요합니다. PostgreSQL의 기능이니 PostgreSQL을 연결하는 것은 선행되어야 합니다. 그 부분은 이번 포스팅에서는 생략하겠습니다.
+
+1. PostgreSQL에서 hstore를 활성화 합니다.
+2. `settings.py`에서 `INSTALLED_APPS`에 `django.contrib.postgres` 를 추가합니다.
+
+   ```python
+   INSTALLED_APPS = [
+       ...
+       "django.contrib.postgres",
+   ]
+   ```
+
+3. hstore가 필요한 Model에서 `HStoreField` 를 선언하고 migration합니다.
+
+   ```python
+   from django.contrib.postgres.fields import HStoreField
+   ...
+   ```
+
+아주 쉽네요. 그럼 예제로 한 번 알아보겠습니다.
+
+### Hstore 활성화 방법
+
+PostgreSQL에 접속하여 `CREATE EXTENSION IF NOT EXISTS hstore;` 이 쿼리만 실행하면 자동으로 실행이 됩니다. `Hstore`는 PostgreSQL의 내장 Extension이기 때문에 추가로 더 할 게 없습니다.
+
+- docker를 이용해서 PostgreSQL을 사용하신다면 다음 명령어를 이용하셔도 됩니다. 물론 컨테이너는 실행 중 이어야 합니다.
+
+```bash
+# $의 환경변수는 각각 설정하신 것을 넣으면 됩니다.
+docker exec -it "$CONTAINER_NAME" psql -U "$POSTGRES_USER" -d "$DATABASE_NAME" -c "CREATE EXTENSION IF NOT EXISTS hstore;"
+```
+
+### Hstore 예제
+
+다음은 예시 model입니다.
+
+```python
+from django.contrib.postgres.fields import HStoreField
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.IntegerField()
+    attributes = HStoreField(null=True, blank=True)
+
+    class Meta:
+        db_table = "product"
+```
+
+제품마다 이름, 설명, 가격, 재고는 정적으로 설정하고 나머지 속성은 동적으로 저장될 수 있습니다.
+
+예를 들면 다음과 같습니다. 예시일 뿐이니 참고만 바랍니다.
+
+```python
+data_1 = {
+        "name": "MacBook Pro M3",
+        "price": 3300000,
+        "stock": 10,
+        "attributes": {"color": "Space Gray", "size": "13-inch"},
+    }
+
+data2 = {
+        "name": "IPad Mini",
+        "price": 1000000,
+        "stock": 10,
+        "attributes": {"color": "Midnight", "size": "10-inch", "charger_type": "8-pin"},
+    }
+```
+
+제품마다 표시되는 속성이 다른 경우 `Hstore`를 사용하면 좋을 것 같습니다.
+
+예시를 보면 금방 아셨을 것 같습니다. `Hstore`는 **저장할 때 Python의 dict로 저장하면 됩니다. 이 또한 너무 쉽네요.**
+
+### Hstore 조회 방법
+
+`Hstore` 의 값을 조회하는 방법은 여러가지가 있습니다. 모든 방법은 Django 공식문서를 참고하시면 되고 여기서는 key를 이용해서 조회하는 방법만 알아보겠습니다.
+
+```python
+# has_key
+products = Product.objects.filter(attributes__has_key="weight")
+
+# has_any_keys
+products = Product.objects.filter(attributes__has_any_keys=["returned", "weight"])
+```
+
+- `has_key` : 조회된 key가 있으면 조회됨
+- `has_any_keys` : 선택된 key중에 하나만 있어도 조회됨 (any)
+
+<Link url="https://docs.djangoproject.com/en/5.1/ref/contrib/postgres/fields/#hstorefield" />
+
+필터링 방법은 공식문서를 참고하면 됩니다.
+
+## 마무리
+
+PostgreSQL의 `Hstore` Extension에 대해서 알아봤습니다. PostgreSQL에는 다양한 Extension이 있기 때문에 궁금하시다면 더 찾아보시는 것도 좋겠습니다. 훈련생 분들이 프로젝트에 사용하는 DB를 대부분 PostgreSQL으로 선택하셨는데 PostgreSQL의 다재다능함을 조금이라도 맛 볼수 있었으면 좋겠습니다.
+
+<Link url="https://chaechae.life/blog/django-orm-dev-tips" />
