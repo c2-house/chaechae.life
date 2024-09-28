@@ -1,0 +1,125 @@
+---
+title: django postgres pg_trgm 사용해서 검색 성능 높이기 - 오름캠프
+description: 이번 포스팅에서 검색 기능을 좀 더 강화할 수 있는 방법을 다뤄보려고 합니다. PostgreSQL의 pg_trgm이라는 Extension이 있습니다. django에서 이걸 아주 쉽게 사용할 수 있습니다.
+tags: [Django, PostgreSQL, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2024/09/28
+---
+
+<Image src="/thumbnails/django-logo.png" alt="django postgres pg_trgm" />
+
+### 목차
+
+## PostgreSQL pg_trgm
+
+오름캠프 django 백엔드 과정의 파이널 프로젝트가 1/3이 지났습니다. 다들 기능들을 열심히 구현하고 있으신데요. 이번 포스팅에서 검색 기능을 좀 더 강화할 수 있는 방법을 다뤄보려고 합니다. PostgreSQL의 `pg_trgm`이라는 Extension이 있습니다. django에서 이걸 아주 쉽게 사용할 수 있습니다.
+
+`pg_trgm` 은 `Trigram`이라는 유사도 기반 검색을 할 수 있도록 지원합니다. 좀 더 유연한 검색을 할 수 있습니다. **오타를 내더라도 혹은 부분적으로 일치하는 단어를 찾아내는데 도움이 될 수 있습니다.**
+
+`Trigram` 을 간략하게 알아보면 3-gram 단위로 유사도를 계산합니다. 예를 들면 "MacBook"이라는 단어는 " Mac", "MacB", "acBo", "cBoo", "Book"과 같이 3-gram 단위로 분해가 가능합니다. 이렇게 단어를 분해하여 클라이언트로부터 입력받은 단어와 유사도를 계산합니다.
+
+## Django에서 pg_trgm 사용하기
+
+이번 포스트에서는 PostgreSQL의 함수나 연산자는 다루지 않고 Django에서 pg_trgm의 `SIMILARITY` 함수가 어떻게 사용되는지 알아보도록 하겠습니다.
+
+이전 포스트의 `Hstore`와 사용 방법 비슷합니다. 다음과 같은 순서로 진행하면 됩니다.
+
+1. PostgreSQL에서 `pg_trgm`를 활성화 합니다.
+   - 아래는 docker를 이용했을 때 예시입니다.
+   - 직접 postgres에 접근해서 활성화해도 됩니다.
+
+```bash
+# $의 환경변수는 각각 설정하신 것을 넣으면 됩니다.
+docker exec -it "$CONTAINER_NAME" psql -U "$POSTGRES_USER" -d "$DATABASE_NAME" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+```
+
+1. **`settings.py`**에서 **`INSTALLED_APPS`**에 **`django.contrib.postgres`** 를 추가합니다.
+
+```python
+INSTALLED_APPS = [
+    ...
+    "django.contrib.postgres",
+]
+```
+
+이렇게 하면 사용할 준비는 끝났습니다. Django에서 `TrigramSimilarity` 함수를 제공해줍니다. 이걸 가져다가 쓰면 됩니다.
+
+예제로 한 번 알아보겠습니다. `django-filter` 라이브러리를 함께 사용하였습니다.
+
+```python
+...
+from django.contrib.postgres.search import TrigramSimilarity
+
+class ProductFilterSet(FilterSet):
+    search = CharFilter(field_name="name", method="filter_by_name_similarity")
+    search2 = CharFilter(field_name="name", lookup_expr="icontains")
+
+    class Meta:
+        model = Product
+        fields = ("search", "search2")
+
+    def filter_by_name_similarity(self, queryset, name, value):
+        # queryset은 Product.objects.all() 임
+        query = (
+            queryset.annotate(
+                similarity=TrigramSimilarity("name", value),
+            )
+            .filter(similarity__gte=0.2)
+            .order_by("-similarity")
+        )
+        return query
+
+```
+
+`TrigramSimilarity` 클래스에 (Model필드명, 검색 텍스트) 를 넣어주면 끝입니다. 예제의 ORM을 잘 봐주세요. 유사도가 0.2이상으로 조회를 합니다. `스마트모니터` 라는 단어를 검색한다고 했을 때 위 ORM은 아래와 같은 Raw쿼리로 DB에 전송됩니다.
+
+```sql
+SELECT "product"."id", "product"."name", "product"."description", "product"."price", "product"."stock", "product"."attributes", SIMILARITY("product"."name", 스마트모니터) AS "similarity" FROM "product" WHERE SIMILARITY("product"."name", 스마트모니터) >= 0.2 ORDER BY 7 DESC
+```
+
+검색 결과는 다음과 같습니다.
+
+- pg_trgm을 사용했을 때
+
+<Image
+  src="/django-postgres-trgm/01.png"
+  alt="django postgres pg_trgm"
+  fullWidth={false}
+  caption="유사도 기반 검색 결과"
+/>
+
+제품명은 `스마트 모니터` 로 되어 있지만 `스마트모니터` 로 검색해도 검색이 됩니다.
+
+- %like%로 검색했을 때
+
+<Image
+  src="/django-postgres-trgm/02.png"
+  alt="django postgres pg_trgm"
+  fullWidth={false}
+  caption="%like% 검색 결과"
+/>
+
+예상 하셨겠지만 아무것도 검색되지 않습니다.
+
+macbook을 검색할 때 a를 입력해야하는데 실수로 옆에 키인 s를 입력했다고 가정해서 mscbook을 검색해도 macbook이 검색됩니다.
+
+<Image
+  src="/django-postgres-trgm/03.png"
+  alt="django postgres pg_trgm"
+  fullWidth={false}
+  caption="mcsbook으로 오타냈을 때 검색 결과"
+/>
+
+## 마무리
+
+`pg_trgm` 익스텐션을 사용해서 검색 기능을 좀 더 강화할 수 있는 방법을 알아봤습니다. 프로젝트에 도움이 되길 바랍니다. 이 익스텐션 말고도 검색과 관련하여 사용할 수 있는 익스텐션은 더 있습니다. 궁금하면 찾아 보시길 바랍니다.
+
+예제에서 제공한 코드는 `django-filter` 를 이용했는데 그것을 이용하지 않더라도 ORM코드에 적용하면 됩니다. 그리고 아래에 Gitbub 링크 첨부했습니다.
+
+<Link url="https://docs.djangoproject.com/en/5.1/ref/contrib/postgres/search/#trigram-similarity" />
+<Link url="https://www.postgresql.org/docs/current/pgtrgm.html#PGTRGM-FUNCS-OPS" />
+
+<Link url="https://github.com/Jungminchae/django-pytest-practice" />
+
+<Link url="https://chaechae.life/blog/django-generatedfield" />
