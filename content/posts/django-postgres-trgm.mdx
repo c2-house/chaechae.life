@@ -34,7 +34,7 @@ date: 2024/09/28
 docker exec -it "$CONTAINER_NAME" psql -U "$POSTGRES_USER" -d "$DATABASE_NAME" -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
 ```
 
-1. **`settings.py`**에서 **`INSTALLED_APPS`**에 **`django.contrib.postgres`** 를 추가합니다.
+1. `settings.py`에서 `INSTALLED_APPS`에 **`django.contrib.postgres`** 를 추가합니다.
 
 ```python
 INSTALLED_APPS = [
