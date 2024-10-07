@@ -1,0 +1,152 @@
+---
+title: FastAPI Soft Delete 구현하기 by PostgreSQL trigger
+description: 오늘 다뤄볼 주제는 Soft Delete 입니다. Soft Delete는 데이터를 삭제하는 것이 아닌 ‘이 데이터는 삭제된 것임’ 이라고 표시를 해주는 것입니다.
+tags: [FastAPI, PostgreSQL]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/10/07
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI softdelete" />
+
+### 목차
+
+## Soft Delete
+
+백엔드에서 애플리케이션 코드를 작성하다보면 기본적으로 CRUD를 작성하게 되고, 아시겠지만 D는 Delete를 의미하죠. 데이터를 삭제하는 경우가 발생한다는 뜻입니다. 일반적으로 Delete라고하면 데이터베이스에서 데이터가 삭제되는 것을 생각합니다. 하지만 오늘 다뤄볼 주제는 `Soft Delete` 입니다.
+
+`Soft Delete`**는 데이터를 삭제하는 것이 아닌 ‘이 데이터는 삭제된 것임’ 이라고 표시를 해주는 것입니다.** 실제로 데이터베이스에는 데이터가 남아있습니다. 이렇게 하면 다음과 같은 장점이 있습니다.
+
+- 일단 데이터를 복구해야할 때 데이터베이스에 데이터가 남아있기 때문에 복구 하기가 쉽습니다.
+- 데이터가 삭제되지 않기 때문에 외래키 제약조건의 무결성을 유지할 수 있습니다.
+- 데이터가 언제 삭제 요청이 들어 왔는지 추적하기가 용이합니다.
+
+이번 포스팅에서 FastAPI 개발을 하면서 PostgreSQL의 Trigger를 이용한 Soft Delete를 구현을 공유하려고 합니다. 애플리케이션 레벨에서 Soft Delete를 구현할 수도 있지만 **DB 레벨에서 구현했을 때 여러 애플리케이션이 함께 쓰는 DB라면 무결성을 쉽게 유지할 수 있고 관련 로직이 DB에 있기 때문에 애플리케이션 코드가 좀 더 간소해 지는 효과**가 있는 것 같습니다.
+
+코드를 통해 알아보겠습니다. 시작하기에 앞서 사용된 버젼은 다음과 같습니다.
+
+- FastAPI==0.115.0
+- PostgreSQL==16
+- SQLAlchemy==2.0.35
+- Alembic==1.13.3
+
+<Link url="https://github.com/Jungminchae/ormcamp-gamgulmarket/blob/main/migrations/versions/34ec93dccf1a_add_users_model.py" />
+
+## Alembic으로 migration하기
+
+PostgreSQL서버에 접속하여 Trigger를 생성할 수도 있지만 alembic을 이용해서 migration 파일을 작성하여 관리할 수도 있습니다.
+
+다음 코드는 users 테이블을 만드는 예시입니다. `op.execute` 함수 안에 Trigger를 생성하는 SQL을 작성해주면 됩니다.
+
+```python
+def upgrade() -> None:
+    op.create_table(
+        "users",
+        sa.Column("id", sa.Integer, primary_key=True, index=True),
+        sa.Column("email", sa.String, unique=True, index=True),
+        sa.Column("password", sa.String),
+        sa.Column("is_active", sa.Boolean, default=True),
+        sa.Column("is_superuser", sa.Boolean, default=False),
+        sa.Column("is_removable", sa.Boolean, default=False),
+        sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
+        sa.Column(
+            "updated_at",
+            sa.DateTime,
+            server_default=sa.func.now(),
+            onupdate=sa.func.now(),
+        ),
+        sa.Column("deleted_at", sa.DateTime, nullable=True),
+    )
+
+    op.execute("""
+        CREATE OR REPLACE FUNCTION "public"._pgtrigger_should_ignore(
+            trigger_name NAME
+        )
+        RETURNS BOOLEAN AS $$
+            DECLARE
+                _pgtrigger_ignore TEXT[];
+                _result BOOLEAN;
+            BEGIN
+                BEGIN
+                    SELECT INTO _pgtrigger_ignore
+                        CURRENT_SETTING('pgtrigger.ignore');
+                    EXCEPTION WHEN OTHERS THEN
+                END;
+                IF _pgtrigger_ignore IS NOT NULL THEN
+                    SELECT trigger_name = ANY(_pgtrigger_ignore)
+                    INTO _result;
+                    RETURN _result;
+                ELSE
+                    RETURN FALSE;
+                END IF;
+            END;
+        $$ LANGUAGE plpgsql;
+        """)
+
+    # 활성화된 사용자에 대해서만 트리거가 실행되도록 함
+    op.execute("""
+        CREATE OR REPLACE FUNCTION pgtrigger_soft_delete_78625()
+        RETURNS TRIGGER AS $$
+            BEGIN
+                IF ("public"._pgtrigger_should_ignore(TG_NAME) IS TRUE) THEN
+                    IF (TG_OP = 'DELETE') THEN
+                        RETURN OLD;
+                    ELSE
+                        RETURN NEW;
+                    END IF;
+                END IF;
+                IF (OLD.is_removable IS TRUE) THEN
+                    RETURN OLD;
+                END IF;
+                UPDATE "users" SET is_active = FALSE, is_removable = TRUE, deleted_at = now()  WHERE "id" = OLD."id" AND is_removable = FALSE; RETURN NULL;
+            END;
+        $$ LANGUAGE plpgsql;
+
+        DROP TRIGGER IF EXISTS pgtrigger_soft_delete_78625 ON "users";
+        CREATE TRIGGER pgtrigger_soft_delete_78625
+            BEFORE DELETE ON "users"
+
+            FOR EACH ROW
+            EXECUTE PROCEDURE pgtrigger_soft_delete_78625();
+
+        COMMENT ON TRIGGER pgtrigger_soft_delete_78625 ON "users" IS '6f7f1bbad00e7d3167219959189d38b83e5f7668';
+        """)
+```
+
+- DELETE요청이 오면 Trigger가 그걸 가로채서 `is_active` 를 `False` 로 변경하고 `is_removable` 은 `True` 로 변경합니다. 그리고 삭제된 날짜도 함께 저장합니다. DELETE문이 UPDATE문으로 변경되어 실행됩니다.
+- `is_removable` 이 `True` 일 때 삭제 요청이 오면 Soft Delete가 아닌 Hard Delete를 합니다. 데이터를 완전 삭제하고 싶은 경우도 있을 거라고 생각해서 만들어봤습니다.
+
+근데 이 코드는 제가 직접 작성한 것은 아닙니다. Django에 `django-pgtrigger` 라는 라이브러리가 있는데 이 라이브러리에 Soft Delete가 구현되어 있습니다. 그 Raw쿼리를 가져다가 일부 수정한 것입니다. django의 풍부한 third-party 라이브러리 정말 최고이긴 하네요.
+
+<Link url="https://chaechae.life/blog/postgresql-trigger-django" />
+
+## FastAPI 애플리케이션 코드
+
+PostgreSQL에서 Soft Delete가 실행되기 때문에 애플리케이션 코드는 아주 간소해집니다.
+
+```python
+from sqlalchemy import delete
+...
+
+async def delete_user(self, db, user_id):
+    # self.model은 User 모델임
+    query = delete(self.model).where(self.model.id == user_id)
+    await db.execute(query)
+    await db.commit()
+    return
+
+```
+
+- user_id만 받아서 Delete요청을 보내면 됩니다. 위 ORM의 Raw쿼리는 `DELETE FROM users WHERE id = {user_id}` 가 되겠네요.
+- DB레벨이 아니고 애플리케이션 레벨에서 구현했다면 `delete_user` 메소드가 update문으로 구현되어야 할 것 입니다.
+- 실행의 결과로 테이블은 이렇게 됩니다.
+
+| is_active | is_removable | deleted_at                 |
+| --------- | ------------ | -------------------------- |
+| False     | True         | 2024-10-07 04:03:17.425345 |
+
+## 마무리
+
+이번 포스팅에서 FastAPI에서 Soft Delete를 PostgreSQL의 Trigger를 이용해서 적용해보았습니다. Soft Delete를 사용하면 장점도 있지만 보다시피 초기에 설정해줘야 하는 번거로움이 있고 데이터가 남아있기 때문에 데이터가 많아지면 쿼리 속도가 느려지는 이슈가 있을 수 있습니다. 그럼 또 그에 맞게 대응이 필요해 질 것입니다. 언제나 그렇듯 상황에 맞게 잘 사용하면 되겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-private-swagger" />
