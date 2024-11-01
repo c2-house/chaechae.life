@@ -1,0 +1,171 @@
+---
+title: FastAPI permissions 구현하기
+description: FastAPI는 DjangoRestFramework랑 다르게 API를 구현할 때 permissions에 대한 기능을 제공하지 않습니다. 그래서 개발할 때 따로 구현해주어야 합니다. 이번 포스팅에서 permissions을 간단하게 구현해보도록 하겠습니다.
+tags: [FastAPI]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2024/11/01
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI permissions 구현하기" />
+
+### 목차
+
+## FastAPI permissions
+
+Permissions는 User의 권한을 의미합니다. API를 요청한 유저가 그 행위를 실행할 권한이 있는지, 혹은 접근하려고 하는 리소스에 대한 권한이 있는지를 의미합니다. 만약 권한이 없다면 그 실행을 막아야합니다. 보안 중에 가장 쉽고 기본이 되는 보안 중에 하나가 아닌가 생각합니다.
+
+`FastAPI`는 `DjangoRestFramework`랑 다르게 API를 구현할 때 permissions에 대한 기능을 제공하지 않습니다. 그래서 개발할 때 따로 구현해주어야 합니다. 이번 포스팅에서 permissions을 간단하게 구현해보도록 하겠습니다.
+
+공식 문서에 보면 Authentication을 구현하여 Annotated와 Depends를 이용해서 Dependency Injection을 해줍니다. 그리고 User 모델 객체를 반환합니다. Permissions도 이와 비슷하게 Dependency Injection을 이용해서 구현해보도록 하겠습니다.
+
+**로직은** `DjangoRestFramework` **를 참고해서 비슷하게 만들어봤습니다.**
+
+인증이 완료된 User dependency `get_current_user`가 있다고 가정하고 중첩으로 Dependency를 구현합니다.
+
+## permission 구현하기
+
+당연한 이야기지만 permission에 앞서서 authentication이 먼저 되어야 합니다. authenticated 된 User의 permission을 검사하는 것이니까요. 인증을 하고 반드시 `Request` 객체에 user를 저장해주어야 합니다.
+
+다음은 유저 인증 예시입니다.
+
+```python
+from typing import Annotated
+from fastapi import Request, Depends
+
+async def get_current_user(request: Request):
+    """
+    어떠한 검증 로직에 의하여
+    user가 인증되엇다고 가정
+    user 객체를 Request의 Scope에 저장
+    """
+	  ...
+
+	  request.state.user = authenticated_user
+    return authenticated_user
+
+CurrentUser = Annotated[User, Depends(get_current_user)]
+```
+
+`DjangoRestFramework` 의 `BasePermission` 을 참고로 만들었습니다. 다음과 같이 선언합니다.
+
+```python
+class BasePermission:
+    def has_permission(self, request: Request) -> bool:
+        return True
+
+    def has_object_permission(self, request: Request, obj: "Base") -> bool:
+        return True
+```
+
+`Base` 는`SQLAlchemy` 의 `DeclarativeBase` 입니다. 일반적으로 SQLAlchemy의 모델 객체를 선언할 때 사용합니다.
+
+`has_permission` 은 API level에서의 권한을 검사합니다. 예를 들어, 특정 API 엔드포인트에 접근할 수 있는 사용자의 역할이나 권한을 확인합니다.
+
+`has_object_permission`은 특정 객체에 대한 권한을 검사합니다. 주로 개별 리소스에 대한 작업을 수행할 때 사용됩니다.
+
+그럼 `has_permission` 부터 예시를 만들어보겠습니다.
+
+```python
+class IsSuperUser(BasePermission):
+    """
+    오로지 SuperUser만 사용할 수 있음
+    """
+    def has_permission(self, request: Request) -> bool:
+        return request.state.user.is_superuser
+```
+
+위 권한을 만들어서 superuser만 사용할 있는 API에 추가할 수 있습니다. user 객체에서 is_superuser 속성만 검사하면 되기 때문에 다른 객체가 필요없습니다.
+
+따라서 `has_permission`을 사용하면 됩니다.
+
+이번에는 `has_object_permission` 의 예시를 만들어보겠습니다.
+
+```python
+class IsMyself(BasePermission):
+    """
+    로그인한 유저가 접근하려고 하는 리소스가
+    본인의 리소스이어야 함
+    """
+    def has_object_permission(self, request: Request, obj: "User") -> bool:
+        return obj.id == request.state.user.id
+```
+
+예를들어 유저 정보를 변경하는 API에 접근한다고 가정했을 때, 내 정보를 다른 유저가 변경하면 안됩니다. 그럴 때 본인인지 권한을 검사하는 용도로 사용할 수 있습니다.
+
+## PermissionChecker 구현하기
+
+`DjangoRestFramework`에서는 `APIView` 에 `check_permissions`와 `check_object_permissions` 가 구현되어 있고 거기에서 permissions를 검사합니다. `FastAPI`에는 그것이 없기 때문에 따로 만들어서 endpoint에 `dependencies` 에 넣어주도록 하겠습니다.
+
+```python
+class PermissionChecker:
+    """
+    권한을 체크하는 객체
+    """
+    def __init__(self, permissions: list[BasePermission], obj: "Base" = None):
+        self.permissions = [permission() for permission in permissions]
+        self.obj = obj
+        self.permission_denied = HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="권한이 없습니다.",
+        )
+
+    def check_permissions(self, request: Request) -> bool:
+        """has_permissions 검사"""
+        is_checked = all(permission.has_permission(request) for permission in self.permissions)
+        if not is_checked:
+            raise self.permission_denied
+
+    def check_object_permissions(self, request: Request) -> bool:
+        """has_object_permissions 검사"""
+        is_checked = all(permission.has_object_permission(request, self.obj) for permission in self.permissions)
+        if not is_checked:
+            raise self.permission_denied
+
+    async def __call__(self, request: Request):
+        self.check_permissions(request)
+        if self.obj:
+            self.check_object_permissions(request)
+
+
+async def check_profile_permission(request: Request, user: CurrentUser):
+    profile_permission = PermissionChecker(
+        # 예시에서 만든 Permission 모두 주입
+        permissions=[IsMyself, IsSuperUser],
+        obj=user,
+    )
+    await profile_permission(request)
+
+
+# endpoint.py
+@router.get(
+    "/profiles/{user_id}/",
+    status_code=status.HTTP_200_OK,
+    dependencies=[Depends(check_profile_permission)],
+)
+async def get_user_profile(data: GetUserProfile):
+    """유저 프로필 조회 API"""
+    ...
+```
+
+`PermissionChecker` 객체에서 permission을 검사하는 로직을 구현합니다. 그게 `check_permissions` 와 `check_object_permissions` 입니다.
+
+그리고 `check_profile_permission` 함수를 Dependency로 endpoint에 넣어줍니다. `check_profile_permission` 에 `obj`가 user가 아니고 다른 모델이라면 `db` Dependency도 받아와서 obj먼저 선언해야합니다. 다음과 같이 예를 들어볼 수 있습니다.
+
+```python
+# 불러올 모델이 product라고 가정합니다.
+async def check_product_permission(request: Request, db: DB):
+    product_id = request.path_params.get("product_id")
+    product = get_product(db, product_id) # product를 가져오는 ORM이라고 가정
+    product_permission = PermissionChecker(
+        permissions=[IsMyself, IsSuperUser],
+        obj=product,
+    )
+    await product_permission(request)
+```
+
+## 마무리
+
+이번 포스팅에서 `DjangoRestFramework` 의 permissions를 참고해서 `FastAPI` 에서도 비슷하게 구현해봤습니다. `FastAPI` 에서는 자유도가 높다보니 다양한 구현방법이 있을 수 있을 것 입니다. **자유롭게 구현해보고 싶은대로 구현해 볼 수 있으니 좋은 것 같습니다.**
+
+<Link url="https://chaechae.life/blog/fastapi-postgresql-softdelete" />
