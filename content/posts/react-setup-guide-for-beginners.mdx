@@ -1,0 +1,118 @@
+---
+title: 초보자를 위한 React 프로젝트 시작 가이드
+description: React 프로젝트를 처음 시작하시는 분들을 위해 Vite로 프로젝트를 생성하는 것부터 ESLint와 Prettier 설정, GitHub 연동하는 방법까지 체계적으로 다뤄보겠습니다.
+tags: [React]
+author: EKO
+thumbnail: /thumbnails/react-logo.png
+date: 2024/11/04
+---
+
+이 글에서는 React 프로젝트를 처음 시작하시는 분들을 위해 Vite로 프로젝트를 생성하는 것부터 ESLint와 Prettier 설정, GitHub 연동하는 방법까지 체계적으로 다뤄보겠습니다. 단순히 방법론적인 것보다는, 초보자들이 많이 하는 실수에 대해 알아보고, 개발 환경을 깔끔하게 세팅하고 관리할 수 있는 팁을 알려드리겠습니다.
+
+<Image src="/thumbnails/react-logo.png" alt="React 로고" />
+
+### 목차
+
+## 개발 폴더 체계적으로 관리하기
+
+### 새 폴더의 늪
+
+여러분은 주로 어디에 프로젝트를 생성하시나요? 아마 많은 분들이 바탕화면에 새 폴더를 만들고, VS Code에서 그 폴더를 열고, VS Code 터미널에서 `create vite` 명령어를 사용하여 프로젝트를 생성하실 겁니다.
+
+<Image src="/react-setup-guide-for-beginners/01.jpg" alt="어지러운 바탕화면" caption="이게 다 뭐였더라..." />
+
+하지만 이런 방식으로 프로젝트를 만들다 보면 바탕화면이 금방 지저분해집니다. 폴더가 많아져서 어떤 폴더가 어떤 프로젝트인지 구분하기 어려워지죠. 무엇보다도 가장 큰 문제점은, 내가 만든 새 폴더 안에 Vite로 생성한 프로젝트 폴더가 nesting되어 실수를 유발한다는 점입니다. VS Code를 보면 이렇게 폴더 안에 폴더가 또 들어있을 것입니다.
+
+<Image src="/react-setup-guide-for-beginners/02.png" alt="잘못된 프로젝트 구조" fullWidth={false} />
+
+이 상태에서 프로젝트 디렉토리인 my-react-app이 아니라 상위 폴더인 react에서 명령어를 실행하여 오류가 발생하거나, 상위 폴더를 GitHub에 올리는 실수를 많이 하게 합니다.
+
+### 개발 전용 폴더 만들기
+
+개발 폴더를 깔끔하고 효율적으로 관리하기 위해서는 **개발 전용 폴더**를 만드실 것을 추천드립니다. 바탕화면이든, 내 문서든, 눈에 잘 띄는 곳에 개발 폴더를 하나 만들고 다음과 같은 구조로 관리해보세요. 그러면 계층 구조가 명확해져 실수를 방지할 수 있습니다.
+
+```text
+dev                        # 모든 개발 관련 파일을 모아두는 최상위 폴더
+├── react-projects/        # React 프로젝트들을 모아두는 폴더
+│   ├── project-1/
+│   ├── project-2/
+│   └── ...
+├── react-practice/        # React 학습용, 연습용 코드를 모아두는 폴더
+│   ├── practice-1/
+│   ├── practice-2/
+│   └── ...
+├── js-practice/           # 다른 언어나 프레임워크도 별도의 폴더로 구분
+└── ...
+```
+
+## Vite로 생성된 프로젝트 구조 이해하기
+
+### 프로젝트 생성하기
+
+이제 폴더 정리가 되었으니 프로젝트를 어디에 생성해야 할지 한층 명확해졌습니다. 굳이 바탕화면에 새 폴더를 만들지 않아도 터미널에서 손쉽게 프로젝트를 생성할 수 있습니다. 다음과 같이 개발 폴더 dev의 react-projects 경로로 들어가서 `create vite` 명령어를 실행하면 됩니다. 프로젝트 생성이 완료되면 그 안으로 들어가서 `code .` 명령어로 VS Code를 열어줍니다.
+
+```bash
+cd dev/react-projects
+yarn create vite my-project --template react
+cd my-project     # 생성된 프로젝트 폴더로 들어가기
+code .            # VS Code 열기
+```
+
+### 주요 파일 및 폴더 설명
+
+VS Code를 열어보면 다음과 같이 여러 가지 파일과 폴더가 생성되었을 것입니다.
+
+<Image src="/react-setup-guide-for-beginners/03.png" alt="프로젝트 구조" fullWidth={false} />
+
+- `public`: favicon, 이미지, 폰트 등 정적으로 제공되어야 하는 파일을 저장합니다.
+- `src`: 실제 React 코드를 작성하는 폴더입니다.
+- `assets`: React 컴포넌트에서 import하여 사용할 이미지나 기타 자산을 저장합니다.
+- `.gitignore`: git에서 제외할 대상을 설정합니다. `node_modules`, `.env` 등을 제외합니다.
+- `eslint.config.js`: ESLint 설정 파일입니다. 코드 품질을 관리하는 도구입니다.
+- `index.html`: React 앱의 진입점이 되는 HTML 파일입니다.
+- `package.json`: 프로젝트의 이름, 버전, 스크립트, 의존성 등 메타 정보를 담고 있습니다.
+- `README.md`: 프로젝트에 대한 설명을 작성하는 파일입니다.
+- `vite.config.js`: Vite의 빌드 설정을 커스터마이징할 수 있는 파일입니다.
+
+여기서 `App.jsx` 파일의 내용을 지우고, `index.css`, `App.css` 파일을 사용하지 않는다면 깔끔하게 삭제하세요. 삭제 후에는 불필요한 import 구문도 찾아서 제거해주세요.
+
+그리고 하나의 패키지 매니저만 사용할 수 있도록 주의를 기울이세요. yarn create vite로 프로젝트를 생성했다면 계속 yarn을 사용하고, npm create vite로 생성했다면 계속 npm을 사용하세요. 둘을 섞어 쓰면 의존성이 꼬일 수 있습니다.
+
+## ESLint & Prettier 설정
+
+### ESLint 설정하기
+
+ESLint는 코드의 문제점을 미리 찾아주는 정적 분석 도구입니다. 쉽게 말해 문법 검사기라고 생각하시면 됩니다. Vite로 생성한 프로젝트는 `eslint.config.js` 파일에 이미 ESLint 기본 세팅이 되어 있습니다. ESLint 익스텐션을 설치하면 문법 오류를 실시간으로 확인할 수 있습니다. 예를 들어, import한 값을 사용하지 않거나, map 메서드를 사용할 때 key prop을 설정하지 않으면 ESLint가 빨간 줄로 경고를 표시합니다.
+
+<Image src="/react-setup-guide-for-beginners/04.png" alt="ESLint 예시" />
+
+하지만 좀 거슬리는 부분이 있습니다. 위 이미지를 보면 컴포넌트의 props에 전부 빨간 줄이 그어져 있습니다. 이는 ESLint의 `react/prop-types` 규칙 때문인데, 요즘엔 TypeScript를 많이 사용하기 때문에 PropTypes를 사용하지 않는 경우가 많습니다. 이 규칙을 끄려면 `eslint.config.js` 파일에 다음과 같이 규칙을 추가해주세요.
+
+```js
+rules: {
+  // 기존 rules에 옵션 추가
+  'react/prop-types': 'off',
+},
+```
+
+### Prettier 설정하기
+
+Prettier는 코드 스타일을 일관되게 유지해주는 formatter입니다. 들여쓰기, 띄어쓰기, 줄바꿈 등을 깔끔하게 정렬하여 코드의 가독성을 높여줍니다. VS Code에서 사용하려면 Prettier 익스텐션을 설치하면 됩니다. 그리고 코드 저장 시 자동으로 Prettier가 적용되도록 설정해두면 편리합니다. VS Code 설정에 들어가서 format이라고 검색한 후 아래 옵션을 찾아 설정해주세요.
+
+- `Format On Save` 옵션 활성화(체크)
+- `Default Formatter`를 `esbenp.prettier-vscode`로 설정
+
+<Image src="/react-setup-guide-for-beginners/05.gif" alt="Prettier 예시" />
+
+## GitHub 연동하기
+
+마지막으로 프로젝트를 GitHub에 연동해보겠습니다. Vite로 생성한 프로젝트는 기본적으로 git 초기화가 되어 있지 않은 상태입니다. 명령어를 통해 수동으로 git init을 하고 GitHub Repository를 연결하는 방법도 있지만, 초심자는 실수할 수도 있으니 좀 더 쉬운 방법을 알려드리겠습니다.
+
+1. GitHub에서 새 Repository 생성
+2. 빈 Repository 화면 하단에 있는 명령어를 복사하여 터미널에서 실행
+
+<Image src="/react-setup-guide-for-beginners/06.png" alt="GitHub Repository 예시" />
+
+이렇게만 하면 로컬 프로젝트와 GitHub Repository가 연동됩니다. 이제 VS Code에서 코드를 수정하고 저장하면 Prettier가 자동 적용되고, ESLint가 코드를 검사해줍니다. 그리고 git add, commit, push 명령어를 통해 변경 사항을 GitHub에 업로드할 수 있습니다. 참 쉽죠?
+
+이제 프로젝트 기본 세팅이 끝났습니다. 이 글이 여러분의 React 코드와 개발 환경을 깔끔하게 관리하는 데 도움이 되었으면 좋겠습니다!
