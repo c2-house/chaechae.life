@@ -24,6 +24,7 @@ export const tags = [
   'Pydantic',
   'Pytest',
   'Python',
+  'React',
   'Redis',
   'Rust',
   'SQLAlchemy',
