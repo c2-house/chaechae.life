@@ -12,7 +12,7 @@ import {
 
 const profiles: ProfileCardProps[] = [
   {
-    name: '고은채',
+    name: 'EKO',
     role: 'Frontend Developer',
     image: 'eko.png',
     cardBg: 'bg-pink-50/60',
@@ -34,7 +34,7 @@ const profiles: ProfileCardProps[] = [
     ],
   },
   {
-    name: '정민채',
+    name: 'mingke',
     role: 'Backend Developer',
     image: 'mingke.png',
     cardBg: 'bg-indigo-50/60',
