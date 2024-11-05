@@ -25,7 +25,7 @@ date: 2024/11/04
 
 <Image src="/react-setup-guide-for-beginners/02.png" alt="잘못된 프로젝트 구조" fullWidth={false} />
 
-이 상태에서 프로젝트 디렉토리인 my-react-app이 아니라 상위 폴더인 react에서 명령어를 실행하여 오류가 발생하거나, 상위 폴더를 GitHub에 올리는 실수를 많이 하게 합니다.
+이 상태에서 프로젝트 디렉토리인 my-react-app이 아니라 상위 폴더인 react에서 명령어를 실행하여 오류가 발생하거나, 상위 폴더를 GitHub에 올리는 실수를 많이 하게 됩니다.
 
 ### 개발 전용 폴더 만들기
 
@@ -68,7 +68,7 @@ VS Code를 열어보면 다음과 같이 여러 가지 파일과 폴더가 생�
 - `src`: 실제 React 코드를 작성하는 폴더입니다.
 - `assets`: React 컴포넌트에서 import하여 사용할 이미지나 기타 자산을 저장합니다.
 - `.gitignore`: git에서 제외할 대상을 설정합니다. `node_modules`, `.env` 등을 제외합니다.
-- `eslint.config.js`: ESLint 설정 파일입니다. 코드 품질을 관리하는 도구입니다.
+- `eslint.config.js`: ESLint 설정 파일입니다.
 - `index.html`: React 앱의 진입점이 되는 HTML 파일입니다.
 - `package.json`: 프로젝트의 이름, 버전, 스크립트, 의존성 등 메타 정보를 담고 있습니다.
 - `README.md`: 프로젝트에 대한 설명을 작성하는 파일입니다.
@@ -76,13 +76,15 @@ VS Code를 열어보면 다음과 같이 여러 가지 파일과 폴더가 생�
 
 여기서 `App.jsx` 파일의 내용을 지우고, `index.css`, `App.css` 파일을 사용하지 않는다면 깔끔하게 삭제하세요. 삭제 후에는 불필요한 import 구문도 찾아서 제거해주세요.
 
-그리고 하나의 패키지 매니저만 사용할 수 있도록 주의를 기울이세요. yarn create vite로 프로젝트를 생성했다면 계속 yarn을 사용하고, npm create vite로 생성했다면 계속 npm을 사용하세요. 둘을 섞어 쓰면 의존성이 꼬일 수 있습니다.
+<Callout>
+  주의! 하나의 패키지 매니저만 사용하세요. yarn create vite로 프로젝트를 생성했다면 계속 yarn을 사용하고, npm create vite로 생성했다면 계속 npm을 사용하세요. 둘을 섞어 쓰면 의존성이 꼬일 수 있습니다.
+</Callout>
 
 ## ESLint & Prettier 설정
 
 ### ESLint 설정하기
 
-ESLint는 코드의 문제점을 미리 찾아주는 정적 분석 도구입니다. 쉽게 말해 문법 검사기라고 생각하시면 됩니다. Vite로 생성한 프로젝트는 `eslint.config.js` 파일에 이미 ESLint 기본 세팅이 되어 있습니다. ESLint 익스텐션을 설치하면 문법 오류를 실시간으로 확인할 수 있습니다. 예를 들어, import한 값을 사용하지 않거나, map 메서드를 사용할 때 key prop을 설정하지 않으면 ESLint가 빨간 줄로 경고를 표시합니다.
+ESLint는 코드의 문제점을 미리 찾아주는 정적 분석 도구입니다. 쉽게 말해 문법 검사기라고 생각하시면 됩니다. Vite로 생성한 프로젝트는 `eslint.config.js` 파일에 이미 ESLint 기본 세팅이 되어 있습니다. ESLint 익스텐션을 설치하면 문법 오류를 실시간으로 확인할 수 있습니다. 예를 들어, import한 값을 사용하지 않거나, map 메서드를 사용할 때 key prop을 설정하지 않으면 ESLint가 빨간 줄로 경고를 표시합니다. 빨간 줄에 마우스를 올리면 경고 메시지를 확인할 수 있습니다.
 
 <Image src="/react-setup-guide-for-beginners/04.png" alt="ESLint 예시" />
 
@@ -90,29 +92,45 @@ ESLint는 코드의 문제점을 미리 찾아주는 정적 분석 도구입니�
 
 ```js
 rules: {
-  // 기존 rules에 옵션 추가
+  // 기존 rules에 추가
   'react/prop-types': 'off',
 },
 ```
 
 ### Prettier 설정하기
 
-Prettier는 코드 스타일을 일관되게 유지해주는 formatter입니다. 들여쓰기, 띄어쓰기, 줄바꿈 등을 깔끔하게 정렬하여 코드의 가독성을 높여줍니다. VS Code에서 사용하려면 Prettier 익스텐션을 설치하면 됩니다. 그리고 코드 저장 시 자동으로 Prettier가 적용되도록 설정해두면 편리합니다. VS Code 설정에 들어가서 format이라고 검색한 후 아래 옵션을 찾아 설정해주세요.
+Prettier는 코드 스타일을 일관되게 유지해주는 formatter입니다. 들여쓰기, 띄어쓰기, 줄바꿈 등을 깔끔하게 정렬하여 코드의 가독성을 높여줍니다. VS Code에서 사용하려면 Prettier 익스텐션을 설치하면 됩니다. 그리고 코드 저장 시 자동으로 Prettier가 적용되도록 설정해두면 편리합니다. VS Code 설정(좌측 하단 톱니바퀴 → Settings)에 들어가서 format이라고 검색한 후 아래 옵션을 찾아 설정해주세요.
 
+- `Default Formatter`를 Prettier로 설정
 - `Format On Save` 옵션 활성화(체크)
-- `Default Formatter`를 `esbenp.prettier-vscode`로 설정
 
-<Image src="/react-setup-guide-for-beginners/05.gif" alt="Prettier 예시" />
+<Image src="/react-setup-guide-for-beginners/05.gif" alt="Prettier 예시" caption="개떡같이 써도 찰떡같이 정렬!" />
 
 ## GitHub 연동하기
 
-마지막으로 프로젝트를 GitHub에 연동해보겠습니다. Vite로 생성한 프로젝트는 기본적으로 git 초기화가 되어 있지 않은 상태입니다. 명령어를 통해 수동으로 git init을 하고 GitHub Repository를 연결하는 방법도 있지만, 초심자는 실수할 수도 있으니 좀 더 쉬운 방법을 알려드리겠습니다.
+마지막으로 프로젝트를 GitHub에 연동해보겠습니다. Vite로 생성한 프로젝트는 기본적으로 git 초기화가 되어 있지 않은 상태입니다. 명령어를 통해 수동으로 GitHub Repository를 연결하는 방법도 있지만, 초심자는 실수할 수도 있으니 좀 더 쉬운 방법을 알려드리겠습니다.
 
-1. GitHub에서 새 Repository 생성
-2. 빈 Repository 화면 하단에 있는 명령어를 복사하여 터미널에서 실행
+1. VS Code 터미널에서 `git init` 명령어 실행
+2. GitHub에서 새 Repository 생성
+3. 빈 Repository 하단에 있는 명령어를 복사하여 터미널에서 실행
 
 <Image src="/react-setup-guide-for-beginners/06.png" alt="GitHub Repository 예시" />
 
-이렇게만 하면 로컬 프로젝트와 GitHub Repository가 연동됩니다. 이제 VS Code에서 코드를 수정하고 저장하면 Prettier가 자동 적용되고, ESLint가 코드를 검사해줍니다. 그리고 git add, commit, push 명령어를 통해 변경 사항을 GitHub에 업로드할 수 있습니다. 참 쉽죠?
+<Callout>
+  혹시 이 명령어를 실행했을 때 오류가 발생한다면, git add, commit이 되지 않은 상태에서 push를 시도해서 그럴 수 있습니다. 먼저 git add, commit을 한 다음 다시 실행해보세요.
+</Callout>
+
+명령어를 한 줄씩 살펴보겠습니다.
+
+1. `git remote add origin https://github.com/kec0130/repo-name.git`  
+    로컬 Git 저장소(내 프로젝트)에 origin이라는 이름으로 원격 저장소(GitHub Repository)를 연결합니다.
+
+2. `git branch -M main`  
+    로컬 저장소의 브랜치를 이름을 main으로 변경합니다. 기본 브랜치가 master로 생성되는 경우가 있어 main으로 맞춰주는 것입니다.
+
+3. `git push -u origin main`  
+    main 브랜치를 원격 저장소에 push합니다. -u 플래그는 main 브랜치를 원격 저장소의 기본 브랜치로 설정하며, 이후부터는 브랜치 이름을 생략하고 git push만 입력해도 main 브랜치로 push됩니다.
+
+이렇게 하면 내 컴퓨터에 있는 프로젝트와 GitHub Repository가 연동됩니다. 이제 VS Code에서 코드를 수정하고 저장하면 Prettier가 자동 적용되고, ESLint가 코드를 검사해줍니다. 그리고 변경 사항을 GitHub에 업로드할 수 있습니다. 참 쉽죠?
 
 이제 프로젝트 기본 세팅이 끝났습니다. 이 글이 여러분의 React 코드와 개발 환경을 깔끔하게 관리하는 데 도움이 되었으면 좋겠습니다!
