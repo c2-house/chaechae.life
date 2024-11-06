@@ -1,0 +1,93 @@
+---
+title: 개발 생산성을 높여주는 VS Code 익스텐션 20개 추천
+description: 코드 작성을 편리하게 만들어주는 기본적인 툴부터 디버깅, 프로젝트 관리, 협업, 테마 설정 등 다양한 측면에서 생산성을 높일 수 있는 VS Code 익스텐션들을 소개합니다.
+tags: [VSCode, Tools]
+author: EKO
+thumbnail: /thumbnails/vscode-logo.png
+date: 2024/11/06
+---
+
+이 글에서는 개발 생산성을 높여주는 VS Code 익스텐션 20개를 소개해드리겠습니다. 코드 작성을 편리하게 만들어주는 기본적인 툴부터 디버깅, 프로젝트 관리, 협업, 테마 설정 등 다양한 측면에서 생산성을 높일 수 있는 익스텐션들을 살펴볼 것입니다. 자신에게 맞는 익스텐션을 찾아 적용하고 커스터마이징 하면서 개발 환경을 한층 더 업그레이드 해보시기 바랍니다.
+
+<Image src="/thumbnails/vscode-logo.png" alt="VS Code 로고" />
+
+### 목차
+
+## 프론트엔드 코드 작성을 도와주는 툴
+
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)  
+  코드의 들여쓰기, 공백, 줄바꿈 등을 자동으로 정리해줍니다. 세팅 방법은 이전 글을 참고하세요.
+
+  <Link url="https://chaechae.life/blog/react-setup-guide-for-beginners#prettier-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0" />
+
+- [ES7+ React/Redux/React-Native snippets](https://marketplace.visualstudio.com/items?itemName=dsznajder.es7-react-js-snippets)
+
+  - React 코드 스니펫을 통해 React 컴포넌트, hooks 등을 쉽고 빠르게 작성할 수 있습니다.
+  - 자주 사용하는 스니펫: `rfce` (function 컴포넌트), `rafce` (화살표 함수 컴포넌트), `clg` (console.log), `useStateSnippet` 등
+  - 이 외에도 아주 다양한 스니펫이 있으니, 전체 스니펫 목록은 [이 문서](https://github.com/r5n-labs/vscode-react-javascript-snippets/blob/HEAD/docs/Snippets.md)에서 확인하세요.
+
+- [Auto Rename Tag](https://marketplace.visualstudio.com/items?itemName=formulahendry.auto-rename-tag)  
+  HTML 태그 이름을 수정할 때 여는 태그와 닫는 태그가 동시에 수정됩니다.
+
+- [Multiple cursor case preserve](https://marketplace.visualstudio.com/items?itemName=Cardinal90.multi-cursor-case-preserve)  
+  다중 커서로 단어를 선택하여 한꺼번에 바꿀 때 기존의 대소문자를 유지해줍니다. camelCase를 사용하는 JavaScript 개발자에게 정말 유용합니다.
+
+- [indent-rainbow](https://marketplace.visualstudio.com/items?itemName=oderwat.indent-rainbow)  
+  들여쓰기에 배경색을 넣어 눈에 잘 띄게 해줍니다.
+
+- [Color Highlight](https://marketplace.visualstudio.com/items?itemName=naumovs.colo-highlight)  
+  CSS 컬러 코드에 실제 컬러로 배경색을 넣어 강조합니다.
+
+- [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer)  
+  로컬 개발 서버를 실행하여 변경사항을 즉각적으로 확인할 수 있게 해줍니다.
+
+## 디버깅과 코드 품질 관리를 위한 툴
+
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)  
+  JavaScript 코드의 문법 오류나 안티 패턴을 찾아줍니다. 세팅 방법은 이전 글을 참고하세요.
+
+  <Link url="https://chaechae.life/blog/react-setup-guide-for-beginners#eslint-%EC%84%A4%EC%A0%95%ED%95%98%EA%B8%B0" />
+
+- [Error Lense](https://marketplace.visualstudio.com/items?itemName=usernamehw.errorlens)  
+  문제가 있는 라인을 강조 표시하고, 오류/경고 메시지를 인라인으로 보여줍니다.
+
+- [Code Spell Checker](https://marketplace.visualstudio.com/items?itemName=streetsidesoftware.code-spell-checker)  
+  코드의 스펠링 오류를 체크해줍니다.
+
+- [Pretty TypeScript Errors](https://marketplace.visualstudio.com/items?itemName=yoavbls.pretty-ts-errors)  
+  TypeScript 에러를 가독성 좋게 표시해줍니다.
+
+- [Console Ninja](https://marketplace.visualstudio.com/items?itemName=WallabyJs.console-ninja)  
+  console.log 출력 결과를 코드 옆에 바로 보여줍니다. (최근 구독 요금제가 도입되면서, 최신 버전 프레임워크에 대한 지원은 PRO 사용자에게만 제공되고 있습니다. 무료 사용자에게는 올해 연말쯤 기능을 풀어줄 것 같습니다.)
+
+## 프로젝트 관리와 협업을 위한 툴
+
+- [Git Graph](https://marketplace.visualstudio.com/items?itemName=mhutchie.git-graph)  
+  깔끔한 Git 그래프를 볼 수 있고, 그래프에서 Git 작업을 수행할 수 있습니다.
+
+- [GitLense](https://marketplace.visualstudio.com/items?itemName=eamodio.gitlens)  
+  코드 라인별로 commit 내역을 볼 수 있습니다.
+
+- [Project Manager](https://marketplace.visualstudio.com/items?itemName=alefragnani.project-manager)  
+  여러 프로젝트를 북마크해놓고 쉽게 접근할 수 있습니다. 태그별로 정리할 수도 있습니다.
+
+- [Todo Tree](https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree)  
+  `TODO`, `FIXME` 등의 주석을 트리 형태로 보여줍니다.
+
+- [Live Share](https://marketplace.visualstudio.com/items?itemName=MS-vsliveshare.vsliveshare)  
+  VS Code에서 여러 명이 실시간으로 협업할 수 있습니다.
+
+- [Thunder Client](https://marketplace.visualstudio.com/items?itemName=rangav.vscode-thunder-client)  
+  VS Code에서 API 응답을 간편하게 테스트할 수 있는 REST API 클라이언트입니다.
+
+## VS Code 테마 설정
+
+- [Material Theme](https://marketplace.visualstudio.com/items?itemName=Equinusocio.vsc-material-theme)
+
+  - 다양한 VS Code 테마를 제공합니다.
+  - 설정 방법: `Command Palette` 열기( <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> ) → "theme" 검색 → `Preferences: Color Theme` 선택 → 원하는 테마 선택
+
+- [Meterial Icon Theme](https://marketplace.visualstudio.com/items?itemName=PKief.material-icon-theme)
+
+  - 사이드바 탐색기의 파일과 폴더를 아이콘 형태로 보여줍니다.
+  - 설정 방법: `Command Palette` 열기( <kbd>Cmd</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> ) → "theme" 검색 → `Preferences: File Icon Theme` 선택 → `Material Icon Theme` 선택
