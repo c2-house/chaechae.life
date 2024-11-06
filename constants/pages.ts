@@ -30,6 +30,8 @@ export const tags = [
   'SQLAlchemy',
   'Supabase',
   'Swagger',
+  'Tools',
+  'VSCode',
   'Writing',
   '오름캠프',
 ] as const;
