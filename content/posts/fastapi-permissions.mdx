@@ -148,7 +148,7 @@ async def get_user_profile(data: GetUserProfile):
     ...
 ```
 
-`PermissionChecker` 객체에서 permission을 검사하는 로직을 구현합니다. 그게 `check_permissions` 와 `check_object_permissions` 입니다.
+`PermissionChecker` 객체에서 permission을 검사하는 로직을 구현합니다. 그게 `check_permissions` 와 `check_object_permissions` 입니다. 그리고 권한이 없을 때 에러 응답도 만들어 줍니다. `permission_denied`에 `403 에러 코드`를 넣었습니다. `401` 이랑 헷갈리는 분들 없기를 바랍니다.
 
 그리고 `check_profile_permission` 함수를 Dependency로 endpoint에 넣어줍니다. `check_profile_permission` 에 `obj`가 user가 아니고 다른 모델이라면 `db` Dependency도 받아와서 obj먼저 선언해야합니다. 다음과 같이 예를 들어볼 수 있습니다.
 
