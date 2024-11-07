@@ -1,0 +1,106 @@
+---
+title: PostgreSQL JSON과 JSONB 데이터타입 알아보기
+description: PostgreSQL이나 MySQL 같은 RDBMS에서도 JSON과 같은 정형화되지 않은 데이터를 저장할 수 있습니다. 그것을 저장하기 위한 데이터 타입인 JSON 타입이 있습니다. 그리고 PostgreSQL에는 PostgreSQL의 고유한 타입인 JSONB 타입이 있습니다.
+tags: [PostgreSQL, Django, SQLAlchemy]
+thumbnail: /thumbnails/postgres-logo.png
+author: mingke
+date: 2024/11/07
+---
+
+<Image src="/thumbnails/postgres-logo.png" alt="postgresql json jsonb" />
+
+### 목차
+
+## JSON과 JSONB 타입
+
+부트캠프에서 근무 하면서 훈련생들에게 알려주고 싶은 것이 정말 많았습니다. 시간의 한계 때문에 다 설명하지 못한 부분들이 많았는데요. PostgreSQL의 JSON과 JSONB 데이터 타입이 그 중에 하나 입니다. 이번 포스팅에서 두 데이터 타입의 차이를 살펴보도록 하겠습니다.
+
+PostgreSQL이나 MySQL 같은 RDBMS에서도 JSON과 같은 정형화되지 않은 데이터를 저장할 수 있습니다. 그것을 저장하기 위한 데이터 타입인 `JSON 타입`이 있습니다. 그리고 PostgreSQL에는 PostgreSQL의 고유한 타입인 `JSONB 타입`이 있습니다.
+
+### JSON
+
+`JSON 타입`은 **데이터를 문자열 그대로 저장**합니다. 데이터는 원시 텍스트 형태로 저장되어 있기 때문에 저장이 빠르고 간단합니다. 입력받은 대로 삽입하면 되는 것이죠. 하지만 조회나 데이터을 조작하는 경우에 성능의 저하가 있을 수 있습니다.
+
+언급했듯이 JSON은 내부적으로 문자열로 저장됩니다. 이 말은 곧, **JSON의 특정 Key나 Value를 조회하려면 전체 문자열을 읽은 다음에 해당 부분을 해석하는 과정이 필요**하다는 것입니다. 그 과정을 **파싱**이라고 합니다. 저장할 때는 단순히 텍스트를 넣으면 되지만 조회할 때 파싱이 필요하기 때문에 이 부분에서 성능저하가 일어날 수 있습니다. 데이터가 복잡하고 큰 경우에 이 시간이 더 오래걸릴 수 있습니다.
+
+아래는 파싱의 이해를 돕기 위한 예제입니다.
+
+```python
+import json
+
+# 텍스트로 저장된 데이터의 특정 키 값에 접근하기 위해 다음과 같은 과정이 필요합니다.
+# 문자열 형태의 JSON 데이터
+json_string = '{"name": "Mingke", "age": 100, "city": "Seoul"}'
+
+# 문자열을 JSON으로 파싱
+parsed_data = json.loads(json_string)
+
+# 파싱된 데이터 접근
+print(parsed_data["name"]) # Mingke 출력
+```
+
+### JSONB
+
+`JSONB 타입` 은 앞에서 언급했듯이 PostgreSQL에만 있는 타입입니다. JSON 데이터를 텍스트가 아닌 **구조화된 binary 형식으로 저장**합니다. 따라서 **저장 공간 측면에서 효율적이고** **쿼리를 할 때 별도의 파싱 작업 없이도 바로 접근이 가능**합니다. 이것이 의미하는 바는 **인덱싱이 가능해지고, Key나 Value에 접근하는 쿼리의 속도가 빠르다**는 것입니다. 인덱싱은 `GIN 인덱스`를 사용해서 효율적으로 조회 성능을 끌어 올릴 수 있습니다.
+
+`JSON 타입`과 다른 또 다른 특징이 있습니다. `JSON 타입` 은 입력 데이터를 완전히 동일한 문자열 그대로 저장하는데, `JSONB 타입` 은 그냥 저장하는 것이 아니라 **공백을 보존하지 않고, Key의 순서를 유지하지도 않습니다. 그리고 중복된 Key를 허용하지 않습니다.**
+
+하지만 데이터를 **삽입할 때는 binary 형식으로 변환해야하기 때문에 저장할 때의 속도가 조금 느려**집니다. 데이터의 양이 엄청 많지 않다면 체감이 크게 되지는 않을 것입니다. 그리고 애초에 **JSON으로 저장하는 데이터가 엄청 많고 복잡하다면 NoSQL 데이터베이스를 고려해보는 것이 좋을 것 같습니다.**
+
+이러한 것들을 고려했을 때 **일반적으로 PostgreSQL에서 JSON데이터를 저장해야한다면** `JSONB 타입`**을 사용하는 것이 좋습니다.**
+
+## Django에서 JSONField 사용하기
+
+Django에서 JSON을 Model에서 쓰기 위해 `models.JSONField` 를 사용하면 됩니다. Django는 PostgreSQL의 고급 기능을 쉽게 활용할 수 있도록 설계되었습니다. 그래서 Django models는 기본적으로 `JSONB 타입` 을 `JSONField`와 매핑합니다. `JSONB 타입` 이 `JSON 타입`에 비해 더 높은 성능과 효율성을 제공하기 때문에 입니다. 만약에 반드시 `JSON 타입` 을 사용해야 한다면 `Raw SQL`을 사용해야 합니다. 이런건 아주 예외 케이스가 되겠죠. 그냥 `JSONB 타입`을 쓰세요.
+
+다음은 `JSONField` 를 사용한 Django Model 예시입니다. 아주 쉽게 사용할 수 있습니다.
+
+```python
+from django.conf import settings
+from django.db import models
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    bio = models.TextField(blank=True)
+    # PostgreSQL을 사용한다면 JSONB 타입임
+    preferences = models.JSONField()
+```
+
+## SQLAlchemy에서 JSONB 사용하기
+
+SQLAlchemy를 사용한다면 다음과 같이 JSONB를 쓸 수 있습니다. Django 보단 아니지만 그래도 사용이 쉬운 편이라고 생각합니다.
+
+```python
+from sqlalchemy import ForeignKey, Text
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import JSONB
+from typing import Dict, Optional
+
+class Base(DeclarativeBase):
+    pass
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(unique=True, nullable=False)
+    email: Mapped[str] = mapped_column(unique=True, nullable=False)
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), unique=True, nullable=False)
+    bio: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    preferences: Mapped[Dict] = mapped_column(JSONB)
+
+    user: Mapped[User] = relationship("User", back_populates="profile")
+```
+
+## 마무리
+
+PostgreSQL의 JSON과 JSONB 타입에 대해서 간단하게 알아봤습니다. Django 위주로 배우다보니 PostgreSQL에 대해서는 자세히 다루지 않은 것들이 많아서 이번 주제를 다뤄봤습니다. ORM을 많이 쓰기 때문에 Raw SQL은 다루지 않았습니다만 공부해보면 좋다고 생각합니다. 그리고 추가적으로 JSONB는 데이터 집계나 업데이트에도 장점이 있습니다. 또한, 저장 방식의 차이 때문에 JSONB만이 가지는 고유의 연산자가 존재합니다. 필요하시다면 더 공부해보시길 추천드립니다.
+
+<Link url="https://www.postgresql.org/docs/17/datatype-json.html" />
+
+<Link url="https://chaechae.life/blog/django-postgresql-hstore" />
