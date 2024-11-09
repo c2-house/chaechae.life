@@ -8,13 +8,16 @@ interface Props {
   params: {
     authorName: string;
   };
+  searchParams: {
+    page: string;
+  };
 }
 
-export const generateStaticParams = async () => {
-  return authors.map((author) => ({ authorName: slugify(author) }));
-};
+// export const generateStaticParams = async () => {
+//   return authors.map((author) => ({ authorName: slugify(author) }));
+// };
 
-const AuthorPage = ({ params: { authorName } }: Props) => {
+const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) => {
   const posts = allPosts
     .filter((post) => slugify(post.author) === authorName)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -30,13 +33,13 @@ const AuthorPage = ({ params: { authorName } }: Props) => {
             alt="프로필 사진"
             width={100}
             height={100}
-            className="rounded-full"
+            className="animate-bounce rounded-full"
           />
-          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
+          <h1 className="text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
         </div>
       </div>
       <section className="container-lg pt-6 md:pt-8">
-        <PostList posts={posts} countLabel="글 목록" />
+        <PostList posts={posts} page={page} countLabel="글 목록" />
       </section>
     </main>
   );

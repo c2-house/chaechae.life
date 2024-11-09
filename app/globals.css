@@ -55,4 +55,50 @@
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  .bounce-move {
+    animation: move 5s infinite;
+  }
+
+  @keyframes move {
+    0% {
+      transform: translate(0, -25%);
+    }
+    10% {
+      transform: translateY(0);
+    }
+    20% {
+      transform: translateY(-25%);
+    }
+    25% {
+      transform: translateX(-100%);
+    }
+    30% {
+      transform: translateY(0);
+    }
+    40% {
+      transform: translateY(-25%);
+    }
+    50% {
+      transform: translate(0, 0);
+    }
+    60% {
+      transform: translateY(-25%);
+    }
+    70% {
+      transform: translateY(0);
+    }
+    75% {
+      transform: translateX(100%);
+    }
+    80% {
+      transform: translateY(-25%);
+    }
+    90% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translate(0, -25%);
+    }
+  }
 }

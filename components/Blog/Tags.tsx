@@ -32,7 +32,7 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
               href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
               className={clsx(
                 'inline-flex rounded-full border px-3 py-1 transition-colors sm:px-4',
-                currentTab === slugify(tag)
+                decodeURIComponent(currentTab) === slugify(tag)
                   ? 'border-indigo-600 bg-indigo-600 text-white'
                   : 'border-slate-200 hover:border-indigo-600',
               )}

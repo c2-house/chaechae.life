@@ -31,7 +31,7 @@ const ProfileCard = ({
           alt={`${name}의 프로필`}
           width={100}
           height={100}
-          className="rounded-full"
+          className="rounded-full bg-white"
         />
         <div className="mt-3 text-center">
           <h3 className="text-xl font-semibold">{name}</h3>

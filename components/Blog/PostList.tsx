@@ -1,13 +1,23 @@
 import { Post } from 'contentlayer/generated';
 import PostListItem from './PostListItem';
 import BlogInfeedAds from '../AdSense/BlogInfeedAds';
+import Pagination from './Pagination';
 
 interface Props {
   posts: Post[];
+  page?: string;
   countLabel?: string;
 }
 
-const PostList = ({ posts, countLabel }: Props) => {
+const PostList = ({ posts, page, countLabel }: Props) => {
+  const currentPage = Number(page) || 1;
+  const postsPerPage = 10;
+  const totalPages = Math.ceil(posts.length / postsPerPage);
+
+  const startIndex = (currentPage - 1) * postsPerPage;
+  const endIndex = startIndex + postsPerPage;
+  const currentPosts = posts.slice(startIndex, endIndex);
+
   if (posts.length === 0)
     return (
       <div className="flex h-[50dvh] items-center justify-center text-slate-500">
@@ -19,25 +29,24 @@ const PostList = ({ posts, countLabel }: Props) => {
     <>
       {countLabel && (
         <div className="mb-5 font-semibold md:mb-7 md:text-xl">
-          {countLabel} ({posts.length})
+          {countLabel} ({posts.length}개)
         </div>
       )}
       <ul>
-        {posts.map((post, index) => (
-          <>
-            {index % 4 === 0 && index !== 0 && index !== posts.length - 1 && (
-              <div>
-                <hr className="my-6 md:my-8" />
+        {currentPosts.map((post, index) => (
+          <li key={post.slug}>
+            {index % 3 === 0 && index !== 0 && (
+              <div className="mb-6 border-b pb-6 md:mb-8 md:pb-8">
                 <BlogInfeedAds />
               </div>
             )}
-            <li>
-              {index !== 0 && <hr className="my-6 md:my-8" />}
-              <PostListItem key={post.slug} post={post} />
-            </li>
-          </>
+            <div className="mb-6 border-b pb-6 md:mb-8 md:pb-8">
+              <PostListItem post={post} />
+            </div>
+          </li>
         ))}
       </ul>
+      <Pagination currentPage={currentPage} totalPages={totalPages} />
     </>
   );
 };
