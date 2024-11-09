@@ -27,7 +27,6 @@ const Home = () => {
         </div>
         <PostList posts={posts} />
         <div>
-          <hr className="my-6 md:my-8" />
           <BlogInfeedAds />
         </div>
       </section>
