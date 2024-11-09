@@ -1,6 +1,8 @@
+import Image from 'next/image';
+
 const Hero = () => {
   return (
-    <section className="bg-gradient-light bg-gradient-to-b">
+    <section className="bg-gradient-light relative bg-gradient-to-b">
       <div className="flex h-[100svh] items-center justify-center">
         <div className="px-6 text-center">
           <div className="mx-auto mb-4 flex w-fit flex-col lg:mb-5">
@@ -27,6 +29,20 @@ const Hero = () => {
           </p>
         </div>
       </div>
+      <Image
+        src="/images/avatar/eko.png"
+        alt="eko"
+        width={100}
+        height={100}
+        className="animate-move-right absolute bottom-0 left-0"
+      />
+      <Image
+        src="/images/avatar/mingke.png"
+        alt="mingke"
+        width={100}
+        height={100}
+        className="animate-move-left absolute bottom-0 right-0"
+      />
     </section>
   );
 };
