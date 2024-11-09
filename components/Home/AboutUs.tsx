@@ -14,7 +14,6 @@ const profiles: ProfileCardProps[] = [
   {
     name: 'EKO',
     role: 'Frontend Developer',
-    image: 'eko.png',
     cardBg: 'bg-pink-50/60',
     iconBg: 'bg-pink-100',
     iconColor: 'fill-pink-500',
@@ -36,7 +35,6 @@ const profiles: ProfileCardProps[] = [
   {
     name: 'mingke',
     role: 'Backend Developer',
-    image: 'mingke.png',
     cardBg: 'bg-indigo-50/60',
     iconBg: 'bg-indigo-100',
     iconColor: 'fill-indigo-500',

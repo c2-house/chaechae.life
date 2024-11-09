@@ -29,7 +29,7 @@ const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) =
       <div className="lg:container-lg">
         <div className="bg-gradient-light flex flex-col items-center py-5 md:py-8 lg:py-10">
           <Image
-            src={`/images/avatar/${authorName}.png`}
+            src={`/images/avatar/${authorName}-1.png`}
             alt="프로필 사진"
             width={100}
             height={100}

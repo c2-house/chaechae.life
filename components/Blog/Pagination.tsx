@@ -23,7 +23,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
           >
             <ChevronLeftIcon className="h-5 w-5 fill-current md:h-7 md:w-7" />
             <Image
-              src="/images/avatar/eko.png"
+              src="/images/avatar/eko-1.png"
               alt="left"
               width={30}
               height={30}
@@ -42,7 +42,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
             )}
           >
             <Image
-              src="/images/avatar/mingke.png"
+              src="/images/avatar/mingke-1.png"
               alt="right"
               width={30}
               height={30}

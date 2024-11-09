@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import Image from 'next/image';
+import { slugify } from '../Blog/utils';
 
 export interface ProfileCardProps {
   name: string;
   role: string;
-  image: string;
   descriptions: {
     icon: React.ReactNode;
     text: string;
@@ -14,20 +14,12 @@ export interface ProfileCardProps {
   iconColor?: string;
 }
 
-const ProfileCard = ({
-  name,
-  role,
-  image,
-  descriptions,
-  cardBg,
-  iconBg,
-  iconColor,
-}: ProfileCardProps) => {
+const ProfileCard = ({ name, role, descriptions, cardBg, iconBg, iconColor }: ProfileCardProps) => {
   return (
     <div className={clsx('mx-auto rounded-xl px-5 py-6 lg:p-8', cardBg || 'bg-gray-100')}>
       <div className="mb-5 flex flex-col items-center border-b border-gray-200 pb-5">
         <Image
-          src={`/images/avatar/${image}`}
+          src={`/images/avatar/${slugify(name)}-1.png`}
           alt={`${name}의 프로필`}
           width={100}
           height={100}

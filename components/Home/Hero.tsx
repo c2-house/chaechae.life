@@ -30,18 +30,18 @@ const Hero = () => {
         </div>
       </div>
       <Image
-        src="/images/avatar/eko.png"
+        src="/images/avatar/eko-1.png"
         alt="eko"
         width={100}
         height={100}
-        className="animate-move-right absolute bottom-0 left-0"
+        className="absolute bottom-0 left-0 animate-move-right"
       />
       <Image
-        src="/images/avatar/mingke.png"
+        src="/images/avatar/mingke-1.png"
         alt="mingke"
         width={100}
         height={100}
-        className="animate-move-left absolute bottom-0 right-0"
+        className="absolute bottom-0 right-0 animate-move-left"
       />
     </section>
   );
