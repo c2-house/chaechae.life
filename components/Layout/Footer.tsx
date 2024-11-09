@@ -2,8 +2,8 @@ import { GithubIcon } from '@/public/icons';
 
 const Footer = () => {
   return (
-    <footer className="container-lg pb-safe mt-8 lg:mt-10">
-      <div className="flex flex-col items-center gap-3 border-t py-10 text-center text-sm text-slate-500">
+    <footer className="pb-safe mt-10 bg-gray-100 md:mt-14">
+      <div className="flex flex-col items-center gap-3 py-10 text-center text-sm text-gray-500">
         <a
           href="https://github.com/c2-house"
           target="_blank"
