@@ -16,7 +16,7 @@ const Author = ({ author, date }: Props) => {
         className="not-prose flex items-center hover:underline"
       >
         <Image
-          src={`/images/avatar/${slugify(author)}.png`}
+          src={`/images/avatar/${slugify(author)}-1.png`}
           alt="프로필 사진"
           width={24}
           height={24}
