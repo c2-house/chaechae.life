@@ -20,7 +20,7 @@ const Author = ({ author, date }: Props) => {
           alt="프로필 사진"
           width={24}
           height={24}
-          className="mr-1.5 rounded-full border border-slate-200"
+          className="mr-1.5 rounded-full border border-slate-200 bg-white"
         />
         <span>{author}</span>
       </Link>

@@ -33,9 +33,9 @@ const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) =
             alt="프로필 사진"
             width={100}
             height={100}
-            className="rounded-full"
+            className="animate-bounce rounded-full"
           />
-          <h1 className="mt-4 text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
+          <h1 className="text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
         </div>
       </div>
       <section className="container-lg pt-6 md:pt-8">
