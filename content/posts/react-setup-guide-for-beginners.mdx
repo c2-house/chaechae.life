@@ -19,7 +19,11 @@ date: 2024/11/04
 
 여러분은 주로 어디에 프로젝트를 생성하시나요? 아마 많은 분들이 바탕화면에 새 폴더를 만들고, VS Code에서 그 폴더를 열고, VS Code 터미널에서 `create vite` 명령어를 사용하여 프로젝트를 생성하실 겁니다.
 
-<Image src="/react-setup-guide-for-beginners/01.jpg" alt="어지러운 바탕화면" caption="이게 다 뭐였더라..." />
+<Image
+  src="/react-setup-guide-for-beginners/01.jpg"
+  alt="어지러운 바탕화면"
+  caption="이게 다 뭐였더라..."
+/>
 
 하지만 이런 방식으로 프로젝트를 만들다 보면 바탕화면이 금방 지저분해집니다. 폴더가 많아져서 어떤 폴더가 어떤 프로젝트인지 구분하기 어려워지죠. 무엇보다도 가장 큰 문제점은, 내가 만든 새 폴더 안에 Vite로 생성한 프로젝트 폴더가 nesting되어 실수를 유발한다는 점입니다. VS Code를 보면 이렇게 폴더 안에 폴더가 또 들어있을 것입니다.
 
@@ -77,7 +81,9 @@ VS Code를 열어보면 다음과 같이 여러 가지 파일과 폴더가 생�
 여기서 `App.jsx` 파일의 내용을 지우고, `index.css`, `App.css` 파일을 사용하지 않는다면 깔끔하게 삭제하세요. 삭제 후에는 불필요한 import 구문도 찾아서 제거해주세요.
 
 <Callout>
-  주의! 하나의 패키지 매니저만 사용하세요. yarn create vite로 프로젝트를 생성했다면 계속 yarn을 사용하고, npm create vite로 생성했다면 계속 npm을 사용하세요. 둘을 섞어 쓰면 의존성이 꼬일 수 있습니다.
+  주의! 하나의 패키지 매니저만 사용하세요. yarn create vite로 프로젝트를 생성했다면 계속 yarn을
+  사용하고, npm create vite로 생성했다면 계속 npm을 사용하세요. 둘을 섞어 쓰면 의존성이 꼬일 수
+  있습니다.
 </Callout>
 
 ## ESLint & Prettier 설정
@@ -104,7 +110,11 @@ Prettier는 코드 스타일을 일관되게 유지해주는 formatter입니다.
 - `Default Formatter`를 Prettier로 설정
 - `Format On Save` 옵션 활성화(체크)
 
-<Image src="/react-setup-guide-for-beginners/05.gif" alt="Prettier 예시" caption="개떡같이 써도 찰떡같이 정렬!" />
+<Image
+  src="/react-setup-guide-for-beginners/05.gif"
+  alt="Prettier 예시"
+  caption="개떡같이 써도 찰떡같이 정렬!"
+/>
 
 ## GitHub 연동하기
 
@@ -117,19 +127,23 @@ Prettier는 코드 스타일을 일관되게 유지해주는 formatter입니다.
 <Image src="/react-setup-guide-for-beginners/06.png" alt="GitHub Repository 예시" />
 
 <Callout>
-  혹시 이 명령어를 실행했을 때 오류가 발생한다면, git add, commit이 되지 않은 상태에서 push를 시도해서 그럴 수 있습니다. 먼저 git add, commit을 한 다음 다시 실행해보세요.
+  혹시 이 명령어를 실행했을 때 오류가 발생한다면, git add, commit이 되지 않은 상태에서 push를
+  시도해서 그럴 수 있습니다. 먼저 git add, commit을 한 다음 다시 실행해보세요.
 </Callout>
 
-명령어를 한 줄씩 살펴보겠습니다.
+<details>
+<summary>위 명령어의 의미가 궁금하시면 여기를 펼쳐보세요!</summary>
 
 1. `git remote add origin https://github.com/kec0130/repo-name.git`  
-    로컬 Git 저장소(내 프로젝트)에 origin이라는 이름으로 원격 저장소(GitHub Repository)를 연결합니다.
+   로컬 Git 저장소(내 프로젝트)에 origin이라는 이름으로 원격 저장소(GitHub Repository)를 연결합니다.
 
 2. `git branch -M main`  
-    로컬 저장소의 브랜치를 이름을 main으로 변경합니다. 기본 브랜치가 master로 생성되는 경우가 있어 main으로 맞춰주는 것입니다.
+   로컬 저장소의 브랜치를 이름을 main으로 변경합니다. 기본 브랜치가 master로 생성되는 경우가 있어 main으로 맞춰주는 것입니다.
 
 3. `git push -u origin main`  
-    main 브랜치를 원격 저장소에 push합니다. -u 플래그는 main 브랜치를 원격 저장소의 기본 브랜치로 설정하며, 이후부터는 브랜치 이름을 생략하고 git push만 입력해도 main 브랜치로 push됩니다.
+   main 브랜치를 원격 저장소에 push합니다. -u 플래그는 main 브랜치를 원격 저장소의 기본 브랜치로 설정하며, 이후부터는 브랜치 이름을 생략하고 git push만 입력해도 main 브랜치로 push됩니다.
+
+</details>
 
 이렇게 하면 내 컴퓨터에 있는 프로젝트와 GitHub Repository가 연동됩니다. 이제 VS Code에서 코드를 수정하고 저장하면 Prettier가 자동 적용되고, ESLint가 코드를 검사해줍니다. 그리고 변경 사항을 GitHub에 업로드할 수 있습니다. 참 쉽죠?
 
