@@ -13,7 +13,7 @@ const CustomLink = (props: any) => {
   }
 
   if (props.href.startsWith('http')) {
-    return <a target="_blank" rel="noopener noreferrer" {...props} />;
+    return <a target="_blank" rel="noopener noreferrer" className="text-indigo-600" {...props} />;
   }
 
   return <a {...props} />;
