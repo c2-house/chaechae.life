@@ -16,7 +16,6 @@ export const tags = [
   'Gunicorn',
   'Nextjs',
   'Nodejs',
-  'Others',
   'PostgreSQL',
   'pre-commit',
   'Programming',
@@ -34,4 +33,5 @@ export const tags = [
   'VSCode',
   'Writing',
   '오름캠프',
+  'Others',
 ] as const;
