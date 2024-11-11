@@ -14,8 +14,8 @@ const PostListItem = ({ post }: { post: Post }) => {
         <Image
           src={post.image}
           alt={post.title}
-          width={160}
-          height={160}
+          width={200}
+          height={200}
           className="h-full w-full object-cover"
         />
       </Link>
