@@ -27,12 +27,11 @@ VS Code에서 단축키를 잘 활용하면 마우스로 클릭하는 것보다 
 | <kbd>⌘</kbd> + <kbd>,</kbd>                | <kbd>Ctrl</kbd> + <kbd>,</kbd>                    | 설정 열기                         |
 | <kbd>⌃</kbd> + <kbd>`</kbd>                | <kbd>Ctrl</kbd> + <kbd>`</kbd>                    | 터미널 토글                       |
 | <kbd>⌘</kbd> + <kbd>B</kbd>                | <kbd>Ctrl</kbd> + <kbd>B</kbd>                    | 사이드바 토글                     |
-| <kbd>⌘</kbd> + <kbd>W</kbd>                | <kbd>Ctrl</kbd> + <kbd>W</kbd>                    | 현재 탭 닫기                      |
-| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>W</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +<kbd>W</kbd>  | 모든 탭 닫기                      |
+| <kbd>⌘</kbd> + <kbd>W</kbd>                | <kbd>Ctrl</kbd> + <kbd>W</kbd>                    | 탭 닫기                           |
 | <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>T</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +<kbd>T</kbd>  | 닫은 탭 다시 열기                 |
 | <kbd>⌘</kbd> + <kbd>\\</kbd>               | <kbd>Ctrl</kbd> + <kbd>\\</kbd>                   | 스플릿 (에디터, 터미널 모두 가능) |
 
-## Basic Editing: 코드 작성하기
+## Basic Editing: 기본 편집 기능
 
 | macOS                                                    | Windows                                                       | 설명                                                 |
 | -------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
@@ -65,3 +64,14 @@ VS Code에서 단축키를 잘 활용하면 마우스로 클릭하는 것보다 
 | <kbd>⌃</kbd> + <kbd>G</kbd>                                              | <kbd>Ctrl</kbd> + <kbd>G</kbd>              | 특정 라인으로 이동                         |
 | <kbd>⌃</kbd> + <kbd>-</kbd> / <kbd>⌃</kbd> + <kbd>⇧</kbd> + <kbd>-</kbd> | <kbd>Alt</kbd> + <kbd>←</kbd>/<kbd>→</kbd>  | 이전/다음 커서 위치로 이동 (커서 히스토리) |
 | <kbd>⌘</kbd> + <kbd>1</kbd>/<kbd>2</kbd>                                 | <kbd>Ctrl</kbd> + <kbd>1</kbd>/<kbd>2</kbd> | 스플릿창 포커스 이동                       |
+
+## Rich Languages Editing: 언어 기반의 심화 기능
+
+VS Code는 언어의 문법, 타입 시스템, 구조 등을 이해하고 이를 바탕으로 다양한 기능을 제공합니다. 예를 들어, 변수, 함수, 클래스, 컴포넌트 등을 인식하고 코드의 맥락에 맞는 작업을 지원합니다.
+
+| macOS                                          | Windows                                           | 설명                                                            |
+| ---------------------------------------------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| <kbd>F12</kbd> or<br/>( <kbd>⌘</kbd> + click ) | <kbd>F12</kbd> or<br/>( <kbd>Ctrl</kbd> + click ) | 정의로 이동<br/>(함수 등이 정의된 부분으로 이동)                |
+| <kbd>⇧</kbd> + <kbd>F12</kbd>                  | <kbd>⇧</kbd> + <kbd>F12</kbd>                     | 모든 참조 보기<br/>(함수 등이 사용된 부분을 모두 찾아줌)        |
+| <kbd>F2</kbd>                                  | <kbd>F2</kbd>                                     | 이름 일괄 변경<br/>(다른 파일에 참조된 것까지 전부 변경)        |
+| <kbd>⌘</kbd> + <kbd>.</kbd>                    | <kbd>Ctrl</kbd> + <kbd>.</kbd>                    | 리팩터링, 퀵 픽스<br/>(변수/함수 추출, 함수 변환, 파일 이동 등) |
