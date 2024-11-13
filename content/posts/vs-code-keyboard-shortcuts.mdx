@@ -1,0 +1,67 @@
+---
+title: 개발 효율성을 높여주는 VS Code 단축키 총정리
+description: VS Code에서 단축키를 잘 활용하면 마우스로 클릭하는 것보다 더 빠르게 코드를 작성하고 수정할 수 있습니다. 이번 글에서는 제가 실제로 자주 사용하고, 작업에 정말 도움이 되는 단축키들을 선별해보았습니다.
+tags: [VSCode, Tools]
+author: EKO
+thumbnail: /thumbnails/vscode-logo.png
+date: 2024/11/13
+---
+
+<Image src="/thumbnails/vscode-logo.png" alt="VS Code 로고" />
+
+### 목차
+
+## 키보드는 마우스보다 빠르다
+
+VS Code에서 단축키를 잘 활용하면 마우스로 클릭하는 것보다 더 빠르게 코드를 작성하고 수정할 수 있습니다. VS Code를 잘 다루는 개발자들은 단축키로 창을 열고 닫고, 코드를 효율적으로 작성하고, 다중 커서로 한 번에 여러 줄을 수정하고, 원하는 파일과 줄로 신속하게 이동합니다. 이렇게 단축키를 잘 활용하면 같은 코드를 더 빠르게 작성할 수 있습니다.
+
+하지만 처음엔 방대한 단축키를 어디서부터 어떻게 익혀야 할지 막막할 수 있습니다. VS Code 홈페이지에서 제공하는 단축키 목록 PDF 자료
+([macOS](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-macos.pdf) / [Windows](https://code.visualstudio.com/shortcuts/keyboard-shortcuts-windows.pdf))도 있지만, 이걸 무작정 다 외우는 것은 너무 비효율적입니다. 그래서 이번 글에서는 제가 **실제로 자주 사용하고, 작업에 정말 도움이 되는 단축키**들을 선별해보았습니다. 비슷한 역할끼리 묶어서 기억할 수 있도록 **창 관리, 기본 편집, 다중 커서, 탐색**이라는 네 가지 카테고리로 나누어 정리했습니다. 여러분도 단축키를 익혀서 개발 생산성을 한 단계 높여보세요!
+
+## General: 창 열고 닫기
+
+| macOS                                      | Windows                                           | 설명                              |
+| ------------------------------------------ | ------------------------------------------------- | --------------------------------- |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>P</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd> | 명령 팔레트 열기                  |
+| <kbd>⌘</kbd> + <kbd>P</kbd>                | <kbd>Ctrl</kbd> + <kbd>P</kbd>                    | 파일명 검색하여 열기              |
+| <kbd>⌘</kbd> + <kbd>,</kbd>                | <kbd>Ctrl</kbd> + <kbd>,</kbd>                    | 설정 열기                         |
+| <kbd>⌃</kbd> + <kbd>`</kbd>                | <kbd>Ctrl</kbd> + <kbd>`</kbd>                    | 터미널 토글                       |
+| <kbd>⌘</kbd> + <kbd>B</kbd>                | <kbd>Ctrl</kbd> + <kbd>B</kbd>                    | 사이드바 토글                     |
+| <kbd>⌘</kbd> + <kbd>W</kbd>                | <kbd>Ctrl</kbd> + <kbd>W</kbd>                    | 현재 탭 닫기                      |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>W</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +<kbd>W</kbd>  | 모든 탭 닫기                      |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>T</kbd> | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +<kbd>T</kbd>  | 닫은 탭 다시 열기                 |
+| <kbd>⌘</kbd> + <kbd>\\</kbd>               | <kbd>Ctrl</kbd> + <kbd>\\</kbd>                   | 스플릿 (에디터, 터미널 모두 가능) |
+
+## Basic Editing: 코드 작성하기
+
+| macOS                                                    | Windows                                                       | 설명                                                 |
+| -------------------------------------------------------- | ------------------------------------------------------------- | ---------------------------------------------------- |
+| <kbd>⌘</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>                 | <kbd>Ctrl</kbd> + <kbd>Home</kbd>/<kbd>End</kbd>              | 파일의 맨 위/아래로 커서 이동                        |
+| <kbd>⌘</kbd> + <kbd>←</kbd>/<kbd>→</kbd>                 | <kbd>Home</kbd>/<kbd>End</kbd>                                | 라인의 맨 앞/뒤로 커서 이동 (Shift 같이 누르면 선택) |
+| <kbd>⌥</kbd> + <kbd>←</kbd>/<kbd>→</kbd>                 | <kbd>Ctrl</kbd> + <kbd>←</kbd>/<kbd>→</kbd>                   | 단어 단위로 커서 이동 (Shift 같이 누르면 선택)       |
+| <kbd>⌥</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>                 | <kbd>Alt</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>                    | 코드를 위/아래로 이동 (여러 줄도 가능)               |
+| <kbd>⌥</kbd> + <kbd>⇧</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd>  | <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> | 코드를 위/아래로 복제 (여러 줄도 가능)               |
+| <kbd>⌘</kbd> + <kbd>Enter</kbd>                          | <kbd>Ctrl</kbd> + <kbd>Enter</kbd>                            | 아래에 빈 줄 삽입 (커서가 중간에 있어도 가능)        |
+| <kbd>⌘</kbd> + <kbd>/</kbd>                              | <kbd>Ctrl</kbd> + <kbd>/</kbd>                                | 주석 (사용하는 언어에 맞게 주석 처리)                |
+| <kbd>⌘</kbd> + <kbd>X</kbd>                              | <kbd>Ctrl</kbd> + <kbd>X</kbd>                                | 잘라내기 (한 줄 삭제할 때 편리)                      |
+| <kbd>⌘</kbd> + <kbd>L</kbd>                              | <kbd>Ctrl</kbd> + <kbd>L</kbd>                                | 한 줄 선택 (연타하면 여러 줄 선택)                   |
+
+## Multi-Cursor: 다중 커서로 여러 줄 수정하기
+
+| macOS                                                   | Windows                                                      | 설명                                                                              |
+| ------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| <kbd>⌘</kbd> + <kbd>D</kbd>                             | <kbd>Ctrl</kbd> + <kbd>D</kbd>                               | 동일 단어 연속 선택<br/>(<kbd>⌘</kbd>/<kbd>Ctrl</kbd> + <kbd>K</kbd> 누르면 제외) |
+| <kbd>⌘</kbd> + <kbd>⇧</kbd> + <kbd>L</kbd>              | <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>L</kbd>            | 동일 단어 전체 선택                                                               |
+| <kbd>⌥</kbd> + click                                    | <kbd>Alt</kbd> + click                                       | 클릭하는 곳마다 커서 생성                                                         |
+| <kbd>⌥</kbd> + <kbd>⇧</kbd> + drag                      | <kbd>Alt</kbd> + <kbd>Shift</kbd> + drag                     | 드래그하는 곳마다 커서 생성                                                       |
+| <kbd>⌥</kbd> + <kbd>⇧</kbd> + <kbd>I</kbd>              | <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>             | 선택한 모든 줄 끝에 커서 생성                                                     |
+| <kbd>⌘</kbd> + <kbd>⌥</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> | <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>↑</kbd>/<kbd>↓</kbd> | 커서 위/아래로 다중 커서 생성                                                     |
+
+## Navigation: 원하는 위치로 이동하기
+
+| macOS                                                                    | Windows                                     | 설명                                       |
+| ------------------------------------------------------------------------ | ------------------------------------------- | ------------------------------------------ |
+| <kbd>⌃</kbd> + <kbd>Tab</kbd>                                            | <kbd>Ctrl</kbd> + <kbd>Tab</kbd>            | 이전 탭으로 이동                           |
+| <kbd>⌃</kbd> + <kbd>G</kbd>                                              | <kbd>Ctrl</kbd> + <kbd>G</kbd>              | 특정 라인으로 이동                         |
+| <kbd>⌃</kbd> + <kbd>-</kbd> / <kbd>⌃</kbd> + <kbd>⇧</kbd> + <kbd>-</kbd> | <kbd>Alt</kbd> + <kbd>←</kbd>/<kbd>→</kbd>  | 이전/다음 커서 위치로 이동 (커서 히스토리) |
+| <kbd>⌘</kbd> + <kbd>1</kbd>/<kbd>2</kbd>                                 | <kbd>Ctrl</kbd> + <kbd>1</kbd>/<kbd>2</kbd> | 스플릿창 포커스 이동                       |
