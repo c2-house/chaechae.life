@@ -26,8 +26,8 @@ export const NextImage = ({
       <Image
         src={`/images${path}${src}`}
         alt={alt}
-        width={fullWidth ? 730 : 400}
-        height={fullWidth ? 548 : 400}
+        width={fullWidth ? 700 : 300}
+        height={fullWidth ? 365 : 300}
         className={clsx('mx-auto', className)}
       />
       {caption && <figcaption className="text-center">{caption}</figcaption>}
