@@ -1,0 +1,113 @@
+---
+title: FastAPI Response 성능 높이기
+description: JSONResponse는 Python의 빌트인 json 라이브러리를 이용해서 직렬화합니다. 고성능이 요구되지 않는 상황에서는 기본 응답도 충분하겠지만, 성능을 조금이라도 더 올리고 싶은 경우에 시도해볼만한 방법이 있습니다. 이번 포스팅에서 Response 응답을 변경하여 성능을 좀 더 높이는 방법을 알아보도록 하겠습니다. orjson 과 webtool 라이브러리를 이용해보도록 하겠습니다.
+tags: [FastAPI]
+thumbnail: /thumbnails/fastapi-logo.png
+author: mingke
+date: 2024/11/18
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="FastAPI Response Performance" />
+
+### 목차
+
+## FastAPI에서 Response 성능 높이는 방법
+
+FastAPI에서는 기본적으로 Response에 `JSONResponse`를 사용합니다. `JSONResponse`는 Python의 빌트인 `json` 라이브러리를 이용해서 직렬화합니다. 고성능이 요구되지 않는 상황에서는 기본 응답도 충분하겠지만, 성능을 조금이라도 더 올리고 싶은 경우에 시도해볼만한 방법이 있습니다. 이번 포스팅에서 Response 응답을 변경하여 성능을 좀 더 높이는 방법을 알아보도록 하겠습니다. `orjson` 과 `webtool` 라이브러리를 이용해보도록 하겠습니다.
+
+## ORJSONResponse을 사용하는 방법
+
+`ORJSONResponse` 는 공식문서에 나와있는 방법입니다. `orjson` 이라는 라이브러리를 사용하고 있습니다. `orjson` 은 Rust로 작성되어 있습니다. 문서에서 벤치마크를 살펴본 바로는 **Python JSON 라이브러리 중에 가장 빠르다고 합니다.**
+
+사용하기 위해서 `orjson` 을 먼저 설치해야 합니다.
+
+```bash
+pip install orjson
+```
+
+설치 후에는 FastAPI에 `ORJSONResponse` 내장 되어있기 때문에 다음과 같이 사용할 수 있습니다.
+
+```python
+from fastapi.responses import ORJSONResponse
+```
+
+<Link url="https://github.com/ijl/orjson" />
+
+## webtool **MsgSpecJSONResponse를 사용하는 방법**
+
+`webtool` 라이브러리는 FastAPI와 Starlette에서 사용할 수 있는 여러가지 툴을 제공하는 라이브러리입니다. 개발된지 얼마 안되었지만 JWT Authentication, Throttling, MsgPackResponse 등 유용한 기능들이 있습니다. 그중에서 `MsgSpecJSONResponse` **는** MessagePack-based response를 제공하는데요. C로 만들어진 `msgpack` 라이브러리를 이용하고 있습니다.
+
+사용하기 위해서 `webtool`을 설치해야합니다.
+
+```bash
+pip install webtool
+```
+
+설치 후에 다음과 같이 사용할 수 있습니다.
+
+```python
+from webtool.utils import MsgSpecJSONResponse
+```
+
+<Link url="https://github.com/ds5105119/webtool" />
+
+## 성능 테스트
+
+로컬에서 `wrk` 를 이용해서 간단하게 성능 테스트를 해봤습니다.
+
+```python
+...
+from fastapi.responses import ORJSONResponse  # noqa
+from webtool.utils import MsgSpecJSONResponse  # noqa
+...
+
+@router.get(
+    "/",
+    status_code=status.HTTP_200_OK,
+    response_class=ORJSONResponse,
+    # response_class=MsgSpecJSONResponse,
+)
+async def read_products(data: product_dependency.ReadProducts):
+    """
+    # 상품 조회
+    감귤 마켓에 등록된 상품을 조회하는 API 입니다.
+    - keyword: 검색 키워드
+    - page: 페이지 번호
+    - page_size: 페이지 크기
+    """
+    response = ResponseInterFace(result=data, message="상품 조회 완료")
+    return ORJSONResponse(content=response.to_dict())
+    # return MsgSpecJSONResponse(content=response.to_dict())
+    # return response
+```
+
+테스트에 사용한 코드를 잠시 설명하면 단순히 제품 목록을 조회하는 API 입니다. 데이터베이스에는 100개의 제품이 저장되어 있습니다. 각각의 Response를 번갈아가며 아래 명령으로 테스트를 해봤습니다.
+
+```bash
+wrk -t12 -c100 -d30s http://127.0.0.1:8000/products/?page=1&page_size=100
+```
+
+- t12 : 12개의 쓰레드
+- c100 : 100개의 커넥션
+- d30 : 30초 동안 테스트
+
+응답 결과는 다음과 같습니다.
+
+| Metric              | ORJSONResponse                        | JSONResponse                           | MsgSpecJSONResponse                   |
+| ------------------- | ------------------------------------- | -------------------------------------- | ------------------------------------- |
+| **Requests/sec**    | 491.13                                | 311.01                                 | 497.82                                |
+| **Transfer/sec**    | 17.89MB                               | 11.33MB                                | 18.13MB                               |
+| **Latency (Avg)**   | 220.00ms                              | 339.23ms                               | 233.01ms                              |
+| **Latency (Stdev)** | 193.43ms                              | 301.08ms                               | 238.61ms                              |
+| **Total Requests**  | 14,783                                | 9,345                                  | 14,986                                |
+| **Socket Errors**   | connect 0, read 0, write 0, timeout 5 | connect 0, read 0, write 0, timeout 30 | connect 0, read 0, write 0, timeout 6 |
+
+- `MsgSpecJSONResponse` 가 초당 처리량은 가장 높습니다. 그 다음은 `ORJSONResponse`입니다.
+- `ORJSONResponse` 이 지연시간이 가장 짧아 응답 속도는 최고로 빠릅니다.
+- `JSONResponse` 가 응답속도와 처리량에서 가장 안좋은 성능이고 보다시피 timeout되는 요청도 제일 많습니다.
+
+## 마무리
+
+FastAPI에서 사용되는 Response객체 타입에 따른 성능 비교를 해보았습니다. **API의 성능을 높이기 위해서** `MsgSpecJSONResponse` , `ORJSONResponse` **로 응답을 변경하는 것을 고려해볼 수 있을 것 같습니다.** FastAPI 공식 문서에 보면 `UJSONResponse` 도 있습니다. 이것은 `ujson` 라이브러리를 사용한 것입니다. `ujson` 라이브러리에서 보안 취약점이 발견되어 `orjson` 의 사용을 권장하고 있습니다. 그래서 이 포스팅에서는 다루지 않았습니다. 관심있으신 분들은 찾아보시길 바랍니다.
+
+<Link url="https://chaechae.life/blog/fastapi-permissions" />
