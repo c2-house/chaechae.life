@@ -39,9 +39,9 @@ async def get_current_user(request: Request):
     user가 인증되엇다고 가정
     user 객체를 Request의 Scope에 저장
     """
-	  ...
+	...
 
-	  request.state.user = authenticated_user
+	request.state.user = authenticated_user
     return authenticated_user
 
 CurrentUser = Annotated[User, Depends(get_current_user)]
@@ -75,7 +75,7 @@ class IsSuperUser(BasePermission):
         return request.state.user.is_superuser
 ```
 
-위 권한을 만들어서 superuser만 사용할 있는 API에 추가할 수 있습니다. user 객체에서 is_superuser 속성만 검사하면 되기 때문에 다른 객체가 필요없습니다.
+위 권한을 만들어서 superuser만 사용할 있는 API에 추가할 수 있습니다. user 객체에서 `is_superuser` 속성만 검사하면 되기 때문에 다른 객체가 필요없습니다.
 
 따라서 `has_permission`을 사용하면 됩니다.
 
