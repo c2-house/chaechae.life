@@ -23,22 +23,29 @@ date: 2024/11/11
 
 <Link url="https://chromewebstore.google.com/detail/ai-subtitles-immersive-tr/mjdbhokoopacimoekfgkcoogikbfgngb" />
 
-AI 언어 학습 도구인 Trancy는 감히 현존하는 최고의 번역 익스텐션이라 할 수 있습니다. Trancy를 사용하면 해외 웹사이트나 외국어 영상도 걱정 없이 볼 수 있습니다. 제공하는 기능은 다음과 같이 크게 3가지로 나눌 수 있으며, 이 모든 기능을 무료로 사용할 수 있다는 것이 정말 감사할 따름입니다.
+AI 언어 학습 도구인 Trancy는 감히 현존하는 최고의 번역 익스텐션이라 할 수 있습니다. Trancy를 사용하면 해외 웹사이트나 외국어 영상도 걱정 없이 볼 수 있습니다. 제공하는 기능은 다음과 같이 크게 4가지로 나눌 수 있으며, 이 모든 기능을 무료로 사용할 수 있다는 것이 정말 감사할 따름입니다.
 
-1. **선택 문장 번역**  
+1. **단어/문장 번역**  
     웹사이트에서 단어나 문장을 드래그하여 선택하면 아이콘 버튼이 뜨는데, 버튼을 클릭하면 바로 번역해줍니다.
 
    <Image src="/best-translators-for-developers/01.gif" alt="Trancy 선택 문장 번역" />
 
-2. **전체 페이지 번역**  
+2. **전문 번역**  
     단축키 <kbd>Option</kbd>/<kbd>Alt</kbd> + <kbd>E</kbd>를 누르면 페이지 전체를 번역해줍니다. 구글 번역을 사용하면 전체 텍스트가 아예 한국어로 바뀌어 오역이 있어도 확인하기 어렵지만, Trancy는 원문 아래에 번역문을 보여주기 때문에 비교하면서 볼 수 있습니다. 영어로 된 개발 문서나 블로그를 읽을 때 완전 유용합니다.
 
    <Image src="/best-translators-for-developers/02.gif" alt="Trancy 전체 페이지 번역" />
 
-3. **영상 이중 자막**  
+3. **빠른 번역**  
+   단축키 <kbd>Option</kbd>/<kbd>Alt</kbd> + <kbd>D</kbd>를 누르면 번역기 창이 뜹니다. 콘솔에 나오는 에러 메시지처럼 웹사이트 외부에 있는 텍스트를 번역할 때 유용합니다.
+
+   <Image src="/best-translators-for-developers/07.webp" alt="Trancy 빠른 번역" />
+
+4. **영상 이중 자막**  
    유튜브, 넷플릭스, 유데미 등의 영상을 볼 때 영어 자막과 한글 번역 자막을 동시에 볼 수 있습니다. 영상 우측 하단의 보라색 Trancy 아이콘 버튼을 클릭하면 자막 모드로 전환됩니다. 영상에서 한글 자막을 지원해주는 경우도 있지만, Trancy 자막 모드를 사용하면 한영 자막을 동시에 보면서 영어 공부도 할 수 있습니다.
 
    <Image src="/best-translators-for-developers/03.webp" alt="Trancy 영상 이중 자막" />
+
+<Ads />
 
 ## 2. 네이버 영어사전 (크롬 익스텐션)
 
@@ -48,30 +55,28 @@ AI 언어 학습 도구인 Trancy는 감히 현존하는 최고의 번역 익스
 
 상단 바에 고정해두고 단어를 바로 검색해볼 수 있고, 검색 결과창에서 단어를 클릭하면 네이버 영어사전 페이지로 이동합니다. 또한 익스텐션 설정을 통해, 단어를 선택하면 영어사전 팝업이 바로 뜨도록 설정할 수 있습니다.
 
-<Image
-  src="/best-translators-for-developers/04.png"
-  alt="네이버 영어사전 익스텐션 고정"
-  caption="상단 바에 고정하여 사용하기"
-  fullWidth={false}
-/>
-<Image
-  src="/best-translators-for-developers/05.png"
-  alt="네이버 영어사전 팝업"
-  caption="단어 선택 시 팝업 띄우기"
-  fullWidth={false}
-/>
+<Flex>
+  <Image
+    src="/best-translators-for-developers/04.png"
+    alt="네이버 영어사전 익스텐션 고정"
+    caption="상단 바에 고정하여 사용하기"
+    fullWidth={false}
+  />
+  <Image
+    src="/best-translators-for-developers/05.png"
+    alt="네이버 영어사전 팝업"
+    caption="단어 선택 시 팝업 띄우기"
+    fullWidth={false}
+  />
+</Flex>
 
 ## 3. DeepL (웹사이트 및 데스크탑 앱)
 
 <Link url="https://www.deepl.com/ko/translator" />
 
-<Callout emoji="❗️">
-  **콘솔 에러 메시지**처럼 웹사이트 외부에 있는 텍스트는 어떻게 번역할까요?
-</Callout>
+웹사이트 번역은 Trancy 익스텐션으로 충분하지만, 영어에 더 많이 노출되는 환경이라면 별도의 번역기를 하나쯤 사용하는 것도 좋습니다. DeepL은 구글 번역보다 번역이 더 자연스럽고 퀄리티가 좋은 AI 번역기로, PDF 파일 번역이나 영어 문법 검사 등 다양한 기능을 제공합니다.
 
-개발을 하다보면 웹사이트 외부에 있는 영어를 읽어야 할 때도 있습니다. 이런 경우를 대비하여 브라우저 익스텐션 외에도 별도의 번역기를 하나쯤 사용하는 것이 좋습니다.
-
-DeepL은 구글 번역기보다 번역이 더 자연스럽고 퀄리티가 좋은 AI 번역기입니다. DeepL [크롬 익스텐션](https://chromewebstore.google.com/detail/deepl-ai-translator-and-w/cofdbpoegempjloogbagkncekinflcnj)도 Trancy처럼 선택 문장 번역 기능을 제공하는데, Trancy가 더 다양한 기능을 제공하기 때문에 익스텐션으로는 Trancy를 추천드립니다. DeepL은 [웹사이트](https://www.deepl.com/ko/translator)를 북마크해놓고 사용하거나, 데스크탑 앱([MacOS](https://www.deepl.com/en/macos-app) / [Windows](https://www.deepl.com/ko/windows-app))을 설치하여 다용도 번역기로 사용하시는 걸 추천드립니다.
+DeepL [크롬 익스텐션](https://chromewebstore.google.com/detail/deepl-ai-translator-and-w/cofdbpoegempjloogbagkncekinflcnj)도 Trancy처럼 단어/문장 번역 기능을 제공하는데, Trancy가 더 다양한 기능을 제공하기 때문에 익스텐션으로는 Trancy를 추천드립니다. DeepL은 [웹사이트](https://www.deepl.com/ko/translator)를 북마크해놓고 사용하거나, 데스크탑 앱([MacOS](https://www.deepl.com/en/macos-app) / [Windows](https://www.deepl.com/ko/windows-app))을 설치하여 다용도 번역기로 사용하시면 좋습니다.
 
 <Image src="/best-translators-for-developers/06.png" alt="DeepL 데스크탑 앱" />
 

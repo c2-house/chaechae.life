@@ -1,39 +1,21 @@
-import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import type { MDXComponents } from 'mdx/types';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
-import { NextImage, YoutubeVideo } from './Figure';
+import { NextImage, Video } from './Figure';
+import { CustomLink, Callout, Flex } from './Components';
+import InarticleAds from '../AdSense/InarticleAds';
 
 const LinkPreview = dynamic(() => import('./LinkPreview'));
-
-const CustomLink = (props: any) => {
-  if (props.href.startsWith('/')) {
-    return <Link href={props.href}>{props.children}</Link>;
-  }
-
-  if (props.href.startsWith('http')) {
-    return <a target="_blank" rel="noopener noreferrer" className="text-indigo-600" {...props} />;
-  }
-
-  return <a {...props} />;
-};
-
-const Callout = ({ emoji = '💡', children }: { emoji?: string; children: React.ReactNode }) => {
-  return (
-    <div className="flex rounded bg-slate-100 p-4 text-slate-700">
-      <div className="mr-2 text-lg">{emoji}</div>
-      <div className="callout">{children}</div>
-    </div>
-  );
-};
 
 const mdxComponents: MDXComponents = {
   a: CustomLink,
   Link: LinkPreview,
   Image: NextImage,
-  Youtube: YoutubeVideo,
+  Video,
   Callout,
+  Flex,
+  Ads: InarticleAds,
 };
 
 const Mdx = ({ code }: { code: string }) => {
