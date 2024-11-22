@@ -35,7 +35,7 @@ export const NextImage = ({
   );
 };
 
-export const YoutubeVideo = ({ src, caption }: VideoProps) => {
+export const Video = ({ src, caption }: VideoProps) => {
   return (
     <figure>
       <iframe
