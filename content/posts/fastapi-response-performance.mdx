@@ -106,6 +106,8 @@ wrk -t12 -c100 -d30s http://127.0.0.1:8000/products/?page=1&page_size=100
 - `ORJSONResponse` 이 지연시간이 가장 짧아 응답 속도는 최고로 빠릅니다.
 - `JSONResponse` 가 응답속도와 처리량에서 가장 안좋은 성능이고 보다시피 timeout되는 요청도 제일 많습니다.
 
+<Ads />
+
 ## 마무리
 
 FastAPI에서 사용되는 Response객체 타입에 따른 성능 비교를 해보았습니다. **API의 성능을 높이기 위해서** `MsgSpecJSONResponse` , `ORJSONResponse` **로 응답을 변경하는 것을 고려해볼 수 있을 것 같습니다.** FastAPI 공식 문서에 보면 `UJSONResponse` 도 있습니다. 이것은 `ujson` 라이브러리를 사용한 것입니다. `ujson` 라이브러리에서 보안 취약점이 발견되어 `orjson` 의 사용을 권장하고 있습니다. 그래서 이 포스팅에서는 다루지 않았습니다. 관심있으신 분들은 찾아보시길 바랍니다.
