@@ -20,7 +20,7 @@ export const Callout = ({
   children: React.ReactNode;
 }) => {
   return (
-    <div className="flex rounded bg-slate-100 p-4 text-slate-700">
+    <div className="my-6 flex rounded bg-slate-100 p-4 text-slate-700">
       <div className="mr-2 text-lg">{emoji}</div>
       <div className="callout">{children}</div>
     </div>
