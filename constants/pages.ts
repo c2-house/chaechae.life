@@ -12,6 +12,7 @@ export const tags = [
   'Django',
   'Docker',
   'FastAPI',
+  'Git',
   'Github Actions',
   'Gunicorn',
   'Nextjs',
