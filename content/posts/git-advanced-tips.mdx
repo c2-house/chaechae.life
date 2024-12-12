@@ -1,13 +1,13 @@
 ---
 title: Git 고수가 되기 위한 실전 팁 10가지
-description: 프로젝트가 복잡해지고 협업이 많아질수록 Git을 제대로 활용하는 능력이 중요해집니다. Git을 더 효율적으로 사용할 수 있는 팁과 실수를 예방하기 위한 팁을 소개하겠습니다.
+description: 프로젝트가 복잡해지고 협업이 많아질수록 Git을 제대로 활용하는 능력이 중요해집니다. Git 히스토리를 더 깔끔하게 관리하고 실수를 방지할 수 있는 팁을 소개하겠습니다.
 tags: [Git]
 author: EKO
 thumbnail: /thumbnails/git-logo.png
-date: 2024/12/11
+date: 2024/12/12
 ---
 
-Git은 현대 소프트웨어 개발에서 필수적인 버전 관리 도구입니다. 프로젝트가 복잡해지고 협업이 많아질수록 Git을 제대로 활용하는 능력이 중요해집니다. 이 글에서는 Git의 기본 개념과 `add`, `commit`, `push` 등 기본 명령어를 알고 있다는 가정 하에, Git 히스토리를 더 깔끔하게 관리할 수 있는 팁과 실수를 예방하기 위한 팁을 소개하겠습니다.
+Git은 현대 소프트웨어 개발에서 필수적인 버전 관리 도구입니다. 프로젝트가 복잡해지고 협업이 많아질수록 Git을 제대로 활용하는 능력이 중요해집니다. 이 글에서는 Git의 기본 개념과 `add`, `commit`, `push` 등 기본 명령어를 알고 있다는 가정 하에, Git 히스토리를 더 깔끔하게 관리하고 실수를 방지할 수 있는 팁을 소개하겠습니다.
 
 <Image src="/thumbnails/git-logo.png" alt="git 로고" />
 
@@ -25,7 +25,11 @@ git graph를 보는 방법은 여러 가지가 있습니다.
 
 이 중에서 `Git Graph` 익스텐션을 가장 추천하고 싶습니다. 전체 그래프를 큰 화면에서 볼 수 있어 가독성이 좋기 때문입니다.
 
-<Image src="/git-advanced-tips/01.jpg" alt="Git Graph Extension" />
+<Image
+  src="/git-advanced-tips/01.jpg"
+  alt="Git Graph Extension"
+  caption="git graph를 지도처럼 사용하세요."
+/>
 
 ## 2. `git fetch`: 원격 저장소 변경사항 확인하기
 
@@ -100,22 +104,29 @@ git reset HEAD~n
 git revert <commit-hash>
 ```
 
+<Ads />
+
 ## 7. `git reflog`: 히스토리 조회하기
 
-만약 `git reset`으로 커밋을 잘못 삭제했다면 복구할 수 있을까요? 특히나 `git reset --hard`로 커밋을 완전히 날려버렸다가 실수한 걸 깨달았다면... 정녕 돌이킬 방법이 없을까요?
+만약 `git reset`으로 커밋을 잘못 삭제했다면 복구할 수 있을까요? 특히나 `git reset --hard`로 커밋을 완전히 날려버렸다가 실수라는 걸 깨달았다면... 정녕 돌이킬 방법이 없을까요?
 
-다행히도 복구가 가능합니다. `git reflog` 명령어는 reference log의 줄임말로, **HEAD의 이동 기록**을 조회하는 명령어입니다. `git log` 명령어와 달리 reset이나 rebase 등으로 변경된 HEAD의 위치까지 모두 조회할 수 있습니다. `git reflog`로 삭제된 커밋의 해시값을 확인한 후, `git reset --hard`로 복구하면 됩니다.
+다행히도 복구가 가능합니다! Git은 로컬에서 작업한 모든 HEAD와 브랜치 포인터를 기록해두는데, 이것을 reference log라고 합니다. `git reflog` 명령어로 이것을 조회할 수 있으며, **reset이나 rebase 등으로 변경된 HEAD의 위치까지 모두 조회**가 가능합니다. 기록이 영구적으로 보존되지는 않고, 90일 후에 삭제되도록 기본 설정이 되어 있습니다.
+
+<Image src="/git-advanced-tips/02.png" alt="git reflog 실행 결과" />
+
+`git reflog`를 실행하면 위와 같은 화면이 나옵니다. 여기서 돌아가고 싶은 커밋의 해시값을 확인한 후, `git reset --hard`로 복구하면 됩니다.
 
 ```bash
 git reflog
-git reset --hard <commit-hash>
-```
 
-<Ads />
+git reset --hard <commit-hash>
+# 또는
+git reset --hard HEAD@{n}
+```
 
 ## 8. `git cherry-pick`: 특정 커밋 가져오기
 
-`git cherry-pick`은 브랜치를 merge하지 않고도 **특정 커밋만 현재 브랜치로 가져올 수 있는** 명령어입니다. 실수로 잘못된 브랜치에 커밋을 한 경우나, 다른 브랜치에서 버그 수정 혹은 설정 변경 등을 한 변경사항을 빠르게 적용하고 싶을 때 유용합니다.
+`git cherry-pick`은 브랜치를 merge하지 않고도 **특정 커밋만 현재 브랜치로 가져올 수 있는** 명령어입니다. 다른 브랜치에서 버그 수정이나 설정 변경 등이 이루어져 작업 중인 브랜치에 변경사항을 빠르게 적용하고 싶을 때 유용합니다. 또는 실수로 다른 브랜치에 커밋한 것을 가져와야 할 때도 사용할 수 있습니다.
 
 ```bash
 git cherry-pick <commit-hash>
