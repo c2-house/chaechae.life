@@ -31,6 +31,10 @@
   .prose details summary {
     @apply my-2 cursor-pointer;
   }
+
+  .prose blockquote > p {
+    @apply before:content-none after:content-none;
+  }
 }
 
 @layer components {
