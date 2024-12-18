@@ -1,0 +1,85 @@
+---
+title: Python 웹 자동화 라이브러리 helium 사용해보기
+description: Helium은 Selenium을 기반으로 개발되었습니다. 제공되는 API들이 좀 더 직관적이고 사용하기 편리합니다. Selenium을 기반으로 만들어졌기 때문에 Selenium 코드와 호환 가능합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2024/12/18
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python web automation helium" />
+
+### 목차
+
+## Python 웹 자동화 라이브러리 Helium
+
+Python으로 웹을 자동화한다고 하면 대부분 Selenium을 사용합니다. Selenium을 사용해보면 아시겠지만 코드가 꽤 복잡합니다. 최근에 Helium이라는 웹 자동화 라이브러리를 알게되어 사용해보았습니다. Helium은 Selenium을 기반으로 개발되었습니다. **제공되는 API들이 좀 더 직관적이고 사용하기 편리합니다**. Selenium을 기반으로 만들어졌기 때문에 Selenium 코드와 호환 가능합니다.
+
+다만 아직 문서화가 엄청 잘되어있지는 않습니다. 그래도 cheatsheet이 github에 제공되어 있어 그걸 보면서 실습을 해봤습니다.
+
+<Link url="https://github.com/mherrmann/helium/blob/master/docs/cheatsheet.md" />
+
+## Helium 실습하기
+
+웹 자동화 실습에는 크롤링 만한게 없는 것 같습니다. 최근 ETF 투자에 관심이 많은데요. 그래서 네이버 증권에서 ETF 시세 정보를 Helium으로 크롤링하기 실습을 해봤습니다.
+
+<Link url="https://github.com/Jungminchae/sise-bot" />
+
+```python
+from helium import *
+
+def select_eft_type_tab(driver, name):
+    wait_until(Link(name).exists)
+    if Link(name).exists():
+        click(Link(name))
+        time.sleep(0.5)
+        sourse = driver.page_source
+        extractor = ETFSiseExtractor(sourse)
+
+        today = datetime.today().strftime("%Y%m%d")
+        df = extractor.extract_table()
+        if "/" in name:
+            name = name.replace("/", ".")
+        df.write_csv(f"{name}_{today}.csv", include_header=True)
+
+driver = start_chrome(SiseLink.ETF, maximize=True, headless=False)
+
+select_eft_type_tab(driver, "국내 시장지수")
+select_eft_type_tab(driver, "국내 업종/테마"
+
+kill_browser()
+```
+
+- `from helium import *` 제공되는 API를 이렇게 불러와서 사용합니다. cheatsheet에서 이렇게 사용하는데 API가 엄청 많은게 아니라 괜찮은 것 같습니다.
+- `start_chrome` 으로 selenium의 webdriver 객체를 반환하고 실행할 수 있습니다. `maximize` 로 브라우져를 최대화 할 수 있고 `headless` 파라미터로 headless 설정을 할 수 있습니다. selenium의 Option도 넣을 수 있습니다.
+- `wait_until` 로 특정 요소가 나타날 때까지 대기할 수 있고 `Link`는 요소를 가리킵니다. `Link`, `Button` , `CheckBox` , `Image` 등 이보다 몇 가지 더 있습니다
+- `click` 으로 클릭 이벤트를 발생시킬 있습니다. 이처럼 웹에서 할 수 있는 동작들을 매우 간단하게 할 수 있어서 편리합니다. **아주 직관적인 이름**입니다. `click` , `rightclick`,`go_to` , `write` , `scroll_down`, `scroll_up` 등 언급한 것 이외에도 다양하게 있습니다.
+
+### 추가 예제
+
+- 정말 간단한 예제를 하나 더 만들어 보겠습니다.
+
+```python
+# Youtube에 접속해서 검색창에 NBA컵 검색하고 첫번째 영상 클릭하기
+from helium import *
+
+driver = start_chrome("https://youtube.com", maximize=True)
+wait_until(TextField("검색").exists)
+click(find_all(TextField("검색"))[0])
+write("NBA컵")
+press(ENTER)
+wait_until(S("#thumbnail").exists)
+click(find_all(S("#thumbnail"))[0])
+
+# 끝나면 kill_browser
+kill_browser()
+```
+
+- `find_all` 로 특정 요소를 찾기 가능합니다.
+- `S` 로 요소의 id나 class로 찾을 수도 있습니다.
+
+## 마무리
+
+helium을 가볍게 실습을 한 번 해봤습니다. 코드가 굉장히 직관적이라 작성하기가 너무 편한 것 같습니다. 전에 근무하던 회사에서 selenium을 이용한 작업을 많이 했었는데 그때 알았더라면 좋았겠다 생각했습니다. 나중에 자동화 작업을 하게 되면 제대로 써봐야겠습니다.
+
+<Link url="https://chaechae.life/blog/typer-cli-dev" />
