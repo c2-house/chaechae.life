@@ -1,0 +1,244 @@
+---
+title: 프론트엔드 개발자를 위한 코딩 컨벤션
+description: 코드 컨벤션은 코드의 가독성과 유지보수성을 높이기 위해 반드시 필요한 규칙입니다. 이번 글에서는 프론트엔드 개발자가 지켜야 할 주요 코드 컨벤션에 대해 알아보겠습니다.
+tags: [React, JavaScript]
+author: EKO
+thumbnail: /thumbnails/developer.jpg
+date: 2024/12/19
+---
+
+<Image src="/thumbnails/developer.jpg" alt="프론트엔드 개발자를 위한 코딩 컨벤션" />
+
+### 목차
+
+## 코딩 컨벤션, 왜 중요할까요?
+
+<Image
+  src="/frontend-coding-conventions/01.jpg"
+  alt="맞춤법의 중요성"
+  caption="맞춤법의 중요성"
+  fullWidth={false}
+/>
+
+만약 이력서를 제출했는데 맞춤법이나 띄어쓰기가 이상하다면 어떨까요? 채용 담당자가 **_“이 사람은 맞춤법 검사도 안했나보네. 기본이 안 되어 있군.”_**하면서 더 이상 그 이력서를 읽지 않을 것입니다. 코드도 마찬가지입니다. 아무리 그럴싸한 포트폴리오를 제출했더라도, 기본적인 컨벤션조차 지키지 않은 들쭉날쭉한 코드라면 아무 소용이 없습니다. 실무자가 **_“이 사람은 기본이 안 되어 있구나.”_**라고 생각하고 코드를 제대로 검토하지 않을 것입니다.
+
+코드 컨벤션은 **코드를 작성할 때 지켜야 할 규칙과 가이드라인**입니다. 컨벤션을 지키지 않은 코드는 맞춤법이 틀린 글과 같습니다. 읽기 어렵고, 수정(유지보수)하기 어렵습니다. 따라서 코드 컨벤션은 **코드의 가독성과 유지보수성을 높이기 위해 반드시 필요한 규칙**입니다. 이번 글에서는 프론트엔드 개발자가 지켜야 할 주요 코드 컨벤션에 대해 알아보겠습니다.
+
+## 네이밍 컨벤션
+
+네이밍 컨벤션은 변수명, 함수명, 컴포넌트명 등을 지을 때 사용하는 규칙입니다. `camelCase`, `PascalCase`, `kebab-case`, `snake_case` 등을 상황에 맞게 사용하고, 명확한 이름을 지어주는 것이 중요합니다.
+
+### Case Styles
+
+#### 1. camelCase
+
+- 변수명
+  ```jsx
+  const todoList = [];
+  ```
+- 함수명
+  ```jsx
+  const getTodos = () => {};
+  ```
+- React 커스텀 훅
+  ```jsx
+  const useTodoForm = () => {};
+  ```
+- 객체 속성명
+  ```jsx
+  const todo = {
+    id: 1,
+    content: 'Learn TypeScript',
+    isDone: false,
+    createdAt: Date.now(),
+  };
+  ```
+
+#### 2. PascalCase
+
+- React 컴포넌트
+  ```jsx
+  const TodoForm = () => {};
+  ```
+- TypeScript Interface, Type Aliases
+
+  ```tsx
+  interface Todo {
+    id: number;
+    content: string;
+    isDone: boolean;
+    createdAt: number;
+  }
+
+  type NewTodo = Omit<Todo, 'id' | 'createdAt'>;
+  ```
+
+#### 3. kebab-case
+
+- CSS 클래스명
+  ```jsx
+  <div className="todo-list"></div>
+  ```
+  ```css
+  .todo-list {
+    display: flex;
+  }
+  ```
+
+#### 4. snake_case
+
+- 상수(UPPER_SNAKE_CASE)
+  ```jsx
+  const BASE_URL = 'https://api.example.com';
+  const API_KEY = process.env.API_KEY;
+  ```
+
+### 명확한 네이밍을 위한 규칙
+
+#### 1. 의미 있는 이름 사용하기
+
+추상적이고 일반적인 이름보다는 명확하고 구체적인 이름을 사용하세요. 이름만 보고도 해당 변수나 함수가 어떤 역할을 하는지 알 수 있도록 작성하는 것이 좋습니다.
+
+```jsx
+// ❌ 안 좋은 예
+const MyComponent = () => {
+  // 무슨 일을 하는 컴포넌트인가요?
+
+  const data = getData();
+  // 무슨 데이터인가요?
+
+  const onClick = () => {
+    // 무슨 일을 하는 함수인가요?
+  };
+  //...
+};
+```
+
+```jsx
+// ✅ 좋은 예
+const ProductDetails = () => {
+  // 제품 상세 페이지 컴포넌트
+
+  const productInfo = fetchProductInfo();
+  // 제품 상세 정보 가져오기
+
+  const addProductToCart = () => {
+    // 제품을 장바구니에 추가하는 함수
+  };
+  //...
+};
+```
+
+#### 2. 단수형, 복수형 적절하게 사용하기
+
+배열을 다룰 때는 복수형을, 단일 데이터를 다룰 때는 단수형을 사용하세요. 이렇게 하면 코드의 흐름을 더 명확하게 이해할 수 있습니다.
+
+```jsx
+// ❌ 안 좋은 예
+const MovieList = () => {
+  const [movie, setMovie] = useState([]);
+
+  return (
+    <>
+      {movie.map((m) => (
+        <Movie key={m.id} movie={m} />
+      ))}
+    </>
+  );
+};
+```
+
+```jsx
+// ✅ 좋은 예
+const MovieList = () => {
+  const [movies, setMovies] = useState([]);
+
+  return (
+    <>
+      {movies.map((movie) => (
+        <MovieItem key={movie.id} movie={movie} />
+      ))}
+    </>
+  );
+};
+```
+
+#### 3. 지나친 줄임말 사용하지 않기
+
+‘별다줄’이라는 말을 아시나요? 코드에서도 지나친 줄임말을 사용하면 이해하기 어려워집니다. 조금 길더라도 명확하고 이해하기 쉬운 이름을 사용하세요.
+
+```jsx
+// ❌ 안 좋은 예
+const selChger = {
+  statNm: '서울시청 충전소',
+  statId: '123456',
+  chgerId: '654321',
+  chgerType: 'DC',
+  addr: '서울시 중구 태평로 1',
+};
+
+console.log(selChger.statNm);
+```
+
+```jsx
+// ✅ 좋은 예
+const selectedCharger = {
+  stationName: '서울시청 충전소',
+  stationId: '123456',
+  chargerId: '654321',
+  chargerType: 'DC',
+  address: '서울시 중구 태평로 1',
+};
+
+console.log(selectedCharger.stationName);
+```
+
+## 코드 스타일 가이드
+
+코드 스타일 가이드는 **특정 프로그래밍 언어를 사용할 때 코드의 일관성과 가독성을 유지하기 위해 마련된 규칙과 지침의 모음**입니다. 예를 들어, 들여쓰기 규칙, 변수 선언 방식, 함수 정의 방식 등을 표준화하여 팀원 간 협업을 원활히 하고 코드 품질을 높이는 것을 목표로 합니다.
+
+JavaScript 진영에서 가장 유명한 스타일 가이드는 **Airbnb JavaScript Style Guide**입니다. Airbnb의 개발자들이 사용하는 JavaScript 코딩 스타일을 문서화한 것으로, 나온지 오래되었지만 여전히 고전처럼 많은 개발자들에게 사랑받고 있습니다. 내용이 방대하여 일부만 소개해드리니, JavaScript 개발을 하시는 분들은 시간 나실 때 문서를 꼭 한 번 읽어보시길 권장드립니다.
+
+<Link url="https://airbnb.io/javascript" />
+한국어 번역 문서도 있습니다.
+<Link url="https://github.com/ParkSB/javascript-style-guide" />
+
+- **Object Destructuring 사용하기**
+
+  객체의 개별 속성에 직접 접근하는 방법 대신, 객체 구조 분해 할당을 사용하세요. 이렇게 하면 코드의 가독성이 높아지고, 불필요한 중복을 줄일 수 있습니다. 그리고 기본값을 설정하거나 속성명을 변경하는 작업도 쉽게 할 수 있습니다.
+
+  ```jsx
+  const { id, content: todo, completed = false } = todo;
+  ```
+
+- **화살표 함수 사용하기**
+
+  화살표 함수를 사용하면 함수를 간결하게 작성할 수 있습니다. 또한, `this` 바인딩 문제를 해결할 수 있어서 클래스 메서드나 콜백 함수를 작성할 때도 유용합니다.
+
+  ```jsx
+  const sum = (a, b) => a + b;
+  ```
+
+- **Fragment 사용하기**
+
+  불필요한 wrapper div는 DOM 구조에 복잡성을 추가하여 잠재적으로 웹 페이지의 접근성에 영향을 미칠 수 있습니다. `Fragment`를 사용하면 불필요한 DOM 요소를 추가하지 않고 element들을 그룹화할 수 있습니다.
+
+  ```jsx
+  const App = () => (
+    <>
+      <Header />
+      <Main />
+      <Footer />
+    </>
+  );
+  ```
+
+## 맺음말
+
+코드 컨벤션을 잘 지키는 것은 개발자로서 가장 기본적이고 중요한 덕목 중 하나입니다. 마지막으로 강조드리고 싶은 것이 두 가지가 있습니다.
+
+1. **코드를 작성하기 전에 우리 팀의 컨벤션은 무엇인지, 다른 사람들은 어떻게 작성했는지, 어떻게 해야 통일성을 해치지 않고 작성할 수 있을지 고민해보는 습관을 들이세요.** 여러 사람이 작성했지만 마치 한 사람이 작성한 것처럼 통일성이 있다면 코드의 가독성과 유지보수성이 크게 향상될 것입니다.
+2. **ESLint, Prettier, Code Spell Checker 등의 툴을 반드시 사용하세요.** 린팅, 포맷팅, 스펠링 체크를 제대로 하는 것은 자소서를 작성할 때 맞춤법 검사를 하는 것처럼 아주 기본적인 것입니다. 해당 익스텐션에 대해 소개한 글이 있으니 아직 설치하지 않으신 분들은 참고해주세요.
+   <Link url="https://chaechae.life/blog/vs-code-extensions-for-productivity" />
+
+여러분 모두 코드 컨벤션을 지키면서 더 나은 코드를 작성하는 개발자가 되시기 바랍니다!
