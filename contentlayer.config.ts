@@ -94,7 +94,7 @@ export default makeSource({
   mdx: {
     remarkPlugins: [
       remarkGfm,
-      [remarkToc, { heading: '목차' } satisfies Partial<RemarkTocOptions>],
+      [remarkToc, { heading: '목차', maxDepth: 3 } satisfies Partial<RemarkTocOptions>],
     ],
     rehypePlugins: [
       rehypeSlug,
