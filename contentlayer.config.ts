@@ -94,7 +94,10 @@ export default makeSource({
   mdx: {
     remarkPlugins: [
       remarkGfm,
-      [remarkToc, { heading: '목차', maxDepth: 3 } satisfies Partial<RemarkTocOptions>],
+      [
+        remarkToc,
+        { heading: '목차', maxDepth: 3, skip: '참고자료' } satisfies Partial<RemarkTocOptions>,
+      ],
     ],
     rehypePlugins: [
       rehypeSlug,
