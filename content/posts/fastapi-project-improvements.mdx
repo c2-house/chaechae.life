@@ -1,0 +1,260 @@
+---
+title: FastAPI 프로젝트 개선하기
+description: 최근 오름캠프에서 3일간 FastAPI 미니 프로젝트가 진행되었습니다. FastAPI 수업이 길지 않았는데 다들 잘 진행해주셨습니다. 이번 포스팅에서는 좋은 평가를 받았던 프로젝트를 몇 가지 로직 변경 없는 개선을 해보도록 하겠습니다.
+tags: [FastAPI, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/fastapi-logo.png
+date: 2025/01/15
+---
+
+<Image src="/thumbnails/fastapi-logo.png" alt="Fastapi Project Improvements" />
+
+### 목차
+
+## FastAPI 프로젝트 소개
+
+최근 오름캠프에서 3일간 FastAPI 미니 프로젝트가 진행되었습니다. FastAPI 수업이 길지 않았는데 다들 잘 진행해주셨습니다. 이번 포스팅에서는 좋은 평가를 받았던 프로젝트를 로직 변경 없이 몇 가지 개선해보도록 하겠습니다.
+
+프로젝트를 간단히 소개하면 ChatGPT API를 이용해서 과거의 인물과 대화를 나누는 서비스 입니다. 로그인을 하고 대화 내역을 저장할 수도 있습니다. 원본 프로젝트는 아래에 있습니다.
+
+<Link url="https://github.com/FastAPI-PingPong/TimeTravellerChatBot" />
+
+## 개선 사항
+
+개선 사항을 적용한 Repo는 아래에 있습니다.
+
+<Link url="https://github.com/Jungminchae/TimeTravellerChatBot" />
+
+### 패키지 매니저 사용하기
+
+기존 프로젝트는 패키지 매니저 없이 프로젝트가 진행되었고 의존성은 `requirements.txt` 를 통해 관리되고 있었습니다. Python 프로젝트를 할 때 보다 편한 의존성 관리 및 프로젝트 셋팅을 위해 패키지 매니저를 많이 사용합니다. `pipenv`, `poetry`, `pdm`, `uv` 등이 있습니다. 저는 최근에 새로운 프로젝트는 `uv`를 많이 사용하고 있습니다. 이 프로젝트를 `uv`를 사용하여 관리할 수 있도록 해보겠습니다.
+
+프로젝트를 로컬로 클론 한 뒤 가장 먼저 다음과 같은 명령어를 실행했습니다.
+
+```bash
+uv init
+
+uv add -r requirements.txt
+```
+
+**이렇게 실행하면** `pyproject.toml`**이 생성되고** `requirements.txt` **의 의존성이 가상환경에 설치되고** `uv` **에서 관리할 수 있도록 합니다. 가상환경 생성 명령을 하지 않았지만 자동으로 가상환경이 생성**됩니다.
+
+`uv`의 사용법이 궁금하시다면 아래 링크를 참고해주세요.
+
+<Link url="https://chaechae.life/blog/python-uv" />
+
+### APIRouter로 라우터 분리하기
+
+기존 프로젝트는 모든 엔드포인트가 app에 바로 붙어서 `main.py`에 구현되어 있습니다. 엔드포인트가 많지 않아 큰 문제가 되지는 않지만 유지 보수 및 확장성을 고려한다면 `APIRouter`로 분리하여 별도로 관리 할 수 있습니다.
+
+```python
+# 기존 프로젝트 main.py
+@app.get("/")
+def read_root():
+    return FileResponse("static/login.html")
+
+@app.post("/signup")
+async def signup(...):
+    ...
+
+@app.post("/login")
+async def login(...):
+    ...
+
+# APIRouter로 분리
+# routes.py
+router = APIRouter()
+
+@router.get("/")
+def read_root():
+    return FileResponse("static/login.html")
+
+@router.post("/signup")
+async def signup(...):
+    ...
+
+@router.post("/login")
+async def login(...):
+    ...
+
+# main.py
+app = FastAPI()
+
+app.include_router(router)
+
+```
+
+### SQLAlchemy 2 버전 마이그레이션 및 비동기 사용
+
+`SQLAlchemy`의 현재 버전은 `2.0.37` 입니다. 앞으로 만나게 될 코드들이 모두 최신 버젼의 코드는 아니기 때문에 1 버전 대의 코드를 아는 것도 중요합니다. 하지만 최신 버전을 아는 것도 중요하기에 2버전으로 마이그레이션을 하고 **2 버전부터 안정적으로 지원되는 비동기 세션도 사용**해보았습니다.
+
+```python
+# 모델 변경
+# 기존
+from sqlalchemy.ext.declarative import declarative_base
+
+Base = declarative_base()
+
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship
+
+class UserModel(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True)
+    hashed_password = Column(String)
+    sessions = relationship(
+        "SessionModel", back_populates="user", cascade="all, delete-orphan"
+    )
+
+# 변경 database.py
+from sqlalchemy.orm import DeclarativeBase
+
+class Base(DeclarativeBase):
+    ...
+
+from sqlalchemy import Integer, String, DateTime, ForeignKey
+from sqlalchemy.orm import relationship, mapped_column, Mapped
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    username: Mapped[str] = mapped_column(String, unique=True, index=True)
+    hashed_password: Mapped[str] = mapped_column(String)
+    sessions: Mapped[list["Session"]] = relationship(
+        "Session", back_populates="user", cascade="all, delete-orphan"
+    )
+```
+
+1버전 대와 다르게 `Base` 를 선언하는 방식이 달라지고 모델의 컬럼을 선언하는 방식도 달라졌습니다. 훨씬 더 명확한 코드가 되었습니다. 그리고 이름을 `UserModel` 에서 `Model` 을 제거했습니다. `Model` **이라고 굳이 붙이지 않아도 SQLAlchemy Model**인걸 알기 때문입니다.
+
+이제 비동기 세션 적용을 다뤄보겠습니다. FastAPI의 주요 특징 중 하나는 비동기 API를 쉽게 만들 수 있다는 것입니다. 그런데 비동기 API에서 데이터베이스 연결은 동기적으로 다룬다면, 쿼리 요청이 데이터베이스 응답을 기다리는 동안 다른 요청은 처리될 수 없어서 병목 현상이 발생할 수 있습니다. **데이터베이스와 관련된 작업은 네트워크와 디스크 I/O를 포함하는 대표적인 블로킹 I/O 작업입니다.** 이것을 비동기로 처리하면 여러 요청을 동시에 처리할 수 있어 FastAPI 앱의 동시성 처리 능력이 향상됩니다.
+
+데이터베이스는 `sqlite` 를 사용중입니다. 비동기로 연결하기 위해서는 `aiosqlite`가 필요합니다. 그리고 SQLAlchemy도 비동기 지원을 하는 것으로 설치해야 합니다. `uv` 로 설치합니다.
+
+```bash
+uv add aiosqlite
+uv add sqlalchemy --extra asyncio
+```
+
+그 다음으로 Session 연결에 사용되었던 코드를 변경합니다.
+
+```python
+from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+
+# aiosqlite로 변경
+SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./time_traveller.db"
+# engine 및 session을 async로 변경
+engine = create_async_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# 동기 함수로 작성된 get_db도 async로 변경
+async def get_db() -> AsyncSession:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        await db.close()
+```
+
+Session을 AsyncSession으로 바꾸게 되면 ORM 코드도 비동기로 변경해야 합니다. 그리고 ORM 코드 패턴도 2버전에서는 좀 더 SQL스럽게 변경되었습니다. SQL을 알고 있는 개발자라면 좀 더 편안함을 느끼면서 사용할 수 있을 것 같습니다.
+
+```python
+# 기존
+class ORM:
+    def get_user_by_username(self, username: str) -> UserModel | None:
+        """사용자 이름으로 유저 조회"""
+        return self.db.query(UserModel).filter(UserModel.username == username).first()
+    ...
+
+# 변경
+from sqlalchemy import select
+
+class UserORM:
+    async def get_user_by_username(self, username: str) -> User | None:
+        """사용자 이름으로 유저 조회"""
+        query = select(User).filter(User.username == username)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+    ...
+
+class ORM(UserORM ...): ...
+```
+
+2 버전에서는 쿼리의 작성과 실행이 명시적으로 분리되었습니다. 하나의 ORM 객체에서 모든 ORM 코드가 관리되고 있는데 좀 더 읽기 편하도록 분리하였습니다.
+
+### Pydantic으로 Validation 하기
+
+Pydantic은 Validation 라이브러리 입니다. FastAPI에서 Data Validation은 Pydantic에서 처리합니다. 다음과 같이 회원가입에 Validation 코드가 있어 Pydantic에서 처리하도록 변경했습니다.
+
+```python
+# 기존 코드
+@app.post("/signup", response_model=UserCreateResposne)
+async def signup(user: UserCreate, db: Session = Depends(get_db)):
+    if len(user.username) < 4:
+        raise HTTPException(
+            status_code=400, detail="Username must be at least 4 characters long."
+        )
+
+    if len(user.password) < 6:
+        raise HTTPException(
+            status_code=400, detail="Password must be at least 6 characters long."
+        )
+    ...
+
+# 변경 코드
+from pydantic import BaseModel, model_validator
+
+class UserCreate(BaseModel):
+    username: str
+    password: str
+
+    @model_validator(mode="before")
+    @classmethod
+    def validate(cls, data):
+        if len(data.username) < 4:
+            raise ValueError("Username must be at least 4 characters long.")
+
+        if len(data.password) < 6:
+            raise ValueError("Password must be at least 6 characters long.")
+        return data
+
+@router.post("/signup", response_model=UserCreateResposne)
+async def signup(user: UserCreate, db: Session = Depends(get_db)):
+    # Validation 로직 삭제
+    ...
+```
+
+이렇게 변경하면 Validation에 실패했을 때 400 에러가 아닌 422에러가 발생하게 됩니다. 기본적으로 Pydantic에서 Validation 실패 시에 422에러가 발생하도록 되어 있기 때문입니다.
+
+### 의존성 주입에 Annotated 사용하기
+
+FastAPI에서 기존에 의존성 주입에 `Depends` 를 사용했습니다. 여전히 `Depends` 를 사용하고 있지만 `Annotated` 와 함께 더 편리하게 사용할 수 있습니다. 최근 FastAPI에서 권장하는 방식이기도 하구요. 최근 공식 문서를 보면 `Annotated`가 계속 사용되고 있음을 알 수 있습니다.
+
+가장 큰 장점은 `Annotated`**를 사용하면 의존성을 변수에 할당하여 여러 곳에서 재사용할 수 있다는 것 입니다.**
+
+예를 들면 다음과 같이 사용할 수 있습니다.
+
+```python
+from typing import Annotated
+from fastapi import Depends
+
+DB = Annotated[AsyncSession, Depends(get_db)]
+
+@router.post("/signup", response_model=UserCreateResposne)
+async def signup(user: UserCreate, db: DB): # 의존성 주입이 이렇게 가능해집니다.
+    ...
+
+```
+
+DB 의존성이 필요한 곳이라면 위 코드와 같이 어느 곳에서나 재사용이 가능합니다. 코드의 가독성을 높이고 유지보수를 더욱 쉽게 만들어줍니다. 또한 의존성 주입 패턴을 일관되게 유지할 수 있으니 당연히 코드의 일관성도 향상됩니다.
+
+## 마무리
+
+이번 포스팅에서 우선 5가지 정도 개선 사항을 적어봤습니다. 이 밖에도 개선해 볼 부분은 더 있을 것 같습니다. `pre-commit` 을 이용해서 코드 베이스를 좀 더 빡빡하게 다룬 다거나, config에 넣을 만한 설정 값과 환경 변수들을 `pydantic-settings` 를 이용해서 다룬 다거나, 불필요한 `lifespan` 을 제거한다거나 하는 등 찾아보면 더 있을 것 같습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-settings" />
+
+<Link url="https://chaechae.life/blog/pre-commit-use-ormcamp" />
