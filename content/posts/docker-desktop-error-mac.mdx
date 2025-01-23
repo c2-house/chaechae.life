@@ -1,0 +1,74 @@
+---
+title: Mac에서 Docker Desktop 실행 에러 해결과 ChatGPT
+description: 최근에 교육 쪽에서 일을 하다보니 도커를 사용할 일이 별로 없는데요. 어제 따로 하는 개인 프로젝트에서 도커를 사용할 일이 생겨서 Docker Desktop을 실행하니 이런 에러가 발생했습니다. 아주 간단하게 해결 할 수 있었습니다. 공식 문서에도 나와있는 내용입니다.
+tags: [Docker, AI]
+author: mingke
+thumbnail: /thumbnails/docker-logo.png
+date: 2025/01/22
+---
+
+<Image src="/thumbnails/docker-logo.png" alt="Docker Logo" />
+
+### 목차
+
+## Docker Desktop 실행 에러
+
+최근에 교육 쪽에서 일을 하다보니 도커를 사용할 일이 별로 없는데요. 어제 따로 하는 개인 프로젝트에서 도커를 사용할 일이 생겨서 Docker Desktop을 실행하니 이런 에러가 발생했습니다.
+
+```
+com.docker.vmnetd’에 악성 코드가 포함되어 있어서 열리지 않았습니다. 이 동작은 Mac을 손상시키지 않았습니다.
+```
+
+<Image
+  src="/docker-desktop-error-mac/01.jpg"
+  alt="Error Image"
+  caption="캡쳐 못해서 구글에서 이미지 찾아 왔습니다"
+  fullWidth={false}
+/>
+
+아주 간단하게 해결 할 수 있었습니다. 공식 문서에도 나와있는 내용입니다.
+
+## 해결 방법
+
+해결 방법은 다음과 같습니다.
+
+```bash
+sudo launchctl bootout system/com.docker.vmnetd 2>/dev/null || true
+sudo launchctl bootout system/com.docker.socket 2>/dev/null || true
+
+sudo rm /Library/PrivilegedHelperTools/com.docker.vmnetd || true
+sudo rm /Library/PrivilegedHelperTools/com.docker.socket || true
+
+ps aux | grep -i docker | awk '{print $2}' | sudo xargs kill -9 2>/dev/null
+```
+
+명령을 실행하고 Docker Desktop을 실행하니 정상적으로 잘 동작했습니다.
+
+## ChatGPT로 해결
+
+ChatGPT에 검색이 생긴지 꽤 되었는데요. 그 동안 검색은 많이 활용하지 않았습니다. 이번에 문제가 생겼을 때 ChatGPT에게 찾아달라고 요청했습니다.
+
+```
+나의 docker desktop 에서 다음과 같은 에러가 발생했어
+나는 애플 실리콘 칩이 탑재된 맥북 M3 pro 모델을 사용하고 있어
+이 에러를 어떻게 해결할 수 있는지 알려줘
+
+‘com.docker.vmnetd’에 악성 코드가 포함되어 있어서 열리지 않았습니다. 이 동작은 Mac을 손상시키지 않았습니다.
+
+```
+
+몇 초만에 다음과 같은 결과를 찍어줍니다.
+
+<Image
+  src="/docker-desktop-error-mac/02.jpg"
+  alt="ChatGPT 검색 결과"
+  caption="ChatGPT 검색 결과 화면"
+/>
+
+출처를 남겨주니 어디서 가지고 온 정보인지 쉽게 알 수도 있었습니다. 살펴보니 공식 문서에서 가져온 것은 아니었고 여러 블로그에서 가져온 것이었습니다. 출처의 블로그들에 들어가서 보니 공식 문서에서 가져온 정보더군요. 검색 기능을 써보면서 이제 **‘구글에 들어가서 검색할 일이 진짜 많이 없겠다.’** 라는 말이 몸으로 느껴졌습니다.
+
+## 마무리
+
+ChatGPT로 Docker Desktop의 에러를 해결한 경험을 글로 남겨봤습니다. **나의 생각이나 질문을 글로 잘 구조화하는 것이 계속해서 더 중요해지겠구나**를 느꼈던 경험이었습니다. **과거에는 구글 검색을 더 잘하기 위해 검색하는 법을 공부했었는데 이젠 프롬프트를 잘 짜서 검색하는 방법을 공부해야하는 것 같습니다.** 그래서 더욱더 생각하는 힘과 구조화 하는 힘을 기르기 위해 계속해서 방법을 고민해봐야겠습니다. 요즘 AI로 뭘 할 수 있을까? 보다 AI로 할 수 없는게 뭘까? 더 궁금해지고 있습니다.
+
+<Link url="https://chaechae.life/blog/docker-compose-mysql-sql-file" />
