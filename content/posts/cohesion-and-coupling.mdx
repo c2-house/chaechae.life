@@ -1,0 +1,148 @@
+---
+title: 응집도(Cohesion)와 결합도(Coupling)에 대해 공부하기
+description: 객체 지향 프로그래밍 언어를 공부하다보면 ‘응집도는 높게 결합도는 낮게 코드를 작성해야 한다’ 는 말을 듣게 됩니다. 이번 포스팅에서 응집도와 결합도가 무엇인지 공부해보는 시간을 가져보려고 합니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2025/01/23
+---
+
+<Image src="/thumbnails/python-logo.png" alt="Python cohesion coupling" />
+
+### 목차
+
+## 코드를 어떻게 작성해야할까?
+
+객체 지향 프로그래밍 언어를 공부하다보면 **‘응집도는 높게 결합도는 낮게 코드를 작성해야 한다’** 는 말을 듣게 됩니다. 이번 포스팅에서 응집도와 결합도가 무엇인지 공부해보는 시간을 가져보려고 합니다.
+
+파이썬 문법 시간이 모두 끝나고 나면 ‘함수도 배우고 클래스도 배웠는데 이걸 직접 이용해서 작성하려니 어떻게 작성해야할 지 모르겠습니다’ 라는 질문을 많이 받았던 것 같습니다. 노베이스의 훈련생 분들은 어려운게 맞습니다. 들어도 무슨 말인지… 응집도는 높게 작성하고 결합도는 낮게 작성하라는데, 잘 모르겠고.. 말입니다. 답은 뭐 계속 공부하는 수 밖에..
+
+## 응집도
+
+응집도는(cohesion) 클래스나 내부 모듈이 **얼마나 밀접하게 관련되어 있는가**의 정도라고 볼 수 있습니다.
+
+이게 무슨 말이냐면, 제가 사는 아파트는 수요일, 일요일에 분리수거를 하고 있는데요, 분리수거장에 가보면 좀 쉽게 와 닿습니다. 종이, 플라스틱, 비닐, 병 등등 종류별로 분리가 되어 있습니다. 종이가 버려진 곳을 보면 그 안에 택배 박스도 있고, A4 요지도 있고, 편지 봉투도 있고 여러 가지가 들어있는데 모두 **종이와 밀접한 관계**가 있고 응집도가 높다고 할 수 있습니다. 그런데 만약에 내용물에 **비닐이 들어가 있거나 페트병이 들어가 있다면 종이에 대한 응집도가 낮아**집니다.
+
+### 코드 예제
+
+그럼 코드로 살펴보겠습니다.
+
+```python
+from django.db import models
+from django.views.generic import (
+    ListView,
+    DetailView,
+    CreateView,
+    UpdateView,
+    DeleteView,
+)
+```
+
+- models 모듈에는 model과 관련된 코드들만 있습니다.
+- views.generic에는 generic view들과 관련된 코드들만 있습니다.
+
+클래스를 작성해보면서 이해해보겠습니다.
+
+```python
+# 응집도가 낮은 코드
+class UserManager:
+    def create_user(self, username, email):
+        # 사용자 생성 로직
+        print(f"사용자 {username} 생성됨")
+
+    def send_welcome_email(self, email):
+        # 이메일 전송 로직
+        print(f"{email}로 환영 이메일을 보냅니다.")
+
+    def generate_user_report(self, user_id):
+        # 보고서 생성 로직
+        print(f"사용자 {user_id}의 보고서 생성 중...")
+```
+
+`UserManager` 클래스에 유저를 생성하고 이메일을 보내고 보고서를 생성하는 메소드들이 들어 있습니다.(이게 막 무조건 엄청 나쁘다는 것은 아닙니다) 각 메소드가 서로 딱히 관계없는 일을 하고 있습니다. 응집도가 낮다고 표현할 수 있죠.
+
+```python
+# 응집도가 높은 코드
+class UserService:
+    def create_user(self, username, email):
+        print(f"사용자 {username} 생성됨")
+        return {"username": username, "email": email}
+
+class EmailService:
+    def send_welcome_email(self, email):
+        print(f"{email}로 환영 이메일을 보냅니다.")
+
+class ReportService:
+    def generate_user_report(self, user_id):
+        print(f"사용자 {user_id}의 보고서 생성 중...")
+```
+
+각각의 기능별로 클래스를 분리하여 응집도를 높여줄 수 있습니다. 객체 지향 원칙에서 단일 책임 원칙과도 연결이 됩니다. 하나의 클래스가 하나의 역할만 가지도록 한다면 응집도를 높일 수 있습니다.
+
+<Ads />
+## 결합도
+
+결합도(Coupling)는 클래스나 모듈이 서로 얼마나 의존적인가 그 정도를 나타내는 것이라고 할 수 있습니다. 이번에도 응집도 설명처럼 비유를 이용해보겠습니다. **가족**을 한 번 생각 해봅시다. 우리는 모두 어머니와 아버지로부터 태어났습니다. 그 분들의 자식이라는 것은 **유전자로 인해 아주 강한 결합도**를 가집니다. 내가 태어난 것은 그 분들에게 완전히 의존적입니다. 절대 바꿀 수 없죠. 내가 만약 소프트 웨어라면, 코드라면, 이건 아주 큰 문제가 될 수도 있습니다. 수정이 어렵거든요. 수정을 쉽게 할 수 있도록 결합도가 낮은 코드를 작성하는 것이 일반적으로 좋습니다.
+
+반대로 결합도가 낮은 상황을 생각 해봅니다. 저는 학창 시절 전학을 간 적이 있는데요. 전학으로 친구 관계가 완전히 변경되었습니다. 그리고 친구도 더 많이 사귀었죠. 이처럼 **학창 시절 친구는 가족보다 결합도가 낮아 변경이 비교적 쉽게 가능하고 확장 가능성도 높습니다.**
+
+### 코드 예제
+
+클래스를 작성해보면서 공부해보겠습니다.
+
+```python
+# 결합도가 높은 코드
+class Order:
+    def __init__(self, user, product):
+        self.user = user
+        self.product = product
+        self.notificator = EmailService()
+
+    def process(self):
+        print(f"{self.product} 주문을 처리합니다.")
+        self.notificator.send(self.user, "주문이 완료되었습니다!")
+```
+
+얼핏 보면 무엇이 결합도가 높다는 것인지 이해가 되지 않을 수 있습니다. 다음과 같은 상황을 생각해봅시다.
+
+- 어떤 주문(Order)은 notificator가 Email이 아니고 SMS나 Push 알림을 사용해야함
+
+`EmailService`가 `Order` 클래스 내부에서 초기화되고 있어서 notificator를 변경하는 상황이 온다면 구조적인 문제 때문에 곤란해집니다.
+
+```python
+# 결합도가 낮은 코드
+class Order:
+    def __init__(self, user, product, notificator):
+        self.user = user
+        self.product = product
+        self.notificator = notificator
+
+    def process(self):
+        print(f"{self.product} 주문을 처리합니다.")
+        self.notificator.send(self.user, "주문이 완료되었습니다!")
+
+# 사용할 때 예시
+email_service = EmailService()
+sms_service = SMSService()
+push_service = PushNotificationService()
+
+order1 = Order(user, product, email_service)
+order2 = Order(user, product, sms_service)
+order3 = Order(user, product, push_service)
+```
+
+주문마다 다르게 notificator를 주입해줄 수 있습니다. 이게 의존성 주입이죠. `Order` 클래스가 notificator들과 결합이 약해서 수정이 쉬워집니다.
+
+<Ads />
+
+## 마무리
+
+질문을 받은 김에 응집도와 결합도에 대해서 비유와 간단한 예제를 통해 다뤄봤습니다. 응집도를 높이고 결합도를 낮추면 **테스트 코드를 작성하기도 좋아**집니다. 그건 한 번 경험해보시면 알 듯. 그런데 주의할 점은 **‘응집도는 높게 결합도는 낮게’ 가** 일반적으로 권장되지만 항상 모든 상황에 맞는 것은 아닙니다.
+
+어떤 프로젝트는 유지 보수가 크게 필요 없을 수 도 있습니다. 그럴 땐 모든 코드를 유지 보수 용이하게 짤 필요는 없죠. 응집도가 높은 코드를 봤을 때 모듈이나 클래스가 여러 개로 쪼개 지는데 예를 들어 유틸 성격의 코드를 작성하는데 너무 자잘하게 쪼개져 있으면 재사용에 불편함을 줄 수 있습니다.
+
+그리고 너무 이 부분에 집착하다가 쓸 데 없이 복잡성을 높일 수도 있으니 주의하시길 바랍니다.
+
+질문에 답변할 때도 ‘그건 상황에 따라 다릅니다.’ 라는 말을 하게 되는 상황이 있는데, 이번 글에서도 그렇게 끝나네요. 일반적으로 권장되나 상황에 따라 다릅니다.
+
+<Link url="https://chaechae.life/blog/python-async-comparison" />
