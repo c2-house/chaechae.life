@@ -6,6 +6,7 @@ export const navLinks = [
 export const authors = ['EKO', 'mingke'] as const;
 
 export const tags = [
+  'AI',
   'AWS',
   'Career',
   'Certification',
