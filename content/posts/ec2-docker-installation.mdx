@@ -1,0 +1,105 @@
+---
+title: EC2 amazon linux에 docker, docker-compose 설치하기
+description: 이번 포스팅에서 EC2 Amazon linux에 docker와 docker-compose를 설치하는 방법을 정리합니다. 이전에 AWS에서 docker를 이용해서 배포하면 ECS를 주로 이용했었는데, 이번에 오랜만에 개인 프로젝트를 AWS 프리티어를 이용해서 EC2에서 배포하다가 docker를 셋팅하는 방법이 잘 기억나지 않아 정리합니다.
+tags: [AWS]
+author: mingke
+thumbnail: /thumbnails/aws-logo.png
+date: 2025/01/31
+---
+
+<Image src="/thumbnails/aws-logo.png" alt="AWS EC2 docker installation" />
+
+### 목차
+
+## EC2에 docker 설치하기
+
+이번 포스팅에서 EC2 Amazon linux에 docker와 docker-compose를 설치하는 방법을 정리합니다. 이전에 AWS에서 docker를 이용해서 배포하면 ECS를 주로 이용했었는데, 이번에 오랜만에 개인 프로젝트를 AWS 프리티어를 이용해서 EC2에서 배포하다가 docker를 셋팅하는 방법이 잘 기억나지 않아 정리합니다.
+
+EC2 인스턴스를 생성하고 EC2에 ssh로 접근할 수 있는 상태를 가정하고 작성합니다.
+
+- EC2 접속 후 패키지 업데이트(최신 상태 일 수도 있음)
+
+```bash
+sudo yum update -y
+```
+
+- docker 최신 버젼 설치
+
+```bash
+sudo yum install docker -y
+```
+
+금방 설치됩니다.
+
+- sudo 명령어 없이 docker를 실행하기 위해 ec2-user를 docker 그룹에 추가
+
+```bash
+sudo usermod -a -G docker ec2-user
+```
+
+- docker 그룹에 추가한 뒤 아래 명령어를 실행해서 확인
+
+```bash
+id ec2-user
+```
+
+잘 추가 되었으면 아래와 같이 나옵니다.
+
+```bash
+uid=1000(ec2-user) gid=1000(ec2-user) groups=1000(ec2-user),4(adm),10(wheel),190(systemd-journal),992(docker)
+
+# groups에 아래 처럼 docker가 없으면 명령어 제대로 입력됐는지 확인
+uid=1000(ec2-user) gid=1000(ec2-user) groups=1000(ec2-user),4(adm),10(wheel),190(systemd-journal)
+```
+
+- 현재 터미널에 그룹 변경 사항을 즉시 적용하기
+
+```bash
+newgrp docker
+```
+
+usermod로 그룹을 추가해도 현재 로그인한 터미널 세션에는 변경 사항이 적용되지 않기 때문에 위 명령어를 실행해서 즉시 적용시키는 것입니다.
+
+<Ads />
+
+## docker-compose 설치하기
+
+docker를 설치했으면 이제 docker-compose를 설치합니다.
+
+- docker-compose 바이너리 다운로드
+
+```bash
+wget https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)
+```
+
+- 바이너리 파일을 실행 가능하도록 위치를 옮기기
+
+```bash
+sudo mv docker-compose-$(uname -s)-$(uname -m) /usr/local/bin/docker-compose
+```
+
+- docker-compose 실행권한 추가
+
+```bash
+sudo chmod -v +x /usr/local/bin/docker-compose
+```
+
+- docker에 심볼릭 링크 생성 및 실행
+
+```bash
+sudo systemctl enable docker.service
+
+sudo systemctl start docker.service
+```
+
+## 마무리
+
+이렇게 하면 EC2 Amazon Linux에 docker와 docker-compose를 설치할 수 있습니다.
+
+```bash
+docker ps
+
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+```
+
+<Link url="https://chaechae.life/blog/django-storages-s3-image-upload" />
