@@ -109,6 +109,8 @@ ruff-format..............................................................Failed
 4 files reformatted, 10 files left unchanged
 ```
 
+<Ads />
+
 ### github actions에서 사용하기
 
 marketplace에 ruff action이 있었습니다. marketplace에 있는 것을 사용하면 쉽게 사용할 수 있지 싶습니다.
@@ -129,6 +131,23 @@ jobs:
 ```
 
 또는 shellscript를 만들어서 사용해 볼 수도 있겠습니다. FastAPI 레포를 염탐해봤더니 lint.sh를 만들어서 CI에 사용되고 있는 것을 확인했습니다.
+
+### Ruff VSCode 사용법
+
+<Image
+  src="/ruff-linter-formatter/01.png"
+  alt="vscode ruff extension"
+  caption="vscode extension에서 ruff 검색"
+/>
+
+VSCode에 Ruff 익스텐션이 있습니다. 익스텐션에서 ruff를 검색한 뒤 설치하면 끝입니다. 기존에는 Black formatter 익스텐션을 설치한 뒤 `formatOnSave`를 켜놓고 사용하셨던 분들이 많을텐데요. Ruff도 동일한 방법으로 사용할 수 있습니다. 위에서 언급한 `pyproject.toml`이 있고 그 안에 ruff 설정이 있으면 익스텐션이 자동으로 설정을 포함시켜 동작합니다.
+
+<Image
+  src="/ruff-linter-formatter/02.jpg"
+  alt="vscode ruff formatOnSave"
+  fullWidth={false}
+  caption="settings에서 format 검색"
+/>
 
 ## 마무리
 
