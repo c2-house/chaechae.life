@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { type Post } from 'contentlayer/generated';
 import Mdx from '../Mdx';
 import { Tags } from './Tags';
@@ -15,6 +16,13 @@ const Post = ({ post }: { post: Post }) => {
         <Tags tags={post.tags} />
       </header>
       <hr className="not-prose my-8 lg:my-10" />
+      <Image
+        src={post.image}
+        alt={post.title}
+        width={700}
+        height={365}
+        className="h-full w-full object-cover"
+      />
       <InarticleAds />
       <section>
         <Mdx code={post.body.code} />
