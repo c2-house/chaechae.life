@@ -1,0 +1,97 @@
+---
+title: Django ManyToManyField 알아보기
+description: ManyToManyField 는 Django에서 다대다 관계를 정의할 때 사용하는 필드입니다. N:M 으로 표현하죠. 예를들면 학생과 수업, 블로그 글과 태그, 영화와 배우 등이 있습니다. Django에서 아주 쉽게 ManyToManyField를 다룰 수 있게 해줍니다. 이번 포스팅에서 한 번 알아보도록 하겠습니다.
+tags: [Django]
+author: mingke
+thumbnail: /thumbnails/django-logo.png
+date: 2025/02/14
+---
+
+### 목차
+
+## ManyToManyField
+
+`ManyToManyField` 는 Django에서 **다대다 관계를 정의할 때 사용하는 필드**입니다. `N:M` 으로 표현하죠. 예를들면 학생과 수업, 블로그 글과 태그, 영화와 배우 등이 있습니다.
+
+일반적으로 우리가 아는 데이터베이스에는 ManyToMany 관계가 존재하지 않습니다. 그래서 사실 ManyToMany를 구현하려면 **두 관계를 연결해주는 연결 테이블이 필요**합니다.
+
+Django에서 아주 쉽게 `ManyToManyField`를 다룰 수 있게 해줍니다. 이번 포스팅에서 한 번 알아보도록 하겠습니다.
+
+## ManyToManyField 사용법
+
+앞서 언급 한 것 처럼 `ManyToManyField` 는 다대다 관계를 나타낼 때 사용합니다. Django 모델에서 아래와 같이 표현할 수 있습니다.
+
+```python
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+
+class Course(models.Model):
+    title = models.CharField(max_length=200)
+    students = models.ManyToManyField(Student, related_name="courses")
+```
+
+학생은 다수의 수업을 신청할 수 있고 수업은 다수의 학생을 받을 수 있습니다. `ManyToManyField`를 구현하기 위해서 중간에 연결 테이블이 필요하다고 했는데 예시를 보면 연결 테이블 정의는 없습니다. 연결 테이블을 명시하지 않으면 Django가 migration할 때 자동으로 만들어줍니다.
+
+`sqlmigrate` 명령으로 확인해보았습니다. (모델1\_모델2) 이름으로 테이블이 생성되는 걸 볼 수 있습니다. 총 `CREATE TABLE`이 3개가 날아가는 걸 볼 수 있습니다.
+
+<Image src="/django-manytomanyfield/01.png" alt="zsh 설치 결과" />
+
+## ManyToManyField 주요 속성
+
+- `related_name` : 역참조에서 사용할 때 이름입니다. Student에서 Course를 조회할 때 사용되는 이름입니다.
+- `related_query_name` : 역참조에서 조회할 때 쿼리 이름입니다. `filter` 할 때 사용하는 이름이라고 생각하면 됩니다.
+  ```python
+  # Django가 들어간 코스를 등록한 학생 조회
+  Student.objects.filter(enrolled_courses__title__icontains='Django')
+  ```
+- `through` : 연결 테이블을 가리킵니다. 명시하지 않으면 위에서 언급한 것처럼 자동으로 생성됩니다. 명시적으로 연결 테이블을 만드는 이유는 관계 뿐 아니라 다른 메타데이터도 추가하고 싶을 때 만듭니다. 다음과 같이 만듭니다.
+
+  ```python
+  class Student(models.Model):
+      name = models.CharField(max_length=100)
+
+  # 연결 테이블
+  class Enrollment(models.Model):
+      student = models.ForeignKey(Student, on_delete=models.CASCADE)
+      course = models.ForeignKey(Course, on_delete=models.CASCADE)
+      enrolled_date = models.DateField(auto_now_add=True)
+
+  class Course(models.Model):
+      title = models.CharField(max_length=200)
+      students = models.ManyToManyField(Student, through=Enrollment)
+  ```
+
+- `symmetrical` : 이것은 자기 자신과 다대다 관계를 만들 때 사용됩니다. 해당 되는 경우 `True`를 주면 됩니다.
+
+<Ads />
+
+## ManyToManyField 데이터 추가,제거
+
+`add`와 `remove`로 할 수 있습니다.
+
+```python
+mingke = Student.objects.get(name="mingke")
+
+python_course = Course.objects.get(title="Python for Beginners")
+
+python_course.students.add(mingke)
+python_course.students.remove(mingke)
+```
+
+ORM을 연습하거나 테스트 해볼 때 `django-extensions` 라이브러리를 설치 후 `shell_plus` 명령을 사용하면 좋습니다.
+
+`python manage.py shell_plus --print-sql` 으로 실행하면 아래와 같이 Raw Query를 함께 볼 수 있습니다.
+
+<Image src="/django-manytomanyfield/02.png" alt="zsh 설치 결과" />
+
+## ManyToManyField를 어디에 넣을까?
+
+`ManyToManyField` 는 다대다 관계여서 양쪽 테이블에 다 관련이 있습니다. 그럼 어디에 컬럼으로 넣는게 좋을까요?
+
+일반적으로는 더 자주 접근하는 모델에 `ManyToManyField`를 넣는 것이 좋습니다. **조회가 더 많이 발생하는 쪽**에 넣습니다. 수업을 통해 학생 목록을 더 자주 조회한다면 `Course` 모델에 넣는 것이 좋고, 학생이 수강하는 수업 목록을 더 자주 조회한다면 `Student` 모델에 넣는 것이 좋습니다.
+
+## 마무리
+
+`ManyToManyField` 에 대해서 간단하게 알아봤습니다. `ManyToManyField` 가 다른 관계보다 조금 더 어렵다고 생각되어 정리해보았습니다. Django에서 아주 편리하게 쓸 수 있도록 해주기 때문에 할 만하다고 느껴지긴 하네요.
+
+<Link url="https://chaechae.life/blog/django-model-basic" />
