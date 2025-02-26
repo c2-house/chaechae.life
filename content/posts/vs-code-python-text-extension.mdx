@@ -1,0 +1,77 @@
+---
+title: VSCode Python Test Explore 사용하기
+description: VScode에서 Python 테스트를 간편하게 실행해 볼 수 있는 VScode Extension을 배우게 되어 사용해보았습니다. Python Test Explorer for Visual Studio Code 라는 Extension 입니다. VSCode 인터페이스를 이용해서 테스트를 간편하게 실행할 수 있게 해주는 툴입니다. 이번 포스팅에서 사용법을 간단하게 알아보겠습니다.
+tags: [Python, VSCode, 오름캠프]
+author: mingke
+thumbnail: /thumbnails/vscode-logo.png
+date: 2025/02/25
+---
+
+### 목차
+
+## VSCode에서 테스트를 간편하게
+
+VScode에서 Python 테스트를 간편하게 실행해 볼 수 있는 VScode Extension을 배우게 되어 사용해보았습니다. `Python Test Explorer for Visual Studio Code` \*\*\*\*라는 Extension 입니다. VSCode 인터페이스를 이용해서 테스트를 간편하게 실행할 수 있게 해주는 툴입니다. 이번 포스팅에서 사용법을 간단하게 알아보겠습니다.
+
+## Python Test Explorer for Visual Studio Code 설치
+
+VSCode Extension 검색에서 python test를 검색하면 2번째에 나옵니다.
+
+<Image
+  src="/vs-code-python-text-extension/01.png"
+  alt="Python Test Explorer for Visual Studio Code 검색"
+  fullWidth={false}
+/>
+
+2번째 Extension 클릭해서 설치해주면 됩니다.
+
+<Image
+  src="/vs-code-python-text-extension/02.png"
+  alt="Python Test Explorer for Visual Studio Code 검색 결과"
+  fullWidth={false}
+/>
+
+<Ads />
+
+## 테스트 실행하기
+
+- 설치한 뒤 사이드바에서 플라스크 모양을 눌러줍니다.
+
+  <Image
+    src="/vs-code-python-text-extension/03.png"
+    alt="Python Test Explorer for Visual Studio Code 실행 방법"
+    fullWidth={false}
+  />
+
+- `Configure Python Tests` 를 클릭합니다. 그리고 아래와 같이 어떤 테스트 프레임워크를 사용할 것인지 선택하라고 하는데 원하는 걸 누르면 됩니다. 저는 `pytest` 를 선택했습니다.
+  <Image
+    src="/vs-code-python-text-extension/04.png"
+    alt="Python Test Explorer for Visual Studio Code config 설정 1"
+    fullWidth={false}
+  />
+- 그 다음 테스트가 포함된 디렉토리를 선택해주면 됩니다.
+  <Image
+    src="/vs-code-python-text-extension/05.png"
+    alt="Python Test Explorer for Visual Studio Code config 설정 2"
+    fullWidth={false}
+  />
+- 디렉토리를 선택하고 나면 작성한 테스트 목록이 쭉 나옵니다. 테스트를 개별적으로 실행할 수도 있고 모듈 별로 실행하거나 한 번에 전체 테스트를 실행하거나 할 수 있습니다. 각각 레이어 별로 실행 버튼이 활성화 되기 때문에 아주 편리합니다.
+  <Image
+    src="/vs-code-python-text-extension/06.png"
+    alt="Python Test Explorer for Visual Studio Code 실행 결과"
+    fullWidth={false}
+  />
+- 코드에서 바로 실행해 볼 수도 있습니다. 코드 라인 옆에 활성화된 실행버튼을 누르면 됩니다.
+  <Image
+    src="/vs-code-python-text-extension/07.png"
+    alt="Python Test Explorer for Visual Studio Code 코드에서 실행 방법"
+    fullWidth={false}
+  />
+
+## 마무리
+
+테스트를 작성하고 쉽게 실행해 볼 수 있는 Extension에 대해서 알아봤습니다.
+
+직접 사용해보니 테스트 실행과 결과 확인이 직관적이어서 아주 좋았습니다. Python으로 개발하고 테스트하 실때 유용하게 사용하실 수 있을 것 같습니다.
+
+<Link url="https://chaechae.life/blog/vs-code-keyboard-shortcuts" />
