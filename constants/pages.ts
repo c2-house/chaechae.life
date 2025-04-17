@@ -17,6 +17,7 @@ export const tags = [
   'Github Actions',
   'Gunicorn',
   'JavaScript',
+  'MCP',
   'Nextjs',
   'Nodejs',
   'PostgreSQL',
