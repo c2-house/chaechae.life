@@ -49,7 +49,7 @@ const profiles: ProfileCardProps[] = [
       },
       {
         icon: <ProfileMingkeIcon3 className="h-8 w-8" />,
-        text: '새로운 기술을 배우고 지식을 공유하는 것을 좋아합니다. 최근 관심사는 프롬프트 엔지니어링입니다.',
+        text: '새로운 기술을 배우고 지식을 공유하는 것을 좋아합니다. 최근 관심사는 백엔드 개발자로 취업하기 입니다.',
       },
     ],
   },
