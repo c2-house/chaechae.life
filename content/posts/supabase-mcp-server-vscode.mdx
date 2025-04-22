@@ -1,0 +1,128 @@
+---
+title: SupabaseMCP 사용해보기 (feat.VScode)
+description: 요즘 MCP가 아주 핫한 만큼 Supabase에서도 MCP Server를 제공해주고 있습니다. SupabaseMCP Server를 이용하는 방법을 이번 글에서 포스팅해보려고 합니다. 다른 MCP들 처럼 매우 간단합니다.
+tags: [MCP, Supabase]
+author: mingke
+thumbnail: /thumbnails/mcp.jpg
+date: 2025/04/22
+---
+
+## SupabaseMCP Server
+
+Supabase는 많은 분들이 아시겠지만 PostgreSQL을 기반으로 하는 오픈소스 백엔드 플랫폼입니다. 데이터베이스 뿐만 아니라 꽤 기능이 많아서 저희 부부가 개인 프로젝트나 외주 개발을 할 때 자주 이용했습니다. 요즘 MCP가 아주 핫한 만큼 Supabase에서도 MCP Server를 제공해주고 있습니다.
+
+SupabaseMCP Server를 이용하는 방법을 이번 글에서 포스팅해보려고 합니다. 사용하기 정말정말 간단합니다.
+
+## Supabase Access Token 발급
+
+Supabase에 로그인 한뒤 아래 링크에서 우선 Access Token을 발급받아야 합니다.
+
+<Link url="https://supabase.com/dashboard/account/tokens" />
+
+**Access Token을 발급 받아서 따로 저장해 줍니다.** 최초에만 볼 수 있고 그 다음부터는 마스킹되어서 나옵니다. 여기까지만 하면 이제 거의 끝났다고 볼 수 있습니다.
+
+## VSCode에 SupabaseMCPServer 추가하기
+
+아래 링크에 나와있는 코드를 복사해서 `.vscode/mcp.json`에 추가해주면 됩니다. 각 IDE 별로 Configuration이 있는데 그냥 VSCode 방법으로 안하고 Cursor 방법으로 동일하게 해도 됩니다.
+
+`.vscode`는 Command Palette에서 `"Preferences: Open Workspace Settings"`를 선택하면 자동으로 생성되는데 그냥 폴더 생성으로 만들어도 됩니다.
+
+<Link url="https://supabase.com/docs/guides/getting-started/mcp?queryGroups=os&os=mac" />
+
+```json
+# .vscode/mcp.json
+{
+  "servers": {
+    "supabase": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "발급받은 Access Token 입력"
+      ]
+    }
+  }
+}
+```
+
+<Ads />
+
+## VSCode에서 SupabaseMCPServer 사용하기
+
+추가가 끝났으면 <kbd>⌘</kbd> + <kbd>Shift</kbd> + <kbd>I</kbd>를 눌러서 채팅창을 켭니다. 그 후에 다음과 같은 프로세스로 하면 됩니다.
+
+- Ask에서 Agent로 바꾸고 채팅창 좌측 상단에 초록색 화살표를 한 번 클릭합니다.
+
+  <Image
+    src="/supabase-mcp-server-vscode/01.png"
+    alt="vscode copilot agent"
+    caption="Agent로 변경하기"
+    fullWidth={false}
+  />
+
+- 도구가 아래와 같이 추가 되었는지 확인합니다. 아래 도구가 25개라고 나오는데요. 25를 클릭해보면 어떤 도구들을 사용할 수 있는지 확인할 수 있습니다.
+  <Image
+    src="/supabase-mcp-server-vscode/02.png"
+    alt="copilot agent tools"
+    caption="Agent가 사용할 수 있는 도구의 수"
+    fullWidth={false}
+  />
+- 하고 싶은 작업을 요청하면 됩니다. 그러면 특정 도구에 대한 권한 요청이 있습니다. 매번 Continue를 눌러줘야 하는데 **귀찮으면 우측에 드롭다운 눌러서 3가지 선택지 중에 원하는걸 눌러**주시면 됩니다.
+  <Image
+    src="/supabase-mcp-server-vscode/03.png"
+    alt="Agent permssion"
+    caption="권한 요청에 대해 응답하기"
+    fullWidth={false}
+  />
+
+**데이터베이스에 대한 작업을 프롬프트 딸깍만 가지고 쉽게 할 수 있습니다.**
+
+모바일 청첩장 외주에서 사용했던 테이블에 대한 정보를 요청해봤습니다. 금방 읽어서 알려줍니다.
+
+<Image
+  src="/supabase-mcp-server-vscode/04.png"
+  alt="MCP로 테이블 조회"
+  caption="MCP로 테이블 조회"
+  fullWidth={false}
+/>
+
+<Image
+  src="/supabase-mcp-server-vscode/05.png"
+  alt="MCP로 쿼리 실행"
+  caption="MCP로 쿼리 실행"
+  fullWidth={false}
+/>
+
+프로젝트를 생성하고 ERD에 따라 테이블을 생성하도록 요청해봤습니다.
+
+<Image
+  src="/supabase-mcp-server-vscode/06.png"
+  alt="MCP로 프로젝트 생성"
+  caption="MCP로 프로젝트 생성"
+  fullWidth={false}
+/>
+
+<Image
+  src="/supabase-mcp-server-vscode/07.png"
+  alt="MCP로 테이블 생성"
+  caption="MCP로 테이블 생성"
+  fullWidth={false}
+/>
+
+<Image
+  src="/supabase-mcp-server-vscode/08.png"
+  alt="MCP로 테이블 생성결과"
+  caption="MCP로 테이블 생성결과"
+  fullWidth={false}
+/>
+
+이미지들을 보면 각 요청마다 **Agent가 스스로 질문의 의도를 파악하여 필요한 도구를 사용**하고 있습니다.
+
+<Ads />
+
+## 마무리
+
+VSCode에 SupabaseMCP Server를 연결해서 간단한 작업을 해봤습니다. 읽기요청을 통한 분석 뿐만 아니라 ERD에 따라 생성하는 것도 잘 합니다. DB를 잘 몰라도 AI와 함께라면 간단한 백엔드 작업은 편리하게 잘 할 수 있을 것 같습니다. 예제에 사용한 ERD도 AI로 작성했습니다. 요즘 이런 저런 MCP Server를 붙여서 써보고 있는데 정말 재미있네요. 다음엔 뭘 써볼까 흥미가 막 돋네요.
+
+<Link url="https://chaechae.life/blog/supabase-django-connection" />
