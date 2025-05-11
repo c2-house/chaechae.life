@@ -19,7 +19,7 @@ const Footer = () => {
         <a href="mailto:chaechae.couple@gmail.com" className="hover:underline">
           chaechae.couple@gmail.com
         </a>
-        <p>&copy; {new Date().getFullYear()} ChaeChae. All Rights Reserved.</p>
+        <p>&copy; 2024. ChaeChae Life. All rights reserved.</p>
       </div>
     </footer>
   );
