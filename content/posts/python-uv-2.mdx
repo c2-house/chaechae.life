@@ -1,0 +1,117 @@
+---
+title: Python uv 명령어 더 알아보기
+description: 이제 Python의 패키지 관리자를 uv에 완전히 정착해서 사용한지 꽤 되었습니다. 이제 완전 업계 표준이 된 듯 합니다. 기존에도 uv에 관련된 글을 하나 썼었습니다. 간단한 사용법과 명령어 몇 가지를 정리했었는데요, 이번에 추가로 더 사용해 본 명령어들이 있어서 정리해보려고 합니다. 사용한 uv 버젼은 0.7.8 입니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2025/05/25
+---
+
+### 목차
+
+## uv는 강력하다
+
+이제 Python의 패키지 관리자를 uv에 완전히 정착해서 사용한지 꽤 되었습니다. 쓰면서 uv의 강력함을 느끼고 있습니다. 이제 완전 업계 표준이 된 듯 합니다. 이전에도 uv에 관련된 글을 하나 썼었습니다. 간단한 사용법과 명령어 몇 가지를 정리했었는데요, 이번에 추가로 더 사용해 본 명령어들이 있어서 정리해보려고 합니다. 사용한 **uv 버젼**은 `0.7.8` 입니다.
+
+<Link url="https://chaechae.life/blog/python-uv" />
+
+## uv로 패키지 빌드 및 배포하기
+
+uv를 이용해서 패키지를 빌드하고 배포하는 방법을 알아보겠습니다.
+
+### uv build
+
+`uv build` 명령으로 빌드를 빠르게 할 수 있습니다. 그전에 `pyproject.toml` 을 수정해야합니다. 빌드 패키지가 여러가지 있지만 uv에도 있습니다.
+
+`pyproject.toml` 에 다음과 같이 추가합니다.
+
+```toml
+[build-system]
+requires = ["uv_build>=0.7.8,<0.8.0"]
+build-backend = "uv_build"
+```
+
+- 한 가지 주의할 점이 있습니다. `uv_build` 는 기본 소스코드 경로가 `src/<Package_name>` 으로 되어있어서 src를 안에 개발하지 않고 root에 개발했다면 `pyproject.toml`에 다음과 같이 추가해주면 됩니다.
+
+```toml
+[tool.uv.build-backend]
+module-name = "소스코드가 있는 디렉토리 이름"
+module-root = ""
+```
+
+`pyproject.toml` 이 수정되었다면 `uv build` 명령을 실행하면 되고 `dist` 디렉토리가 생기면서 빌드가 완료됩니다.
+
+```bash
+uv build
+```
+
+### uv publish
+
+빌드가 끝났으면 pypi에 배포도 할 수 있습니다. `uv publish`라는 명령어가 있고 배포하기 위해서는 다음과 같은 준비가 필요합니다.
+
+- pypi 로그인 후 계정 설정에서 `API 토큰` 발급받기
+
+pypi에 한글이 공식 지원되어 아주 보기 편해졌습니다.
+
+토큰이 있으면 배포할 때 다음과 같이 하면 됩니다.
+
+```bash
+uv publish --token <토큰>
+```
+
+아니면 `UV_PUBLISH_TOKEN` 환경변수로 선언해주면 됩니다.
+
+```bash
+export UV_PUBLISH_TOKEN="토큰"
+```
+
+### uv version
+
+`uv version`은 패키지 업데이트할 때 사용하는 명령어입니다. 다음과 같이 사용하면 버젼 업데이트할 때 편합니다. Semantic Versioning을 기준으로 다음과 같이 할 수 있습니다.
+
+```bash
+# major 버젼 업데이트
+uv version --bump major
+
+# minor 버젼 업데이트
+uv version --bump minor
+
+# patch 버젼 업데이트
+uv version --bump patch
+```
+
+<Ads />
+
+## uv venv 가상환경 생성하기
+
+가상환경을 생성할 수 있는 명령어 입니다. `uv venv`만 입력하면 설치된 python default 버젼이 설치되는데요. 다음과 같이 하면 버젼을 변경할 수 있습니다. 물론 그 버젼도 설치는 되어 있어야 합니다.
+
+```bash
+uv venv --python 3.12
+```
+
+## uvx
+
+어떤 패키지를 그냥 tool로써 사용하려고 할 때 쓰면 좋은 명령입니다. 의존성 설치없이 사용하고 싶을 때 쓰면 좋습니다. 공식문서에는 다음과 같은 예시가 있습니다.
+
+```bash
+uvx ruff
+```
+
+`ruff` 를 내 환경에 설치하지 않고 실행할 수 있습니다.
+
+python으로 만들어진 mcp를 실행할 때도 종종 본 것 같습니다.
+
+특정 패키지에 종속된 명령어가 있고 **명령어가 패키지 이름과 다르다면** 다음과 같이 사용할 수 있습니다.
+
+```bash
+uvx --from fastapi-mctools mct startproject
+```
+
+node를 해보신 분들이라면 npx 명령어와 비슷하다는 것을 아실겁니다.
+
+## 마무리
+
+이번 포스팅에서 최근에 사용했던, 기존 블로그 글에서 정리하지 않았던 uv 명령어들을 정리해보았습니다. 쓰면 쓸수록 잘 만들었다는 생각이드네요.
+
+<Link url="https://chaechae.life/blog/ruff-linter-formatter" />
