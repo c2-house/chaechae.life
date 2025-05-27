@@ -1,7 +1,7 @@
 export const navLinks = [
   { name: 'Projects', path: '/projects' },
-  { name: 'Blog', path: '/blog' },
   { name: 'Games', path: '/games' },
+  { name: 'Blog', path: '/blog' },
 ] as const;
 
 export const authors = ['EKO', 'mingke'] as const;
