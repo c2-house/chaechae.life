@@ -1,5 +1,6 @@
 export const navLinks = [
   { name: 'Projects', path: '/projects' },
+  { name: 'Games', path: '/games' },
   { name: 'Blog', path: '/blog' },
 ] as const;
 
