@@ -27,6 +27,8 @@ React, Vue, Svelte 같은 SPA(Single Page Application)를 Vercel에 배포했을
 
 이러한 구조 때문에 새로고침이나 뒤로가기와 같은 동작을 하면 문제가 발생합니다.예를 들어, 브라우저가 `/about` 경로에서 새로고침을 하면, 서버는 실제로 존재하지 않는 `/about` 경로의 리소스를 찾습니다. 그런데 **SPA에는** `index.html` **하나만 존재하기 때문에 404 Not Found 에러가 발생**하게 됩니다.
 
+<Ads />
+
 ## 해결 방법
 
 문제 해결 방법은 간단합니다. 다음과 같이 `vercel.json`을 만들어서 배포하면 됩니다.
