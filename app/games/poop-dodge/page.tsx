@@ -10,9 +10,7 @@ const PoopDodgePage = () => {
         <iframe
           src="https://poop-dodge-chi.vercel.app/"
           title="똥피하기 게임"
-          width="1400"
-          height="800"
-          className="h-[65vh] min-h-[500px] w-full max-w-7xl rounded-xl border border-gray-200 shadow-lg"
+          className="h-[70vh] min-h-[500px] w-full max-w-7xl rounded-xl border border-gray-200 shadow-lg"
           allowFullScreen
         ></iframe>
       </div>
