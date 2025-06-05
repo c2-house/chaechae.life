@@ -26,7 +26,9 @@ const Home = () => {
           </Link>
         </div>
         <PostList posts={posts} />
-        <BlogInfeedAds />
+        <div>
+          <BlogInfeedAds />
+        </div>
       </section>
     </main>
   );
