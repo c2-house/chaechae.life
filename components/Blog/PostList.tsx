@@ -35,7 +35,11 @@ const PostList = ({ posts, page, countLabel }: Props) => {
       <ul>
         {currentPosts.map((post, index) => (
           <li key={post.slug}>
-            {index % 3 === 0 && index !== 0 && <BlogInfeedAds />}
+            {index % 3 === 0 && index !== 0 && (
+              <div className="mb-6 border-b pb-6 md:mb-8 md:pb-8">
+                <BlogInfeedAds />
+              </div>
+            )}
             <div className="mb-6 border-b pb-6 md:mb-8 md:pb-8">
               <PostListItem post={post} />
             </div>
