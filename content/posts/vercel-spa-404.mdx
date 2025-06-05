@@ -1,0 +1,44 @@
+---
+title: Vercel SPA 배포 후 404에러 해결
+description: React, Vue, Svelte 같은 SPA(Single Page Application)를 Vercel에 배포했을 때 주소창에 특정 URL 경로를 입력해서 접근하거나, 뒤로가기, 새로고침 등을 했을 때 404 Not Found 에러가 발생하는 경우가 있습니다.
+tags: [React, Vercel]
+thumbnail: /thumbnails/react-logo.png
+author: mingke
+date: 2025/06/05
+---
+
+### 목차
+
+## 문제 상황
+
+React, Vue, Svelte 같은 SPA(Single Page Application)를 Vercel에 배포했을 때 **주소창에 특정 URL 경로를 입력해서 접근하거나, 뒤로가기, 새로고침 등을 했을 때 404 Not Found 에러**가 발생하는 경우가 있습니다.
+
+<Image
+  src="/vercel-spa-404/01.png"
+  alt="React Vercel 배포 후 404 에러"
+  caption="새로고침 후 404 발생"
+  fullWidth={true}
+/>
+초보적인 실수인데 저는 프론트엔드는 초보가 맞기 때문에 이번 포스팅에서 정리해보도록 하겠습니다.
+
+## 클라이언트 라우터와 정적 파일의 문제
+
+**SPA는 실제로** `index.html` **하나에서 모든 페이지를 렌더링**합니다. 브라우져 주소창에 URL 경로가 여러 개로 바뀐다고 해서 새로운 html 파일을 서버로부터 받아오는게 아닙니다. **클라이언트 사이드의 라우터가 내부적으로 경로에 따라서 컴포넌트들을 렌더링**하는 것 입니다.
+
+이러한 구조 때문에 새로고침이나 뒤로가기와 같은 동작을 하면 문제가 발생합니다.예를 들어, 브라우저가 `/about` 경로에서 새로고침을 하면, 서버는 실제로 존재하지 않는 `/about` 경로의 리소스를 찾습니다. 그런데 **SPA에는** `index.html` **하나만 존재하기 때문에 404 Not Found 에러가 발생**하게 됩니다.
+
+## 해결 방법
+
+문제 해결 방법은 간단합니다. 다음과 같이 `vercel.json`을 만들어서 배포하면 됩니다.
+
+```json
+{ "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
+```
+
+이것의 의미는 모든 경로의 요청을 `/`로 rewrite하여 라우팅하고 `index.html`을 내려받도록 하는 설정입니다.
+
+## 마무리
+
+Vercel에 SPA를 배포하며 발생했던 원인 파악과 에러 해결 방법을 간단하게 알아봤습니다. Vercel에 배포를 해서 Vercel을 중심으로 알아봤는데 Netlify같은 플랫폼에서도 SPA 배포라면 동일하게 발생할 수 있는 문제입니다. Vercel배포가 매우 간단하더라도 SPA 동작 원리에 대해서도 잘 알고 있어야 하겠습니다.
+
+<Link url="https://chaechae.life/blog/react-setup-guide-for-beginners" />
