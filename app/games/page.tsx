@@ -11,6 +11,12 @@ const games = [
     thumbnail: '/images/games/poop/poop-dodge-thumbnail.png',
     description: '똥을 피해 살아남으세요!',
   },
+  {
+    name: '기사의 여행',
+    slug: 'knightstour',
+    thumbnail: '/images/games/knight/knights-tour-thumbnail.png',
+    description: '데블스플랜에 나왔던 기사의 여행을 플레이해봐요!',
+  },
   // 추후 게임 추가 가능
 ];
 
