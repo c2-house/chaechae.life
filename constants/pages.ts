@@ -35,6 +35,7 @@ export const tags = [
   'Supabase',
   'Swagger',
   'Tools',
+  'Vercel',
   'VSCode',
   'Writing',
   '오름캠프',
