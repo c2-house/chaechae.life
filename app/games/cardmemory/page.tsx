@@ -1,6 +1,6 @@
 'use client';
 
-const KnightstourPage = () => {
+const CardMemoryPage = () => {
   return (
     <main className="container-lg py-10">
       <h1 className="mb-2 text-3xl font-bold">카드 뒤집기</h1>
@@ -18,4 +18,4 @@ const KnightstourPage = () => {
   );
 };
 
-export default KnightstourPage;
+export default CardMemoryPage;
