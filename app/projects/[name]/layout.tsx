@@ -24,6 +24,7 @@ export const generateMetadata = async ({ params: { name } }: Props): Promise<Met
       title,
       description,
       url: `/projects/${name}`,
+      images: [{ url: project.thumbnail, alt: projectTitle }],
     },
     twitter: {
       title,
