@@ -1,4 +1,26 @@
-'use client';
+import { Metadata } from 'next';
+import { openGraph, title as baseTitle } from '@/app/shared-metadata';
+import { games } from '@/constants/pages';
+
+const { name: title, description, slug, thumbnail } = games[1];
+const ogTitle = `${title} - ${baseTitle}`;
+
+export const metadata: Metadata = {
+  title,
+  description,
+  openGraph: {
+    ...openGraph,
+    title: ogTitle,
+    description,
+    url: `/games/${slug}`,
+    images: [{ url: thumbnail, alt: title }],
+  },
+  twitter: {
+    title: ogTitle,
+    description,
+    card: 'summary_large_image',
+  },
+};
 
 const KnightstourPage = () => {
   return (

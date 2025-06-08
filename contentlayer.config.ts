@@ -71,6 +71,10 @@ export const Project = defineDocumentType(() => ({
       type: 'string',
       required: true,
     },
+    thumbnail: {
+      type: 'string',
+      required: true,
+    },
     mockupType: {
       type: 'enum',
       options: ['mobile', 'desktop'],
