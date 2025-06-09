@@ -1,0 +1,6 @@
+User-Agent: *
+Allow: /
+
+Sitemap: https://chaechae.life/sitemap.xml
+
+#DaumWebMasterTool:1ad953ad643aef1f5c0b4175bb9c77b8a3631f763e62b4188483f1b596833834:ND4mRdfDq/mheSUL1AAxRA==
