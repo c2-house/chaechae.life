@@ -56,6 +56,14 @@ const Header = () => {
                     </Link>
                   </li>
                 ))}
+                <li>
+                  <a
+                    href="https://life.chaechae.life"
+                    className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
+                  >
+                    Life
+                  </a>
+                </li>
               </ul>
             </nav>
 

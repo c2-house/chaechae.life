@@ -59,6 +59,14 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
                 </Link>
               </li>
             ))}
+            <li>
+              <a
+                href="https://life.chaechae.life"
+                className="inline-block w-full p-2 text-center font-semibold hover:text-slate-500"
+              >
+                Life
+              </a>
+            </li>
           </ul>
         </nav>
       </div>
