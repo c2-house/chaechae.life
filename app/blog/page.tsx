@@ -15,7 +15,7 @@ const BlogPage = ({ searchParams: { page } }: Props) => {
     <main className="container-lg">
       <TagNavbar currentTab="all" />
       <section className="pt-2 md:pt-5">
-        <PostList posts={posts} page={page} countLabel="전체 글" />
+        <PostList posts={posts} page={page} countLabel="전체글" />
       </section>
     </main>
   );
