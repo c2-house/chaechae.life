@@ -25,7 +25,7 @@ export const CodeBlock = (
         {props.children}
       </pre>
       <button
-        className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded border border-white border-opacity-20 bg-white bg-opacity-0 text-white hover:border-opacity-40 hover:bg-opacity-10"
+        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded border border-white border-opacity-20 bg-white bg-opacity-0 text-white hover:border-opacity-40 hover:bg-opacity-10 lg:right-3 lg:top-3"
         onClick={copyToClipboard}
         aria-label="코드 복사"
         type="button"
