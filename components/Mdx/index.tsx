@@ -1,12 +1,14 @@
+'use client';
+
 import dynamic from 'next/dynamic';
 import type { MDXComponents } from 'mdx/types';
 import { useMDXComponent } from 'next-contentlayer/hooks';
 
-import { NextImage, Video } from './Figure';
 import { CustomLink, Callout, Flex } from './Components';
+import { NextImage, Video } from './Figure';
+import { CodeBlock } from './CodeBlock';
+import LinkPreview from './LinkPreview';
 import InarticleAds from '../AdSense/InarticleAds';
-
-const LinkPreview = dynamic(() => import('./LinkPreview'));
 
 const mdxComponents: MDXComponents = {
   a: CustomLink,
@@ -16,6 +18,7 @@ const mdxComponents: MDXComponents = {
   Callout,
   Flex,
   Ads: InarticleAds,
+  pre: CodeBlock,
 };
 
 const Mdx = ({ code }: { code: string }) => {
