@@ -1,11 +1,14 @@
 import Link from 'next/link';
+import type { AnchorHTMLAttributes, DetailedHTMLProps } from 'react';
 
-export const CustomLink = (props: any) => {
-  if (props.href.startsWith('/')) {
+export const CustomLink = (
+  props: DetailedHTMLProps<AnchorHTMLAttributes<HTMLAnchorElement>, HTMLAnchorElement>,
+) => {
+  if (props.href?.startsWith('/')) {
     return <Link href={props.href}>{props.children}</Link>;
   }
 
-  if (props.href.startsWith('http')) {
+  if (props.href?.startsWith('http')) {
     return <a target="_blank" rel="noopener noreferrer" className="text-indigo-600" {...props} />;
   }
 

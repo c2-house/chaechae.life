@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import Image from 'next/image';
-import { games } from '@/constants/pages';
+import { games } from '@/constants/games';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 import { WebsiteIcon } from '@/public/icons';
 

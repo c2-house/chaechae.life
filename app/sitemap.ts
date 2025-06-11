@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { allPosts, allProjects } from 'contentlayer/generated';
-import { authors, navLinks, tags, games } from '@/constants/pages';
+import { authors, navLinks, tags } from '@/constants/pages';
+import { games } from '@/constants/games';
 import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
