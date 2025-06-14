@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import { games } from '@/constants/games';
+import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 
 interface Props {
   params: {
@@ -21,7 +22,7 @@ const Page = ({ params: { slug } }: Props) => {
       <h1 className="mb-2 text-3xl font-bold">{game.name}</h1>
       <p className="mb-6 text-lg text-slate-600">{game.description}</p>
       <hr className="mb-8" />
-      <div className="flex justify-center">
+      <div className="mb-6 flex justify-center">
         <iframe
           src={game.url}
           title={`${game.name} 게임`}
@@ -29,6 +30,7 @@ const Page = ({ params: { slug } }: Props) => {
           allowFullScreen
         ></iframe>
       </div>
+      <ResponsiveAds />
     </main>
   );
 };
