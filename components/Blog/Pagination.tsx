@@ -17,11 +17,11 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
             href={`?page=${currentPage - 1}`}
             aria-disabled={currentPage === 1}
             className={clsx(
-              'group flex items-center rounded-full border border-slate-200 px-2 py-1',
+              'group flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-slate-100',
               currentPage === 1 && 'pointer-events-none opacity-50',
             )}
           >
-            <ChevronLeftIcon className="h-5 w-5 fill-current md:h-7 md:w-7" />
+            <ChevronLeftIcon className="h-6 w-6 fill-current" />
             <Image
               src="/images/avatar/eko-1.png"
               alt="left"
@@ -30,14 +30,14 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
               className="group-hover:animate-bounce-fast"
             />
           </Link>
-          <span className="text-sm md:text-base">
+          <span>
             {currentPage} / {totalPages}
           </span>
           <Link
             href={`?page=${currentPage + 1}`}
             aria-disabled={currentPage === totalPages}
             className={clsx(
-              'group flex items-center rounded-full border border-slate-200 px-2 py-1',
+              'group flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-slate-100',
               currentPage === totalPages && 'pointer-events-none opacity-50',
             )}
           >
@@ -48,7 +48,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
               height={30}
               className="group-hover:animate-bounce-fast"
             />
-            <ChevronRightIcon className="h-5 w-5 fill-current md:h-7 md:w-7" />
+            <ChevronRightIcon className="h-6 w-6 fill-current" />
           </Link>
         </div>
       )}
