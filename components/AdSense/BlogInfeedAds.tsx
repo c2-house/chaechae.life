@@ -8,7 +8,12 @@ const BlogInfeedAds = () => {
   useEffect(() => {
     setIsMobileView(window.innerWidth < 768);
     if (process.env.NODE_ENV !== 'production') return;
-    (window.adsbygoogle = window.adsbygoogle || []).push({});
+
+    try {
+      (window.adsbygoogle = window.adsbygoogle || []).push({});
+    } catch (error) {
+      console.error('Error loading Google AdSense:', error);
+    }
   }, []);
 
   return (
