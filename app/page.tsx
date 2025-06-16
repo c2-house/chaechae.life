@@ -29,6 +29,15 @@ const Home = () => {
         <div>
           <BlogInfeedAds />
         </div>
+        <div className="mt-8 flex justify-center">
+          <Link
+            href="/blog"
+            className="bg-gradient-dark inline-flex items-center justify-center rounded-lg bg-opacity-100 px-4 py-3 font-semibold text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
+          >
+            <span className="pl-2">기술 블로그 보기</span>
+            <ChevronRightIcon className="h-6 w-6 fill-current" />
+          </Link>
+        </div>
       </section>
     </main>
   );
