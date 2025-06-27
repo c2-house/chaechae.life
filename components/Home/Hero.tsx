@@ -3,7 +3,7 @@ import Image from 'next/image';
 const Hero = () => {
   return (
     <section className="bg-gradient-light relative bg-gradient-to-b">
-      <div className="flex h-[100svh] items-center justify-center">
+      <div className="flex h-[90svh] items-center justify-center">
         <div className="px-6 text-center">
           <div className="mx-auto mb-4 flex w-fit flex-col lg:mb-5">
             <span

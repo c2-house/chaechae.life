@@ -57,7 +57,7 @@ const profiles: ProfileCardProps[] = [
 
 const AboutUs = () => {
   return (
-    <section className="container-lg py-10">
+    <section className="container-lg py-20">
       <h2 className="mb-5 text-xl font-semibold md:mb-7 md:text-2xl lg:text-3xl">About Us</h2>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {profiles.map((profile) => (
