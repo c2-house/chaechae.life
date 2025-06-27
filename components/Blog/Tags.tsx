@@ -1,21 +1,30 @@
 import clsx from 'clsx';
 import Link from 'next/link';
-import { Post } from 'contentlayer/generated';
 import { tags } from '@/constants/pages';
 import { slugify } from './utils';
 
-export const Tags = ({ tags }: { tags: Post['tags'] }) => {
+export const Tags = ({ tags, addLink = true }: { tags: string[] | null; addLink?: boolean }) => {
+  if (!tags || tags.length === 0) {
+    return null;
+  }
+
   return (
     <div className="flex flex-wrap gap-x-2 gap-y-1.5 text-xs text-slate-700 sm:text-sm">
-      {tags.map((tag) => (
-        <Link
-          key={tag}
-          href={`/blog/tag/${slugify(tag)}`}
-          className="not-prose rounded-full bg-slate-200/60 px-2 py-0.5 sm:px-3"
-        >
-          {tag}
-        </Link>
-      ))}
+      {tags.map((tag) =>
+        addLink ? (
+          <Link
+            key={tag}
+            href={`/blog/tag/${slugify(tag)}`}
+            className="not-prose rounded-full bg-slate-200/60 px-2 py-0.5 sm:px-3"
+          >
+            {tag}
+          </Link>
+        ) : (
+          <span key={tag} className="not-prose rounded-full bg-slate-200/60 px-2 py-0.5 sm:px-3">
+            {tag}
+          </span>
+        ),
+      )}
     </div>
   );
 };

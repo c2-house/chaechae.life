@@ -33,8 +33,7 @@ export const Post = defineDocumentType(() => ({
       type: 'list',
       required: true,
       of: {
-        type: 'enum',
-        options: tags,
+        type: 'string',
       },
     },
     thumbnail: {

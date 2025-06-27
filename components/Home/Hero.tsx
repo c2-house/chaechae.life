@@ -3,7 +3,7 @@ import Image from 'next/image';
 const Hero = () => {
   return (
     <section className="bg-gradient-light relative bg-gradient-to-b">
-      <div className="flex h-[100svh] items-center justify-center">
+      <div className="flex h-[90svh] items-center justify-center">
         <div className="px-6 text-center">
           <div className="mx-auto mb-4 flex w-fit flex-col lg:mb-5">
             <span
@@ -35,6 +35,7 @@ const Hero = () => {
         width={100}
         height={100}
         className="absolute bottom-0 left-0 animate-move-right"
+        unoptimized
       />
       <Image
         src="/images/avatar/mingke-1.png"
@@ -42,6 +43,7 @@ const Hero = () => {
         width={100}
         height={100}
         className="absolute bottom-0 right-0 animate-move-left"
+        unoptimized
       />
     </section>
   );
