@@ -28,6 +28,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
               width={30}
               height={30}
               className="group-hover:animate-bounce-fast"
+              unoptimized
             />
           </Link>
           <span>
@@ -47,6 +48,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
               width={30}
               height={30}
               className="group-hover:animate-bounce-fast"
+              unoptimized
             />
             <ChevronRightIcon className="h-6 w-6 fill-current" />
           </Link>

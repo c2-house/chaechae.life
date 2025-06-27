@@ -35,6 +35,7 @@ const Hero = () => {
         width={100}
         height={100}
         className="absolute bottom-0 left-0 animate-move-right"
+        unoptimized
       />
       <Image
         src="/images/avatar/mingke-1.png"
@@ -42,6 +43,7 @@ const Hero = () => {
         width={100}
         height={100}
         className="absolute bottom-0 right-0 animate-move-left"
+        unoptimized
       />
     </section>
   );

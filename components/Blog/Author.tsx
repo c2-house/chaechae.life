@@ -21,6 +21,7 @@ const Author = ({ author, date }: Props) => {
           width={24}
           height={24}
           className="mr-1.5 rounded-full border border-slate-200 bg-white"
+          unoptimized
         />
         <span>{author}</span>
       </Link>
