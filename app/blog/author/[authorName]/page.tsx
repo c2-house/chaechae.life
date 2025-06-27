@@ -34,6 +34,7 @@ const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) =
             width={100}
             height={100}
             className="animate-bounce rounded-full"
+            unoptimized
           />
           <h1 className="text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
         </div>

@@ -1,15 +1,16 @@
-import { Post } from 'contentlayer/generated';
+import type { BlogPost } from '@/lib/lifePosts';
 import PostListItem from './PostListItem';
 import BlogInfeedAds from '../AdSense/BlogInfeedAds';
 import Pagination from './Pagination';
 
 interface Props {
-  posts: Post[];
+  posts: BlogPost[];
   page?: string;
   countLabel?: string;
+  showAds?: boolean;
 }
 
-const PostList = ({ posts, page, countLabel }: Props) => {
+const PostList = ({ posts, page, countLabel, showAds = true }: Props) => {
   const currentPage = Number(page) || 1;
   const postsPerPage = 10;
   const totalPages = Math.ceil(posts.length / postsPerPage);
@@ -33,10 +34,10 @@ const PostList = ({ posts, page, countLabel }: Props) => {
           <span className="text-sm font-medium text-gray-500">({posts.length})</span>
         </div>
       )}
-      <ul>
+      <ul className="group">
         {currentPosts.map((post, index) => (
           <li key={post.slug}>
-            {index % 3 === 0 && index !== 0 && (
+            {showAds && index % 4 === 0 && index !== 0 && (
               <div className="mb-6 border-b pb-6 md:mb-8 md:pb-8">
                 <BlogInfeedAds />
               </div>
@@ -47,7 +48,9 @@ const PostList = ({ posts, page, countLabel }: Props) => {
           </li>
         ))}
       </ul>
-      <Pagination currentPage={currentPage} totalPages={totalPages} />
+      {posts.length > postsPerPage && (
+        <Pagination currentPage={currentPage} totalPages={totalPages} />
+      )}
     </>
   );
 };

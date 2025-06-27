@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.50.2",
     "cheerio": "^1.0.0-rc.12",
     "clsx": "^2.0.0",
     "contentlayer": "^0.3.4",

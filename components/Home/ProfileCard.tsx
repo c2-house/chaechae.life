@@ -24,6 +24,7 @@ const ProfileCard = ({ name, role, descriptions, cardBg, iconBg, iconColor }: Pr
           width={100}
           height={100}
           className="rounded-full bg-white"
+          unoptimized
         />
         <div className="mt-3 text-center">
           <h3 className="text-xl font-semibold">{name}</h3>
