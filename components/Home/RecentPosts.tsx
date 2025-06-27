@@ -39,7 +39,7 @@ const RecentPosts = ({ posts }: { posts: BlogPost[] }) => {
       <div className="mb-5 flex items-center justify-between md:mb-7">
         <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl">
           {TITLE[postType].en}
-          <span className="ml-2 text-xl text-slate-500">{TITLE[postType].ko}</span>
+          <span className="left-pipe ml-2 pl-2 text-xl text-slate-500">{TITLE[postType].ko}</span>
         </h2>
         <BlogLink
           type={postType}
