@@ -17,14 +17,16 @@ const Home = async () => {
   return (
     <main>
       <Hero />
-      <AboutUs />
-      <ResponsiveAds />
-      <RecentPosts posts={techPosts} />
-      <ResponsiveAds />
-      <Suspense fallback={null}>
-        <RecentPosts posts={lifePosts} />
-      </Suspense>
-      <ResponsiveAds />
+      <div className="container-lg">
+        <AboutUs />
+        <ResponsiveAds />
+        <RecentPosts posts={techPosts} />
+        <ResponsiveAds />
+        <Suspense fallback={null}>
+          <RecentPosts posts={lifePosts} />
+        </Suspense>
+        <ResponsiveAds />
+      </div>
     </main>
   );
 };

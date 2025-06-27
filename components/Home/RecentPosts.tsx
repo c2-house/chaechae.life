@@ -35,7 +35,7 @@ const RecentPosts = ({ posts }: { posts: BlogPost[] }) => {
   const postType = posts[0].type;
 
   return (
-    <section className="container-lg py-20">
+    <section className="py-20">
       <div className="mb-5 flex items-center justify-between md:mb-7">
         <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl">
           {TITLE[postType].en}
