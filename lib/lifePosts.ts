@@ -37,7 +37,7 @@ export async function getLifePosts() {
     )
     .eq('is_draft', false)
     .order('created_at', { ascending: false })
-    .range(0, 5);
+    .range(0, 4);
 
   if (error) return [];
 

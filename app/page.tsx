@@ -5,6 +5,7 @@ import { getLifePosts } from '@/lib/lifePosts';
 import Hero from '@/components/Home/Hero';
 import AboutUs from '@/components/Home/AboutUs';
 import RecentPosts from '@/components/Home/RecentPosts';
+import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 
 const Home = async () => {
   const techPosts = allPosts
@@ -17,10 +18,13 @@ const Home = async () => {
     <main>
       <Hero />
       <AboutUs />
+      <ResponsiveAds />
       <RecentPosts posts={techPosts} />
+      <ResponsiveAds />
       <Suspense fallback={null}>
         <RecentPosts posts={lifePosts} />
       </Suspense>
+      <ResponsiveAds />
     </main>
   );
 };
