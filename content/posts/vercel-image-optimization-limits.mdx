@@ -1,0 +1,79 @@
+---
+title: Vercel 이미지 최적화 횟수 제한 및 사용량 줄이는 법
+description: 코드에 Image 컴포넌트를 사용하는 것은 자유지만, Vercel의 Image Optimization 기능은 사용량에 따라 요금이 부과됩니다. 무료 버전의 기본 제공량은 월 5,000회입니다. 그런데 말입니다, 이 5천회가 생각보다 금방 소진됩니다.
+tags: [Nextjs, Vercel]
+thumbnail: /thumbnails/vercel-logo.png
+author: EKO
+date: 2025/07/07
+---
+
+### 목차
+
+## Vercel 이미지 최적화 횟수 제한
+
+Next.js에서 이미지를 렌더링할 때 HTML `<img>` 태그 대신 `<Image>` 컴포넌트를 사용하면 이미지 최적화 기능(포맷 변환, 리사이즈, 캐싱 등)이 자동으로 적용됩니다. 그렇다면 모든 이미지에 `<Image>` 컴포넌트를 사용하는 것이 좋을까요? 그랬다간 Vercel 이미지 최적화 무료 제공량을 초과하여 20달러를 결제하고 프로 버전으로 업그레이드해야 할 수도 있습니다.
+
+코드에 `<Image>` 컴포넌트를 사용하는 것은 자유지만, Vercel의 Image Optimization 기능은 사용량에 따라 요금이 부과됩니다. **무료 버전(Hobby Plan)의 기본 제공량은 월 5,000회입니다.** 그런데 말입니다, 이 5천회가 생각보다 금방 소진됩니다. Image Optimization 무료 사용량이 거의 다 찼으니 Pro 버전을 결제하라는 메일이 온다든지, 어느날 갑자기 내 웹사이트의 이미지가 전부 엑박이 뜬다든지 하는 경험을 해보신 분들도 계실 겁니다.
+
+경제적 여유가 된다면 월 20달러씩 내고 프로 버전을 사용할 수도 있겠지만, **Pro Plan의 기본 제공량은 월 10,000회입니다.** 웹사이트에 방문하는 유저가 어느 정도 있거나 웹사이트를 여러 개 운영 중이라면 이것도 넉넉한 횟수는 아닙니다. 1만회를 넘어가면 프로 버전 사용자도 초과 요금을 내야 합니다. 결국 **이미지 최적화를 적절하게 활용하는 것**이 가장 근본적인 해결책입니다.
+
+## Vercel 이미지 최적화 사용량 확인 방법
+
+<Image
+  src="/vercel-image-optimization-limits/01.png"
+  alt="Vercel Image Optimization 사용량 조회"
+  caption="벌써 5,000회 중 4,300회 이상 사용했네요"
+/>
+
+Vercel에 로그인하면 메인 화면 좌측에 Usage라는 섹션이 있습니다. 여기서 **Image Optimization - Transformations**를 클릭하여 자세한 사용량을 확인할 수 있습니다. 혹은 상단 내비게이션바에서 **Usage** 탭에 들어간 후 **Image Transformations**를 찾으셔도 됩니다. 그러면 일별 사용량이 그래프로 나오는데, **Projects** 탭을 누르면 아래 이미지처럼 프로젝트별 사용량이 나옵니다. 여기서 사용량이 많은 프로젝트를 중심으로 이미지 최적화 횟수를 줄여주면 과금당하지 않고 사용이 가능합니다.
+
+<Image
+  src="/vercel-image-optimization-limits/02.png"
+  alt="Vercel Image Transformation 프로젝트별 사용량"
+/>
+
+<Ads />
+
+## 이미지 최적화 사용량 줄이는 방법
+
+Image Optimization 사용량을 줄이고 비용을 절감하기 위한 방법에는 크게 두 가지가 있습니다.
+
+### unoptimized 옵션 활용
+
+<Link url="https://nextjs.org/docs/app/api-reference/components/image#unoptimized" />
+
+10KB 이하의 작은 이미지(아이콘, 썸네일 등)나 SVG, GIF 등 최적화 효과가 크지 않은 이미지는 `<Image>`⁠ 컴포넌트에 `unoptimized`⁠ 속성을 부여해 최적화를 막을 수 있습니다.
+
+```jsx
+<Image {...props} unoptimized />
+```
+
+오래된 팀 프로젝트처럼 유저가 거의 없거나 현재 사용하지 않는 웹사이트라면 해당 프로젝트 전체의 이미지 최적화 기능을 비활성화하는 방법도 있습니다. `next.config.js`에 `unoptimized` 옵션을 추가하면, `<Image>` 컴포넌트에 `unoptimized` 옵션을 일일이 추가하지 않고도 일괄적으로 이미지 최적화를 비활성화할 수 있습니다.
+
+```js
+// next.config.js
+module.exports = {
+  images: {
+    unoptimized: true,
+  },
+};
+```
+
+### minimumCacheTTL 설정
+
+<Link url="https://nextjs.org/docs/app/api-reference/components/image#minimumcachettl" />
+
+`minimumCacheTTL` 옵션을 사용하면 최적화된 이미지가 Vercel Edge Network에 캐시되는 시간을 조정할 수 있습니다. **TTL(Time To Live)** 시간이 지나면 캐시된 이미지는 만료되어 다시 최적화(변환) 후 캐싱됩니다. 별도의 설정이 없으면 **기본값은 60초**로 꽤 짧습니다. 1분이 지나면 동일한 이미지라도 다시 최적화하게 되니 변환이 자주 일어납니다.
+
+따라서 블로그처럼 자주 바뀌지 않는 웹사이트라면 TTL 값을 늘려주는 것이 좋습니다. TTL이 길어지면 이미지 캐시가 더 오래 유지되어 최적화 빈도를 줄일 수 있습니다. 예를 들어, 이미지가 한 달 이상 변경되지 않는다면 `minimumCacheTTL`을 `2678400`(31일)로 설정할 수 있습니다.
+
+```js
+// next.config.js
+module.exports = {
+  images: {
+    minimumCacheTTL: 2678400, // 31 days
+  },
+};
+```
+
+단, 캐시가 만료되기 전에는 이미지가 변경되더라도 이전 이미지가 계속 보일 수 있어 주의가 필요합니다. 따라서 `minimumCacheTTL`이 길다고 무조건 좋은 것은 아니고, 이미지 변경 주기에 따라 적절한 값을 설정하는 것이 중요합니다.
