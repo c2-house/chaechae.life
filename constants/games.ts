@@ -20,5 +20,12 @@ export const games = [
     description: '카드 뒤집기 게임으로 기억력을 향상시켜봐요!',
     url: 'https://chaechae-games.vercel.app/game2',
   },
+  {
+    name: '로또 번호 생성기',
+    slug: 'lotto-generator',
+    thumbnail: '/images/games/lotto/lotto-thumbnail.png',
+    description: '로또는 게임이다. 로또 번호를 생성해보자! (고정 번호, 제외 번호 설정 가능)',
+    url: 'https://chaechae-games.vercel.app/lotto',
+  }
   // 추후 게임 추가 가능
 ];
