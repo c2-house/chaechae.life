@@ -1,0 +1,82 @@
+---
+title: 대 AI IDE 시대에 AWS가 만든 IDE KIRO 알아보기
+description: 이제 막 개발을 공부하는분들, 이미 개발을 하는 개발자분들 모두 사용하는 IDE에 AI Agent가 있을 거라고 예상됩니다. 이제 IDE에서 AI를 빼놓고 이야기하기 힘들어졌습니다.
+tags: [AI, Kiro]
+author: mingke
+thumbnail: /thumbnails/kiro-logo.png
+date: 2025/07/16
+---
+
+### 목차
+
+## 대 Agentic IDE 시대
+
+이제 막 개발을 공부하는분들, 이미 개발을 하는 개발자분들 모두 사용하는 IDE에 AI Agent가 있을 거라고 예상됩니다. 이제 IDE에서 AI를 빼놓고 이야기하기 힘들어졌습니다. VSCode, Cursor, WindSurf … 등 AI Agent와 함께 코드를 작성하는 것이 일상인 대 `Agentic IDE 시대` 입니다. 빅테크 기업들도 여기에 빠지지 않는데요, VSCode는 마이크로소프트에서, Cursor는 OpenAI에서 투자했습니다. 또 다른 빅테크 기업인 AWS가 이 싸움에 뛰어들었습니다. **KIRO**라고 하는 Agentic IDE를 출시 했습니다. 이번 포스팅에서 KIRO에 대해서 간단하게 알아보겠습니다.
+
+## KIRO의 주요 특징
+
+KIRO의 주요 특징 중에 첫번째는..! 바로 다른 IDE보다 로고가 **귀엽**습니다. 보라색 배경에 귀여운 유령 로고 입니다. 그리고 VSCode와 호환이 되어 익스텐션들도 다 가져다 쓸 수 있습니다.
+
+### Spec 모드
+
+그 다음으로 인상 깊은 특징은 바로 `Spec` 모드입니다. `Vibe`모드와 Spec모드가 있는데 Vibe모드는 흔히 우리가 알고 있는 Agent의 그 모드입니다. Spec은 명세 기반 개발을 할 수 있도록 도와주는 기능입니다. 단순히 **프롬프트에 따라 코드를 생성하는 것을 넘어서 사용자가 무엇을 만들고자 하는지 자연어 및 다이어그램을 통해 의도를 이해하고 명세를 Step-By-Step으로 생성**합니다.
+
+프롬프트를 입력하면 만들고자하는 것에 대해 문서화를 먼저 시작합니다. 개발하는데 필요한 컨텍스트를 직접 생성하는 역할을 합니다.
+
+<Image
+  src="/aws-agentic-ide-kiro/01.png"
+  alt="Spec 모드 진행"
+  caption="문서 하나 만들고 다음 진행해도 되냐고 물어봄"
+/>
+
+이런 명확한 요구사항이 에이전트가 개발할 때 더 **정확한 구현을 할 수 있도록하는 가이드**가 됩니다.
+
+### Hooks
+
+개발자가 놓칠 수 있는 부분을 포착하거나 백그라운드에서 반복적이고 일상적인 작업을 자동 처리해주는 유용한 기능입니다. 이벤트를 감지해서 자동으로 특정 작업을 실행해주는 기능입니다. 자동화를 경험해본 개발자라면 ‘음 이런게 있군’ 할 정도의 기능이긴한데, IDE에 들어와서 주목해 볼만 한 것 같습니다. 커맨드 팔레트켜고 `Hooks` 검색하면 쉽게 찾을 수 있습니다.
+
+<Image src="/aws-agentic-ide-kiro/02.png" alt="Hooks 화면" caption="Hooks 화면" />
+
+---
+
+그 이외에는 타 IDE와 비슷한 것 같습니다. 우선 저는 그렇게 느꼈습니다. 단 하루만 써본 것이라서 그런지 모르겠지만 지금은 그렇게 느끼고 있습니다. MCP도 다 지원되고 기본 Chat도 비슷하게 됩니다.
+
+<Image src="/aws-agentic-ide-kiro/03.png" alt="kiro의 코어 기능" caption="Kiro의 코어 기능" />
+
+VSCode랑 단축키도 거의 동일해서 좋습니다. UI는 조금씩 다릅니다. 커맨드 팔레트를 켰을 때 중앙에 뜨면서 뒤에 블러처리 되는데 저는 이게 괜히 좋더라구요.
+
+<Image src="/aws-agentic-ide-kiro/04.png" alt="kiro 명령 팔레트" caption="Kiro 명령 팔레트" />
+<Ads />
+<Image
+  src="/aws-agentic-ide-kiro/05.png"
+  alt="MCP 도구 사용하는 Kiro"
+  caption="MCP 도구 사용하는 Kiro"
+/>
+
+<Image src="/aws-agentic-ide-kiro/06.png" alt="Kiro 단축키들" caption="Kiro 단축키들" />
+
+클로드 개발사인 앤트로픽에 80억 달러를 투자한 기업답게 Claude Sonnet 모델을 제공하고 있습니다. 그리고 `Autopilot`모드는 에이전트가 스스로 알아서 하는 것이고 비활성화하면 `Supervised` 모드인데 뭐 할 때마다 물어봅니다. `#`은 컨텍스트, 옆에는 이미지 추가 입니다.
+
+<Image
+  src="/aws-agentic-ide-kiro/07.png"
+  alt="Kiro 프롬프트 입력창"
+  caption="Kiro 프롬프트 입력창"
+/>
+
+## KIRO로 로또 생성기 만들기
+
+새로운 IDE를 테스트할 겸 `로또 번호 생성기`를 만들어 봤습니다. 기존에 Games 프로젝트를 켜고 진행했습니다. 간단한 개발이라 기존에 사용하던 Gemini를 이용해서 PRD를 만들고 개발을 하라고 하니 프롬프트 4번에 완성했습니다. PRD문서 만드는데 Gemini를 활용한 이유가 있습니다.
+
+지금 런칭 초기이고 무료라서 사용자가 많은 이유인 것인지는 모르겠지만 **중간에 좀 끊기기도 하고 느립**니다. 그래도 간단한 것은 금방 만들어줍니다.
+
+<Link url="https://chaechae.life/games/lotto-generator" />
+
+## 마무리
+
+자세한 것은 지금은 **프리뷰 기간이라서 무료**니까 KIRO를 **다운 받으시고 사용해보시면 됩니다.** 요금제가 생기면 **무료 플랜은 월 50회** 인터랙션만 지원한다고 합니다.
+
+<Link url="https://kiro.dev/docs/getting-started/" />
+
+IDE가 많아지고 각 IDE마다 특징도 조금씩 달라서 뭘 써야하나 고민이 많이 될 것 같습니다. IDE들도 다 빠른 속도로 발전하고 있어서 이젠 그냥 개인의 취향 영역에 온 것이 아닌가 싶습니다.
+
+<Link url="http://chaechae.life/blog/vibe-coding-without-dev-knowledge" />
