@@ -18,6 +18,7 @@ export const tags = [
   'Github Actions',
   'Gunicorn',
   'JavaScript',
+  'Kiro',
   'MCP',
   'Nextjs',
   'Nodejs',
