@@ -35,6 +35,7 @@ export const tags = [
   'SQLAlchemy',
   'Supabase',
   'Swagger',
+  'Terraform',
   'Tools',
   'Vercel',
   'VSCode',
