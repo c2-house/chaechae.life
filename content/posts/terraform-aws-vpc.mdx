@@ -1,0 +1,206 @@
+---
+title: Terraform으로 AWS VPC 구축해보기
+description: Terraform은 하시코프(HashiCorp)에서 개발한 Infrastructure as Code(IaC) 도구입니다. 서버, 데이터베이스, 네트워크 같은 IT 인프라를 직접 손으로 설정하는 대신 코드를 통해 정의하고, 프로비저닝하며, 관리할 수 있게 해줍니다.
+tags: [AWS, Terraform]
+author: mingke
+thumbnail: /thumbnails/terraform-logo.png
+date: 2025/07/31
+---
+
+### 목차
+
+## Terraform이란?
+
+Terraform은 하시코프(HashiCorp)에서 개발한 **Infrastructure as Code(IaC)** 도구입니다. 서버, 데이터베이스, 네트워크 같은 IT 인프라를 직접 손으로 설정하는 대신 **코드를 통해 정의하고, 프로비저닝하며, 관리**할 수 있게 해줍니다. AWS, Azure, GPC 같은 클라우드를 배우고 나면 그 다음에 배우는 코스이기도 합니다. 이번 포스팅에서는 **AWS VPC를 Terraform으로 구축**해보겠습니다.
+
+## Terraform 간단 정리
+
+Terraform은 클라우드 인프라를 위한 설계도를 코드로 작성하는 것과 같습니다. 설계도만 있으면 언제 어디서든 **똑같은 구성의 인프라를 자동으로 구축하고, 변경하고, 제거**할 수 있습니다. 다음과 같은 특징이 있습니다.
+
+- 선언형 - ‘t3.large 인스턴스와 100GB의 gp3 EBS 볼륨이 필요해’ 같이 **원하는 인프라의 최종 상태를 선언**합니다.
+- 상태관리 - Terraform은 생성한 인프라 자원의 상태를 `terraform.tfstate`라는 파일에 기록하고 추적합니다.
+- 멀티 클라우드 - AWS, GCP, Azure등 다양한 클라우드 프로바이더를 지원합니다.
+
+## Terraform 문법 간단 정리
+
+### provider
+
+어떤 클라우드 서비스를 사용할지 지정합니다. 사용할 서비스와 리전(region), 인증 정보 같은 것을 설정합니다.
+
+```bash
+# provider.tf
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+provider "aws" {
+  region  = "ap-northeast-2"
+  profile = "my-profile" # profile이 default만 있는 경우 제외 가능
+}
+```
+
+위와 같이 선언합니다. profile은 `aws cli` 를 이용해서 `aws configure` 를 통해서 `AWS_ACCESS_KEY`와 `AWS_SECRET_ACCESS_KEY` 를 등록해 놓는 것이 좋습니다. 그렇지 않으면 `provider.tf`에 직접 입력해줘야 합니다.
+
+### resource
+
+실제로 생성할 인프라 서비스를 의미합니다. EC2, VPC 등을 생성할 서비스를 선언합니다. `resource "리소스_타입" "리소스_이름" { ... }` 로 선언합니다.
+
+```bash
+# vpc.tf
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "my-vpc"
+  }
+}
+```
+
+### variable
+
+변수를 선언하는 방법입니다. 반복적으로 사용되거나, 상황에 따라 변경될 수 있는 값을 변수로 만들어 코드의 재사용성을 높일 수 있습니다.
+
+```bash
+# 변수 정의
+variable "vpc_cidr" {
+  description = "VPC에 사용할 CIDR 블록"
+  type        = string
+  default     = "10.10.0.0/16"
+}
+
+# 변수 사용
+resource "aws_vpc" "main" {
+  cidr_block = var.vpc_cidr
+}
+```
+
+---
+
+이 밖에도 더 많은 문법들이 있지만 VPC를 구축하기 위한 간단한 문법만 알아봤습니다.
+
+## terraform으로 AWS VPC 구축하기
+
+저는 MAC을 사용하는데 terraform은 homebrew를 이용해서 간편하게 설치했습니다. `brew install terraform`.
+
+terraform으로 VPC를 생성하기 위해서 콘솔에서 생성하는 흐름을 따라가면됩니다. 모두 `vpc.tf` 라는 모듈안에 선언합니다.
+
+- VPC를 만든다.
+
+  ```bash
+  # VPC 생성
+  resource "aws_vpc" "main" {
+    cidr_block           = "10.0.0.0/16"
+    enable_dns_hostnames = true
+
+    tags = {
+      Name = "my-vpc"
+    }
+  }
+  ```
+
+- 서브넷을 만든다. 퍼블릭 서브넷 2개, 프라이빗 서브넷 2개는 다음과 같이 선언할 수 있습니다.
+
+  ```bash
+  # 퍼블릭 서브넷
+  resource "aws_subnet" "public" {
+    for_each = {
+      a = "10.0.1.0/24"
+      c = "10.0.3.0/24"
+    }
+
+    vpc_id                  = aws_vpc.main.id
+    cidr_block              = each.value
+    availability_zone       = "ap-northeast-2${each.key}"
+    map_public_ip_on_launch = true
+
+    tags = {
+      Name = "my-public-subnet-${each.key}"
+    }
+  }
+
+  # 프라이빗 서브넷
+  resource "aws_subnet" "private" {
+    for_each = {
+      a = "10.0.2.0/24"
+      c = "10.0.4.0/24"
+    }
+
+    vpc_id            = aws_vpc.main.id
+    cidr_block        = each.value
+    availability_zone = "ap-northeast-2${each.key}"
+
+    tags = {
+      Name = "my-private-subnet-${each.key}"
+    }
+  }
+  ```
+
+- 인터넷 게이트웨이를 만든다. 퍼블릭 서브넷이 인터넷을 통하려면 필요한 인터넷 게이트웨이입니다.
+
+  ```bash
+  # Internet Gateway 생성
+  resource "aws_internet_gateway" "main" {
+    vpc_id = aws_vpc.main.id
+
+    tags = {
+      Name = "my-igw"
+    }
+  }
+  ```
+
+- 라우팅 테이블을 생성하고 인터넷 게이트웨이에 연결합니다.
+
+  ```bash
+  # 라우팅 테이블 생성 및 인터넷 게이트웨이에 연결
+  resource "aws_route_table" "public" {
+    vpc_id = aws_vpc.main.id
+
+    route {
+      cidr_block = "0.0.0.0/0"
+      gateway_id = aws_internet_gateway.main.id
+    }
+
+    tags = {
+      Name = "my-public-rt"
+    }
+  }
+  ```
+
+- 모든 퍼블릭 서브넷에 라우팅 테이블에 연결합니다.
+  ```bash
+  # 모든 퍼블릭 서브넷을 라우팅 테이블에 연결
+  resource "aws_route_table_association" "public" {
+    for_each       = aws_subnet.public
+    subnet_id      = each.value.id
+    route_table_id = aws_route_table.public.id
+  }
+  ```
+
+이렇게 `vpc.tf`를 선언하고 저장합니다.
+
+다음은 terraform에게 `vpc.tf`를 기반으로 VPC를 생성하라고 명령합니다. 명령하기 전에 실행계획을 보는 명령이 있습니다. 확인을 하고 적용을 하면 됩니다.
+
+- `terraform plan` 이 명령을 실행하면 terraform이 어떤 작업을 실행할 것인지 실행 계획을 보여줍니다.
+- `terraform apply` 계획이 잘 출력되면 검토하고 이 명령으로 인프라를 생성하면 됩니다. 나오는 질문에 yes를 입력하면 생성을 시작합니다.
+
+```bash
+Plan: 9 to add, 0 to change, 0 to destroy.
+
+Do you want to perform these actions?
+  Terraform will perform the actions described above.
+  Only 'yes' will be accepted to approve.
+
+  Enter a value: yes
+```
+
+## 마무리
+
+Terraform으로 VPC 구축하는 방법을 알아봤습니다. AWS 콘솔에 들어가서 인프라 구축한다고 클릭, 클릭 하는 것 너무 귀찮습니다. Terraform은 이런 반복적인 작업을 자동화하고, 누가 작업하든 동일한 결과물을 보장해주는 좋은 도구입니다. 이번 글에서 Terraform으로 선언한 것을 VPC를 콘솔에서 만드는 글은 아래 링크에서 볼 수 있습니다. 두 방법을 모두 비교해보면 Terraform이 얼마나 편한지 알 수 있습니다.
+
+<Link url="https://chaechae.life/blog/aws-vpc-creation" />
