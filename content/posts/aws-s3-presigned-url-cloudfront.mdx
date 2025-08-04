@@ -1,0 +1,172 @@
+---
+title: S3 Pre-signed URL로 안전하게 파일 업로드하고 CloudFront CDN으로 배포하기
+description: 백엔드를 개발 입문에서 이미지, 동영상, 파일 등을 업로드하는 기능을 개발하고 실제 파일들은 AWS S3에 저장하는 방법을 많이 배웁니다. 이번에는 단순히 S3를 이용하는 것을 넘어 Pre-signed URL을 만들어서 안전하게 파일을 업로드하는 방법과 CloudFront CDN으로 배포하는 방법을 알아보겠습니다.
+tags: [AWS]
+thumbnail: /thumbnails/aws-logo.png
+author: mingke
+date: 2025/08/04
+---
+
+## S3 Pre-signed URL을 이용한 안전한 파일 업로드
+
+백엔드를 개발 입문에서 이미지, 동영상, 파일 등을 업로드하는 기능을 개발하고 실제 파일들은 AWS S3에 저장하는 방법을 많이 배웁니다. 이번에는 **단순히 S3를 이용하는 것을 넘어 Pre-signed URL**을 만들어서 안전하게 파일을 업로드하는 방법과 CloudFront CDN으로 배포하는 방법을 알아보겠습니다.
+
+**S3 Pre-signed URL은 백엔드 서버가 특정 사용자에게 정해진 시간 동안만, 특정 파일의 업로드를 허용하는 일회용 임시 허가증**을 발급해 주는 방식입니다. 사용자가 파일을 업로드할 때, 파일이 백엔드 서버를 거치지 않아도 되고 S3 버킷을 퍼블릭으로 열어두지 않아도 되기 때문에 부하와 보안에 좀 더 효율적입니다.
+
+Pre-signed URL의 장점은 **S3 버킷을 항상 Private**으로 유지할 수 있다는 것입니다. 용량이 큰 파일들이 백엔드 서버를 거치지 않으니 백엔드 서버에 가해지는 부하를 줄일 수 있습니다. 백엔드에서 파일 종류, 크기, 업로드 위치 등 모든 것을 유연하게 통제할 수 있습니다.
+
+다음은 Nestjs에서의 간단한 구현입니다.
+
+```bash
+npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner
+```
+
+```tsx
+import { Injectable } from '@nestjs/common';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { ConfigService } from '@nestjs/config';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class S3Service {
+  private readonly s3Client: S3Client;
+  private readonly bucketName: string;
+  private readonly cloudFrontDomain: string;
+
+  constructor(private configService: ConfigService) {
+    // ... AWS S3 클라이언트 및 환경변수 초기화 ...
+    // production 코드에서는 환경변수 검증 로직이 반드시 필요합니다.
+    this.s3Client = new S3Client({
+      region: this.configService.get('AWS_REGION'),
+      // IAM 역할을 사용하는 것이 Best Practice입니다.
+    });
+    this.bucketName = this.configService.get('AWS_S3_BUCKET_NAME');
+    this.cloudFrontDomain = this.configService.get('AWS_CLOUDFRONT_DOMAIN');
+  }
+
+  /**
+   * 클라이언트가 S3에 파일을 직접 업로드할 수 있는 Pre-signed URL을 생성합니다.
+   * @param fileName 원본 파일명 (예: 'profile.jpg')
+   * @param folder S3 내 폴더 경로 (예: 'profiles')
+   * @returns 업로드 URL과, 업로드 후 접근 가능한 CDN URL
+   */
+  async generatePresignedUrl(fileName: string, folder?: string) {
+    // 파일 확장자를 유지하며 고유한 파일 이름 생성 (충돌 방지)
+    const fileExtension = fileName.split('.').pop();
+    const key = `${folder ? `${folder}/` : ''}${uuidv4()}.${fileExtension}`;
+
+    // 어떤 버킷에, 어떤 이름으로, 어떤 파일을 올릴지 Command 생성
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    // getSignedUrl 함수로 Pre-signed URL 생성
+    const uploadUrl = await getSignedUrl(this.s3Client, command, {
+      expiresIn: 300, // URL 만료 시간 (초)
+    });
+
+    // 업로드 완료 후 파일에 접근할 수 있는 최종 URL 생성
+    const publicUrl = `https://${this.cloudFrontDomain}/${key}`;
+
+    return { uploadUrl, publicUrl };
+  }
+}
+```
+
+클라이언트와 백엔드는 pre-signed url 요청과 pre-signed url이 담긴 응답만을 주고 받습니다. 클라이언트가 응답으로 받은 pre-signed url로 PUT요청과 함께 파일을 담아서 보내면 S3 버킷으로 업로드됩니다.
+
+<Ads />
+
+## S3와 CloudFront CDN 연동
+
+파일을 저장했으면 이제 사용자에게 빠르게 보여줘야 합니다. S3에서 직접 파일을 제공할 수도 있지만, 좀 더 나은 방법은 **AWS CloudFront CDN** 서비스와 연동하는 것입니다. Cloudfront는 원본 콘텐츠를 전 세계 AWS의 엣지 로케이션에 분산해서 저장하는 서비스입니다. 요청하는 유저와 가까운 곳에서 콘텐츠를 전송해주기 때문에 속도면에서 강점이 있습니다.
+
+전 세계에 엣지 로케이션에서 `전 세계` 라는 단어 때문에 국내 서비스만 하면 CDN이 필요 없다고 생각할 수 있는데 **국내에도 AWS의 여러 거점 엣지 로케이션이 있기 때문에 속도 개선**이 있고 **Cloudfront의 강력한 데이터 캐싱**의 이점도 볼 수 있습니다.
+
+트래픽이 몰리는 경우에 엣지 로케이션으로 **트래픽이 분산**되기 때문에 서비스가 불안정해지는 것을 방지할 수 있습니다. 또한 기본으로 AWS Shield Standard가 적용되어 **DDoS 공격을 무료로 방어**해 주는 효과도 있습니다.
+
+곧 설명할 OAC(Origin Access Control)를 통해 **보안을 한층 더 강화**시킬 수 있습니다.
+
+- S3 버킷 만들기
+  그냥 이름만 정하고 만들면 생성하면 됩니다.
+  aws-s3-presigned-url-cloudfront
+  <Image src="/aws-s3-presigned-url-cloudfront/01.png" alt="S3 버킷 만들기" />
+- Cloudfront 배포 생성으로 넘어갑니다.
+  첫번째 페이지에서 배포 이름만 정하고 다음으로 넘어갑니다.
+  <Image src="/aws-s3-presigned-url-cloudfront/02.png" alt="cloudfront 배포" />
+  두번째 페이지에서 Origin을 Amazon S3로 설정하고 Browse S3에서 생성한 S3를 연결합니다. path는 원하는
+  경로가 있는 경우에 설정하면 됩니다.
+  <Image src="/aws-s3-presigned-url-cloudfront/03.png" alt="cloudfront 오리진 정의" />
+  그다음은 보안 설정이 나옵니다. 원하는 대로 설정하면 됩니다. 계속 넘어가서 배포를 실행합니다.
+- 생성한 배포에 들어가서 **원본**탭에서 편집을 선택합니다.
+  <Image src="/aws-s3-presigned-url-cloudfront/04.png" alt="가용 영역 정의" />
+  원본 엑세스가 원본 엑세스 제어로 되어 있는지 확인합니다. (영어로 하면 OAC)
+  <Image src="/aws-s3-presigned-url-cloudfront/05.png" alt="가용 영역 정의" />
+- S3로 돌아가서 **버킷 정책**을 살펴봅니다.
+  아래와 같은 방식으로 생성되어 있는지 확인
+
+  ```json
+  {
+      "Version": "2008-10-17",
+      "Id": "PolicyForCloudFrontPrivateContent",
+      "Statement": [
+          {
+              "Sid": "AllowCloudFrontServicePrincipal",
+              "Effect": "Allow",
+              "Principal": {
+                  "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": "arn:aws:s3:::my-cdn-bucket-1234/*",
+              "Condition": {
+                  "ArnLike": {
+                      "AWS:SourceArn": "arn:aws:cloudfront::ACCOUNT_ID:distribution/배포명"
+                  }
+              }
+          }
+      ]
+  }
+
+  // or
+
+  {
+      "Version": "2012-10-17",
+      "Statement": [
+          {
+              "Effect": "Allow",
+              "Principal": {
+                  "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": "arn:aws:s3:::bucket-name/*",
+              "Condition": {
+                  "StringEquals": {
+                      "AWS:SourceArn": "arn:aws:cloudfront::ACCOUNT_ID:distribution/배포명"
+                  }
+              }
+          }
+      ]
+  }
+  ```
+
+- cloudfront에서 자동으로 생성되는 도메인이 아니라 내 도메인을 넣고 싶다면 그것도 가능합니다.
+  배포에 들어와서 `Add domain` 선택
+  <Image src="/aws-s3-presigned-url-cloudfront/06.png" alt="가용 영역 정의" />
+  <Image src="/aws-s3-presigned-url-cloudfront/07.png" alt="가용 영역 정의" />
+  <Image src="/aws-s3-presigned-url-cloudfront/08.png" alt="가용 영역 정의" />
+  시키는대로 원하는 도메인 입력하고 넘어가면 되는데 Route 53에 도메인이 등록되어 있어야 하고 **CDN은
+  https**만 가능하기 때문에 ACM으로 https 인증도 받아야 합니다. 그런데 이미지에서 보시다시피 us-east-1
+  리전, **버지니아 리전에 인증서**가 있어야합니다. 여기서 도메인을 추가한 뒤 Route53에서 레코드 생성해서
+  Cloudfront와 연결하면 됩니다.
+
+## OAC는 무엇인가?
+
+OAC(Origin Access Control)은 s3에 접근을 오직 내 CloudFront만 할 수 있도록 하는 전용 인증 시스템이라고 볼 수 있습니다. 내 CloudFront를 거치지 않으면 절대 S3에 접근할 수 없음을 의미합니다. 회사에 갈 때 직원에게 주어지는 출입증같은 거라고 보면 됩니다.
+
+## 마무리
+
+Pre-signed URL 방식의 업로드와 CDN 연동에 대해서 알아봤습니다. 기존에 단순히 S3만 이용하는 것보다 여러 방면에서 이점이 있는 방식입니다. Pre-signed URL 방식은 백엔드가 Pre-signed URL요청만 받아서 Pre-signed URL응답만 주는데 그러면 실제 파일을 불러올 때 사용할 URL주소는 데이터베이스에 어떻게 저장할까는 한 번 생각해보세요.
+
+<Link url="https://chaechae.life/blog/fastapi-image-upload-s3" />
