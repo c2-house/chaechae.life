@@ -1,3 +1,4 @@
+import { unstable_cache } from 'next/cache';
 import type { Post } from 'contentlayer/generated';
 import { supabase } from './supabase';
 
@@ -19,11 +20,12 @@ export interface LifePost {
   };
 }
 
-export async function getLifePosts() {
-  const { data: posts, error } = await supabase
-    .from('posts')
-    .select(
-      `
+export const getLifePosts = unstable_cache(
+  async () => {
+    const { data: posts, error } = await supabase
+      .from('posts')
+      .select(
+        `
       id,
       title,
       slug,
@@ -34,18 +36,23 @@ export async function getLifePosts() {
       tags,
       author:author_id(name, avatar_url)
     `,
-    )
-    .eq('is_draft', false)
-    .order('created_at', { ascending: false })
-    .range(0, 4);
+      )
+      .eq('is_draft', false)
+      .order('created_at', { ascending: false })
+      .range(0, 4);
 
-  if (error) return [];
+    if (error) return [];
 
-  return posts.map(
-    (post) =>
-      ({
-        ...post,
-        type: 'LifePost',
-      }) as LifePost,
-  );
-}
+    return posts.map(
+      (post) =>
+        ({
+          ...post,
+          type: 'LifePost',
+        }) as LifePost,
+    );
+  },
+  ['lifePosts'],
+  {
+    revalidate: 86400, // 24 hours
+  },
+);

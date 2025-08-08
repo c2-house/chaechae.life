@@ -7,8 +7,6 @@ import AboutUs from '@/components/Home/AboutUs';
 import RecentPosts from '@/components/Home/RecentPosts';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 
-export const revalidate = 86400; // 24 hours
-
 const Home = async () => {
   const techPosts = allPosts
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
