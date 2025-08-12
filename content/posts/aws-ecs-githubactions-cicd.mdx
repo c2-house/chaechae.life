@@ -27,6 +27,7 @@ Market Place에 많은 Action들이 있는데 Docker 이미지를 빌드하고 �
 빌드를 Github Actions에서 한다는 것은 Github에 올라와 있는 코드로 빌드를 한다는 것입니다. 환경변수는 Github에 올리지 않기 때문에 빌드를 실행하기 전에 환경변수부터 만들어줘야 합니다. 이것도 Action을 이용해서 가능합니다.
 
 ```yaml
+# 비어있는 부분은 알맞게 작성하면 됩니다.
 name:
 on:
 
@@ -147,15 +148,15 @@ ECS에 작업 정의를 생성하고, 서비스를 업데이트하고, 서비스
 
 그리고 이제 역할을 생성해서 생성한 정책을 부여해줍니다. 역할로 이동해서 역할 생성을 선택하고 다음과 같이 실행합니다.
 
-<Image src="/aws-ecs-githubactions-cicd/01.png" alt="AWS 라우팅 테이블 서브넷 연결 화면" />
+<Image src="/aws-ecs-githubactions-cicd/01.png" alt="AWS 역할 생성 화면" />
 
 아래와 같이 공급자를 생성해줍니다. 생성하면 ID 제공업체에 추가가됩니다. 이 과정은 GithubActions가 AWS에 접근할 수 있는 통행증을 만들어주는 과정이라고 생각하면 됩니다.
 
-<Image src="/aws-ecs-githubactions-cicd/02.png" alt="AWS 라우팅 테이블 서브넷 연결 화면" />
+<Image src="/aws-ecs-githubactions-cicd/02.png" alt="AWS 공급자 생성 화면" />
 
 권한 추가에서 생성한 정책을 추가합니다.
 
-<Image src="/aws-ecs-githubactions-cicd/03.png" alt="AWS 라우팅 테이블 서브넷 연결 화면" />
+<Image src="/aws-ecs-githubactions-cicd/03.png" alt="AWS 권한 추가 화면" />
 
 ## 마무리
 
