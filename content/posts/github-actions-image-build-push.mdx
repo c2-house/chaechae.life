@@ -91,7 +91,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
 
-- image는 docker hub에 저장할 때와 다르게 image이름만 적어줍니다. ex) fastapi-project
+- image는 레포이름/이미지이름 이런식으로 적어줍니다. ex) backend/fastapi-project
   - ECR의 Repository 이름 이기도 합니다.
 - tags는 docker hub에 적용한 방법과 동일합니다.
 - registry는 이렇게 생긴 ECR URI를 넣어주면 됩니다. ex)123456789012.dkr.ecr.ap-northeast-2.amazonaws.com
