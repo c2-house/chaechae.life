@@ -1,0 +1,69 @@
+---
+title: AWS 아키텍처 쉽게 그리는 법 알아보기
+description: 프로젝트를 하기 전 또는 하고 나서 관련된 발표를 할 때 AWS 아키텍처 다이어그램 이미지를 만들게 됩니다. 귀찮지만 나름 중요도는 있는 일이고 시간도 많이 잡아 먹는 일이었습니다. 그래서 오늘은 AWS 아키텍처 다이어그램을 쉽게 그릴 수 있는 방법을 알아보려고 합니다.
+tags: [AWS, MCP]
+author: mingke
+thumbnail: /thumbnails/aws-logo.png
+date: 2025/08/16
+---
+
+### 목차
+
+## AWS 아키텍처 그리기
+
+프로젝트를 하기 전 또는 하고 나서 관련된 발표를 할 때 AWS 아키텍처 다이어그램 이미지를 만들게 됩니다. **귀찮지만 나름 중요도는 있는 일이고 시간도 많이 잡아 먹는 일이었습니다.** 그래서 오늘은 AWS 아키텍처 다이어그램을 쉽게 그릴 수 있는 방법을 알아보려고 합니다.
+
+## AWS MCP 활용하기
+
+AWS MCP를 사용하면 정말 쉽게 만들 수 있습니다. AWS에서 AWS와 관련된 MCP를 다양하게 제공하고 있습니다. 그 중에 `aws-diagram-mcp-server` 를 이용하면 쉽게 만들 수 있습니다. MCP를 추가하면 프롬프트만으로 쉽게 생성할 수 있습니다.
+
+하지만 그전에 설치해야하는 것이 있습니다. `python3.10 이상`, `uv` , `graphviz` 가 설치되어 있어야 합니다. 그리고 사용하는 mcp 클라이언트에 다음과 같이 mcp.json 내용을 추가해주면 됩니다.
+
+```json
+// mcp.json
+{
+  "servers": {
+    "AWS Diagram MCP Server": {
+      "command": "uvx",
+      "args": ["awslabs.aws-diagram-mcp-server"],
+      "env": {
+        "FASTMCP_LOG_LEVEL": "ERROR"
+      },
+      "autoApprove": [],
+      "disabled": false,
+      "type": "stdio"
+    }
+  },
+  "inputs": []
+}
+```
+
+아래 링크에서 더 자세한 사용법을 알 수 있습니다. **docker로도 사용 가능합니다.**
+
+<Link url="https://github.com/awslabs/mcp/tree/main/src/aws-diagram-mcp-server" />
+
+MCP를 설치하고 내가 그리고 싶은 인프라의 구조를 프롬프트에 설명해서 넣으면 뚝딱 만들어져 나옵니다. 스타일도 구체적으로 말하면 변경이 가능한데 안 그러면 심플하게 나옵니다.
+
+<Image
+  src="/others/03.png"
+  alt="AWS MCP를 이용해서 만든 아키텍처 다이어그램"
+  caption="AWS MCP를 이용해서 만든 아키텍처 다이어그램"
+/>
+
+<Ads />
+
+## 수동으로 그리기 with AWS ICON DECK
+
+사실 AI가 그리는 것 보다 수동으로 인간의 공을 들여서 만들면 더 예쁘게 만들 수 있습니다. 정보 전달용으로 AI가 만들어 주는 형태도 충분하다고 생각하는데, 있어빌리티를 생각하면 조금 부족한 면이 있습니다.
+
+그럴때는 AWS에서 제공하는 ICON 모음을 사용해서 있어보이게 만드는 것도 좋아보입니다. AWS에서 Icon Asset들과 PPT를 제공하고 있어서 활용해보면 좋을 것 같습니다.
+
+구글에 aws icon deck이라고 검색하면 아래 사이트가 나오는데 다운받아서 쓰면 됩니다.
+
+<Link url="https://aws.amazon.com/architecture/icons/?nc1=h_ls" />
+
+## 마무리
+
+이번 포스팅에서 AWS 아키텍처 다이어그램을 쉽게 만드는 방법을 알아봤습니다. 빠르게 정보 제공용으로 만든다고 하면 MCP를 이용하는게 좋은 것 같고 있어보이게 만드는 것이 중요하다면 AWS에서 제공하는 ICON DECK을 이용해서 만들어보는 것이 좋은 선택인 것 같습니다.
+
+<Link url="http://localhost:3000/blog/aws-service-resource" />
