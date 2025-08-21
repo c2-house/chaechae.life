@@ -1,0 +1,62 @@
+---
+title: Supabase cron job 사용하기(feat.pg_cron)
+description: 최근 혼자서 개발하면서 Supabase를 많이 사용하고 있습니다. 최근 작업에서 cron job을 사용할 일이 있었는데 Supabase에서 쉽게 사용할 수 있었습니다. 이번 포스팅에서 Supabase에서 cron job을 사용하는 방법을 알아보려고 합니다.
+tags: [PostgreSQL, Supabase]
+author: mingke
+thumbnail: /thumbnails/supabase-logo.webp
+date: 2025/08/21
+---
+
+### 목차
+
+## Supabase Cron Job
+
+최근 혼자서 개발하면서 Supabase를 많이 사용하고 있습니다. 최근 작업에서 cron job을 사용할 일이 있었는데 **Supabase에서 쉽게 사용**할 수 있었습니다. 이번 포스팅에서 Supabase에서 cron job을 사용하는 방법을 알아보려고 합니다.
+
+AI API를 이용하는 아주 간단한 프로젝트가 있습니다. 사용자의 AI 사용량을 트래킹하고 제한하기 위해서 가장 간단한 방법으로 supabase에 `usage_tracking` 이라는 테이블을 만들었습니다. 사용자의 사용량이 저장되는 테이블입니다. 일 사용량만 제한하고 있기 때문에 여기에 저장된 데이터는 존재할 필요가 없습니다. 그래서 이 테이블을 매일 밤 자정에 비워주는 cron job을 생성했습니다.
+
+## pg_cron
+
+사실 supabase의 고유성을 가진 방법은 아니고 Postgresql의 extension을 이용한 방법입니다. `pg_cron` 이라는 extension이 존재합니다. 이것을 사용해서 cron job을 실행할 수 있습니다.
+
+pg_cron은 `supabase project`에 들어가서 `Database` → `Extensions` 로 접근하면 됩니다.
+
+<Image src="/others/04.png" alt="supabase pg_cron 활성화" caption="pg_cron을 활성화 합니다." />
+
+`ENABLED`가 꺼져있을 텐데 활성화시켜주면 됩니다.
+
+활성화 시킨 뒤에 `SQL Editor`로 이동하여 쿼리를 작성하면 됩니다. Supabase에는 SQL 작업을 할 수 있는 Editor가 있습니다.
+
+<Image
+  src="/others/05.png"
+  alt="supabase SQL Editor 편집"
+  caption="supabase SQL Editor에서 SQL을 작성하고 실행합니다."
+/>
+
+쿼리를 쓰고 `Run` 해주면 끝입니다.
+
+```sql
+CREATE OR REPLACE FUNCTION truncate_usage_tracking_table()
+RETURNS void AS $$
+BEGIN
+  TRUNCATE TABLE public.usage_tracking RESTART IDENTITY;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT cron.schedule(
+  'daily-truncate-usage-tracking',
+  '0 15 * * *',
+  $$ SELECT truncate_usage_tracking_table(); $$
+);
+SELECT * FROM cron.job;
+```
+
+cron을 등록할 때는 `schedule` 함수를 쓰면 되고 해제할 때는 `unschedule` 함수를 쓰면 됩니다.
+
+<Ads />
+
+## 마무리
+
+이번 포스팅에서 supabase에서 cron job을 실행하는 방법을 알아봤습니다. postgresql의 다양한 extension들 중에 `pg_cron`이라는 것을 사용해서 아주 쉽게 구현해봤습니다. supabase 콘솔에서 조작도 쉬워서 너무 좋은 것 같습니다.
+
+<Link url="https://chaechae.life/blog/supabase-mcp-server-vscode" />
