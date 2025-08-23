@@ -16,7 +16,7 @@ const GameScreen = ({ url, name }: { url: string; name: string }) => {
         ref={iframeRef}
         src={url}
         title={`${name} 게임`}
-        className="fixed inset-0 z-10 h-screen w-full border border-gray-200 shadow-lg lg:static lg:z-0 lg:h-[70vh] lg:min-h-[500px] lg:max-w-7xl lg:rounded-xl"
+        className="fixed inset-0 z-10 h-[100dvh] w-full border border-gray-200 shadow-lg lg:static lg:z-0 lg:h-[70vh] lg:min-h-[500px] lg:max-w-7xl lg:rounded-xl"
         allowFullScreen
       ></iframe>
       <button
