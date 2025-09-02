@@ -1,0 +1,54 @@
+---
+title: Context7 MCP로 AI Agent를 코딩할 때 더 똑똑하게 만들기
+description: Context7 MCP는 대규모 언어 모델(LLM) 기반의 AI 코딩 어시스턴트가 겪는 문제를 해결하기 위해 나온 MCP입니다. 바로 정보의 노후화문제를 해결하는 아주 꿀맛인 MCP입니다.
+tags: [AI, MCP]
+author: mingke
+thumbnail: /thumbnails/mcp.jpg
+date: 2025/09/02
+---
+
+### 목차
+
+## Context7 MCP
+
+Context7 MCP는 대규모 언어 모델(LLM) 기반의 AI 코딩 어시스턴트가 겪는 문제를 해결하기 위해 나온 MCP입니다. 바로 **정보의 노후화문제를 해결**하는 아주 꿀맛인 MCP입니다. **LLM은 정말 방대한 양의 데이터를 학습하지만 그 데이터를 대부분 최신 데이터는 아닙니다.** 우리가 코드를 작성할 때 항상 과거 버전만 사용한다면 Context7은 필요없을 수도 있겠지만 그렇지 않죠. Context7은 AI가 코드를 생성하거나 질문에 답변할 때 **실시간으로 최신 공식 문서와 코드 예제를 참조**하도록 돕습니다. **최신 버전에 맞는 코드**를 짜야할 때 아주 유용하게 사용될 수 있습니다.
+
+<Link url="https://context7.com/" />
+
+## Context7 사용하는 방법
+
+위 링크에서 접속해서 `DashBoard`를 클릭하면 로그인을 요구하는데 구글이나 깃헙아이디로 로그인하면 됩니다. 아래 이미지는 메인 페이지인데 약 38,000의 라이브러리를 지원합니다.
+
+<Image src="/context7-mcp/01.png" alt="Context7 메인 화면" caption="Context7 메인 화면" />
+
+`DashBoard` 에 들어가면 `API KEY`를 확인할 수 있습니다.
+
+<Image src="/context7-mcp/02.png" alt="Context7 대시보드" caption="Context7 대시보드" />
+
+상단 네비게이션바에 `MCP Server` 를 클릭하면 Github레포로 연결이 되는데 거기에서 사용하는 툴 별로 연결 방법이 나와있습니다.
+
+<Image src="/context7-mcp/03.png" alt="Context7 MCP 연결 방법" caption="Context7 MCP 연결 방법" />
+
+`YOUR_API_KEY` 부분에 본인의 `API KEY` 를 넣으면 됩니다.
+
+<Ads />
+
+## 실제 Context7 동작 살펴보기
+
+최근에 개발 중인 프로젝트에 Context7을 적용해 보았습니다. Next.js를 사용하는 프로젝트이고 새롭게 시작하는 프로젝트여서 최신 Next.js 15.5.2 버전을 사용했습니다. Context7 MCP를 연결했더니 그렇게 셋팅해주더군요.
+
+<Image src="/context7-mcp/04.png" alt="Context7 MCP 동작 보기" caption="Context7 MCP 동작 보기" />
+
+Tool을 호출해서 필요한 공식 문서를 찾고 필요한 부분의 세부 내용을 스스로 찾아서 읽어옵니다. 이전에는 Agent한테 셋팅 시키려면 예전 버전으로 셋팅하려고해서 충돌나고 어지러워서 그냥 제 스스로했는데 이번엔 정말 스무스하게 셋팅했습니다.
+
+## 마무리
+
+최신 문서를 일일히 찾아보지 않고 Agent에게 Context MCP달아줘서 빠르게 최신 기술을 적용할 수 있다는 것이 아주 매력적입니다. 어떻게 보면 필수로 사용해야하는 MCP가 아닌가 생각이듭니다. 최근에 Context7을 모를 때, Gemini API쓰려고 했더니 Agent가 자꾸 Deprecated된 google/generative-ai를 쓰려고 해서 google/genai 라이브러리 문서 보면서 해결했는데 이젠 Context7을 알았으니 이걸 써야겠습니다.
+
+<Image
+  src="/context7-mcp/05.png"
+  alt="Context7 MCP에서 라이브러리 검색하기"
+  caption="Context7 MCP에서 라이브러리 검색하기"
+/>
+
+<Link url="https://chaechae.life/blog/aws-architecture-easy-way-to-build" />
