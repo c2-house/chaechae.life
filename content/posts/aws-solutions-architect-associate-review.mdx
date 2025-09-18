@@ -1,0 +1,78 @@
+---
+title: AWS SAA(Solutions Architect Associate) 취득 후기 및 공부 방법
+description: 오늘 AWS SAA(Solutions Architect Associate)시험을 보고 합격해서 자격증을 취득하게 되었습니다. 원래 ‘AWS 잘 쓰기만 하면 되지 자격증 그거 필요한가?’ 라고 생각했던 사람이었는데, 시험을 무료로 볼 수 있는 바우처가 생겨서 따게 되었네요. AWS 실무 경험이 좀 있으신 분이라면 1~2주정도 틈틈히 공부한다면 합격할 수 있는 난이도라고 생각합니다.
+tags: [AWS]
+author: mingke
+thumbnail: /thumbnails/aws-logo.png
+date: 2025/09/18
+---
+
+### 목차
+
+## AWS SAA 합격
+
+<Image src="/aws-solutions-architect-associate-review/01.png" alt="AWS SAA 마크" />
+
+오늘 **AWS SAA**(**Solutions Architect Associate**)**시험을 보고 합격**해서 자격증을 취득하게 되었습니다. 원래 ‘AWS 잘 쓰기만 하면 되지 자격증 그거 필요한가?’ 라고 생각했던 사람이었는데, 시험을 무료로 볼 수 있는 바우처가 생겨서 따게 되었네요. **AWS 실무 경험이 좀 있으신 분이라면 1~2주정도 틈틈히 공부한다면 합격할 수 있는 난이도**라고 생각합니다.
+
+## 시험에 많이 나왔던 서비스
+
+공식 홈페이지 가서 확인해보면 알겠지만 시험 범위가 정말 넓습니다.
+
+<Link url="https://d1.awsstatic.com/ko_KR/training-and-certification/docs-sa-assoc/AWS-Certified-Solutions-Architect-Associate_Exam-Guide.pdf" />
+
+AWS의 서비스가 정말 많기 때문에 사실 다 공부하는 것은 정말 무리가 있어 보입니다. AWS 서비스 중에서 시험을 위해 제대로 알아야 하는 부분은 저의 개인적인 생각으론 다음과 같습니다.
+
+### S3
+
+AWS를 사용해보면 알겠지만 S3는 정말 다재다능하고 여러 서비스와 연계해서 많이 쓰입니다. S3의 개념과 특징(버저닝, 수명 주기, 암호화 등), 비용 체계, 그리고 어떤 서비스와 연결될 수 있는지 시험에 많이 나왔습니다. 수명 주기 문제 나왔었는데 이건 시험에 매번 나올 것 같은 그런 느낌이 듭니다.
+
+### VPC
+
+VPC와 관련된 문제도 여러 개 나왔습니다. VPC를 구성하고 있는 내용들을 다 알아야 하는 것 같습니다. 서브넷, 인터넷 게이트웨이, 라우팅 테이블, NAT 게이트웨이 등.
+
+**인터넷 연결이 안되는 프라이빗 서브넷에 있는 외부 라이브러리를 설치를 하려면 어떻게 해야 하는가? 이게 시험에 나왔었습니다. VPC 엔드포인트와 관련된 문제도 나왔었구요. 그리고 VPC와 온프레미스 데이터센터를 연결하는 것과 관련된 문제도 있었습니다.**
+
+<Ads />
+
+### IAM
+
+AWS 실무에서 사용할 때도 IAM 때문에 귀찮았던 기억이 많이 있습니다. 보안을 신경 쓰면서 최소 권한을 주려고 하다보니 그랬던 것 같은데요. 이번에 시험에서도 IAM과 관련해서 꽤 많은 문제가 나왔습니다. 정확히 기억은 안 나지만 **Control Tower, Identity Center와 관련된 문제, IAM Access Analyzer와 관련된 문제, 서비스에 역할을 부여하는 것과 관련된 문제 등 몇몇 고민하게 만드는 문제들 중에 IAM과 관련된 것들이 있었습니다.**
+
+**시험 범위에 있는 서비스에서 정말 골고루 나오긴 하더라구요**. 아마 시험볼 때마다 다르긴 할 것 같습니다만 시험 범위에 있는 **서비스들을 최대한 많이 이게 어떤 서비스이다 정도는 알아두면 좋을 것** 같습니다. 왜냐면 보기에서 말장난을 합니다. 예를들면 GuardDuty로 DDoS를 방어 한다라고 하면 Guard라는 단어 때문에 그럴듯 해보이는데 DDoS 방어는 Shield입니다. **맞는 문장에 서비스 이름만 바꿔서 틀린 보기로 만드는 말장난이 잘 나와서 서비스를 최대한 많이 알고 있는게 좋을 것 같습니다.**
+
+## SAA 공부 방법
+
+AWS를 꽤 오래 써왔어도 스타트업에서만 사용했고 3티어 아키텍쳐 기준으로 작은 서비스들만 운영해왔기 때문에 안 써본 서비스도 많아서 공부가 필요하긴 했습니다. 유데미에서 아래 강의를 구매해서 잘 모르는 서비스들만 골라서 빠르게 들었습니다.
+
+<Link url="https://www.udemy.com/course/best-aws-certified-solutions-architect-associate/?couponCode=MT250915G1" />
+
+그 후에 아래 링크의 모의고사를 구매해서 모의고사 위주로 문제 풀이를 하면서 준비했습니다. **문제 풀고 오답 정리하면서 모르는 개념 익히는 방식으로 공부했습니다.** 풀면서 꽤 어렵다고 느꼈는데 본 시험이 훨씬 쉽습니다. 그래서 도움이 많이 되지 않았나 싶네요. 아래 시험은 영어가 원본입니다. 브라우저의 한글 번역 기능을 사용해서 당연히 한글로 풀었는데 번역이 이상하게 되는 경우도 있습니다.
+
+<Image
+  src="/aws-solutions-architect-associate-review/02.png"
+  alt="AWS SAA 모의고사 점수"
+  caption="어렵긴 하더라구요"
+/>
+
+<Link url="https://www.udemy.com/course/practice-exams-aws-certified-solutions-architect-associate" />
+
+아 그리고 AWS Skill Builder에도 모의고사가 있으니 Skill Builder로 공부하는 분이라면 Skill Builder에서도 모의고사를 보시길 바랍니다.
+
+<Image
+  src="/aws-solutions-architect-associate-review/03.png"
+  alt="AWS Skill Builder 모의고사"
+  caption="AWS Skill Builder 모의고사"
+/>
+
+<Ads />
+
+## 마무리
+
+한 10일 정도 틈틈이 준비했던 것 같습니다. 대단한 자격증은 아니지만 그래도 간만에 딴 자격증이라 기분은 좋네요. 영구 자격증은 아니고 3년 짜리인게 아쉽습니다. 온라인 시험이 아닌 오프라인으로 시험장에 가서 시험을 봤습니다.
+
+<Link url="https://naver.me/5Rhis5Sm" />
+
+여기서 봤는데 시험장에 나방 파리가 많아서 시험보는데 얼굴에 달라 붙기도 하고 그랬습니다. 시험 중에 3마리나 죽였습니다. 벌레에 민감한 분들이라면 다른 시험 장을 알아보시는 것을 추천드립니다.
+
+<Link url="https://chaechae.life/blog/aws-architecture-easy-way-to-build" />
