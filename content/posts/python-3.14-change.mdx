@@ -1,0 +1,132 @@
+---
+title: 파이썬 개발자가 알아야 할 Python 3.14의 핵심 변화
+description: 파이썬 3.14가 곧 정식 출시됩니다. 이번 버전은 특히 성능과 개발 편의성이라는 두 마리 토끼를 모두 잡은 듯합니다. 이번에 추가된 새로운 기능들을 간단하게 정리해 봤습니다.
+tags: [Python]
+author: mingke
+thumbnail: /thumbnails/python-logo.png
+date: 2025/09/22
+---
+
+### 목차
+
+## 다가오는 Python 3.14 릴리즈
+
+파이썬 3.14가 곧 정식 출시됩니다. 이번 버전은 특히 **성능과 개발 편의성이라는 두 마리 토끼를 모두 잡은 듯합니다.** 이번에 추가된 새로운 기능들을 간단하게 정리해 봤습니다.
+
+<Link url="https://docs.python.org/ko/3.14/whatsnew/3.14.html" />
+
+## 더 빨라진 파이썬
+
+가장 눈에 띄는 변화는 성능입니다. 파이썬 3.14는 새로운 인터프리터인 `Tail-call Interpreter`를 도입했습니다. 이게 뭔지 몰라도 상관없습니다. 그냥 속도가 빨라졌다는 사실만 알면 됩니다. 기존에 쓰던 코드를 단 한 줄도 수정할 필요 없고 **일부 작업에서 최대 30%까지 속도**가 빨라진다고 하니 놀랍죠. 파이썬 라이브러리들이 Rust로 만들어져서 빠른 것들이 많은데 CPython도 계속해서 최적화되고 있는 것 같습니다.
+
+## 향상된 개발 편의성 t-string
+
+이번 버전에서 새롭게 추가된 문법 중 가장 눈에 띄는 것은 **템플릿 스트링 리터럴**`(t-string)`입니다. `f-string`과 비슷하게 보이지만 역할은 훨씬 강력합니다. `f-string`이 즉시 문자열로 평가되는데 `t-string`은 `string.templatelib.Template` 객체를 생성합니다. 이 객체는 템플릿의 구조를 그대로 보존하기 때문에 다양한 곳에 활용할 수 있습니다. 특히 보안과 관련된 작업에서 아주 유용하다고 합니다.
+
+### 입력값 안전하게 처리하기
+
+웹 개발에서 사용자 입력을 다룰 때, 악의적인 스크립트가 삽입되는 XSS(Cross-Site Scripting) 공격을 방지하는 것이 중요합니다. `t-string`과 `html()` 함수를 사용하면 간단하게 해결할 수 있습니다.
+
+```python
+from string.templatelib import html
+from string.templatelib import Template
+
+evil_input = "<script>alert('evil')</script>"
+template: Template = t"<p>{evil_input}</p>"
+
+# html() 함수가 템플릿 구조를 분석해 자동으로 이스케이프 처리합니다.
+print(html(template))
+# 출력: <p>&lt;script&gt;alert('evil')&lt;/script&gt;</p>
+```
+
+### HTML 속성 동적으로 생성하기
+
+```python
+from string.templatelib import html
+from string.templatelib import Template
+
+attributes = {"src": "shrubbery.jpg", "alt": "looks nice"}
+template: Template = t"<img {attributes}>"
+
+# 딕셔너리가 자동으로 HTML 속성으로 변환됩니다.
+print(html(template))
+# 출력: <img src="shrubbery.jpg" alt="looks nice" />
+```
+
+이런 식으로 `t-string`은 단순한 문자열 포맷팅을 넘어서 보안을 강화하고 반복적인 작업을 간소화하는 도구로 활용될 수 있습니다.
+
+<Ads />
+
+## 타입 힌트 개선
+
+파이썬이 점점 더 정적 타입 언어의 장점을 흡수하고 있다는 느낌을 받습니다. **3.14 버전부터는 타입 힌트가 기본적으로 lazy evaluation**됩니다. 이전 버전에서는 순환 참조(circular reference) 문제 때문에 `from __future__ import annotations`를 사용해야 했습니다. 이제 그럴 필요가 없어집니다. 덕분에 코드가 더 간결해지고, 복잡한 타입 구조를 다루기 쉬워졌습니다.
+
+### Lazy Evaluation란?
+
+**lazy evaluation**란 말 그대로 **타입 힌트를 당장 실행(평가)하지 않고 나중에 필요할 때까지 미뤄두는 것**입니다.
+
+이전 파이썬 버전에서는 인터프리터가 코드를 한 줄씩 읽어나가면서 타입 힌트를 만나면 그 타입을 바로 평가(evaluate)했습니다. 그런데 만약 `class A`가 `class B`를 참조하고 `class B`가 다시 `class A`를 참조하는 해서 순환참조하게 될 때 문제가 발생했습니다.
+
+### 이전 버전 파이썬에서의 순환 참조 문제
+
+다음과 같은 예시들 만들어봤습니다. `User`와 `Post` 클래스가 서로를 참조하는 상황이 있습니다. `User` 클래스에는 자신이 쓴 `Post` 목록이 있고 `Post` 클래스에는 해당 게시글의 작성자(`User`) 정보가 필요한 상황입니다.
+
+```python
+# user.py
+from typing import List
+from post import Post  # post.py를 먼저 불러와야 합니다.
+
+class User:
+    def __init__(self, username: str):
+        self.username = username
+
+    # 이 유저가 작성한 게시글을 반환하는 메서드
+    def get_posts(self) -> List[Post]:
+        # 실제로 데이터베이스에서 게시글을 조회하는 로직
+        pass
+
+# post.py
+from user import User  # user.py를 먼저 불러와야 합니다.
+
+class Post:
+    def __init__(self, title: str, author: User):
+        self.title = title
+        self.author = author
+```
+
+위 코드는 `user.py`와 `post.py`가 서로를 참조하기 때문에 `ImportError`가 발생합니다. 파이썬이 파일을 순차적으로 읽으면서 어떤 모듈을 먼저 불러와야 할지 혼란을 겪기 때문이죠. 이 문제를 해결하기 위해 `from __future__ import annotations`를 사용했어야 했습니다.
+
+<Ads />
+
+### 3.14 버전의 해결책
+
+파이썬 3.14부터는 타입 힌트가 기본적으로 문자열로 취급되며 인터프리터가 파일 전체를 읽은 후에야 평가됩니다. 따라서 별도의 구문 없이 아래와 같이 깔끔하게 코드를 작성할 수 있습니다.
+
+```python
+# user.py (Python 3.14)
+from typing import List
+
+class User:
+    def get_posts(self) -> List[Post]: # 바로 평가되지 않기 때문에 따옴표 없이 사용 가능
+        pass
+
+# post.py (Python 3.14)
+from user import User
+
+class Post:
+    def __init__(self, title: str, author: User): # 바로 평가되지 않기 때문에 따옴표 없이 사용 가능
+        self.title = title
+        self.author = author
+```
+
+`'Post'`나 `'User'`처럼 클래스 이름을 따옴표로 감싸는 방법도 여전히 유효하지만, 3.14 버전부터는 따옴표 없이도 정상적으로 동작합니다. 덕분에 복잡한 클래스 간의 관계를 표현하는 코드가 훨씬 간결하고 명확해졌습니다.
+
+## Free-threaded
+
+마지막으로 표준 라이브러리와 C API에도 여러 변화가 있습니다. 개인적으로 가장 기대되는 건 **C API 변경**입니다. 파이썬이 **GIL**(Global Interpreter Lock)을 제거하는 Free-threaded Python을 공식적으로 지원하기 시작하면서, 멀티스레딩 성능이 비약적으로 향상될 겁니다. 아직 Optional이라고 하긴 합니다. 유일해지면 그때는 신입 면접에서 GIL에 대해서 질문하지 않는 날이 올 수도 있겠네요. 하지만 어떻게 나아가게 될 지는 아직 미정이라고 합니다.
+
+## 마무리
+
+이번 포스팅에서 파이썬 3.14의 핵심 변화들을 간단히 살펴봤습니다. 성능 향상부터 문법 개선, 그리고 타입 힌트의 진화까지, 파이썬이 계속해서 발전하고 있다는 걸 느낍니다.
+
+<Link url="https://chaechae.life/blog/python-uv-2" />
