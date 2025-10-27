@@ -29,13 +29,13 @@ export const games = [
   },
   {
     name: '랜덤라이프',
-    location: 'https://randomlife.chaechae.life',
+    url: 'https://randomlife.chaechae.life',
     thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
     description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
   },
   {
     name: '시간죽이기',
-    location: 'https://killingtime.chaechae.life',
+    url: 'https://killingtime.chaechae.life',
     thumbnail: '/images/games/killingtime/killingtime-thumbnail.png',
     description: '시간을 죽이는 게임입니다.',
   },

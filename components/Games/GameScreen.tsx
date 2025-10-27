@@ -3,7 +3,7 @@
 import { useRef } from 'react';
 import { Maximize } from 'lucide-react';
 
-const GameScreen = ({ url, name }: { url: string | undefined; name: string }) => {
+const GameScreen = ({ url, name }: { url: string; name: string }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const handleFullScreen = () => {
