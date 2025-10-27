@@ -12,29 +12,52 @@ const GamesPage = () => {
       <ul className="grid grid-cols-1 gap-5 py-6 md:grid-cols-2">
         {games.map((game) => (
           <li
-            key={game.slug}
+            key={game.name}
             className="group mx-auto aspect-square w-full max-w-[470px] overflow-hidden rounded-xl bg-gray-100"
           >
-            <Link href={`/games/${game.slug}`}>
-              <article className="flex h-full flex-col p-5 lg:p-8">
-                <header>
-                  <h2 className="text-2xl font-semibold lg:text-3xl">{game.name}</h2>
-                  <hr className="my-3 lg:my-4" />
-                </header>
-                <div className="flex flex-1 flex-col items-center justify-center">
-                  <Image
-                    src={game.thumbnail}
-                    alt={game.name}
-                    width={320}
-                    height={220}
-                    className="mx-auto max-h-56 object-contain transition-transform duration-300 group-hover:scale-110"
-                  />
-                  <p className="mt-6 text-center text-base font-medium text-slate-700">
-                    {game.description}
-                  </p>
-                </div>
-              </article>
-            </Link>
+            {game.slug ? (
+              <Link href={`/games/${game.slug}`}>
+                <article className="flex h-full flex-col p-5 lg:p-8">
+                  <header>
+                    <h2 className="text-2xl font-semibold lg:text-3xl">{game.name}</h2>
+                    <hr className="my-3 lg:my-4" />
+                  </header>
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <Image
+                      src={game.thumbnail}
+                      alt={game.name}
+                      width={320}
+                      height={220}
+                      className="mx-auto max-h-56 object-contain transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <p className="mt-6 text-center text-base font-medium text-slate-700">
+                      {game.description}
+                    </p>
+                  </div>
+                </article>
+              </Link>
+            ) : (
+              <a href={game.location} target="_blank" rel="noopener noreferrer">
+                <article className="flex h-full flex-col p-5 lg:p-8">
+                  <header>
+                    <h2 className="text-2xl font-semibold lg:text-3xl">{game.name}</h2>
+                    <hr className="my-3 lg:my-4" />
+                  </header>
+                  <div className="flex flex-1 flex-col items-center justify-center">
+                    <Image
+                      src={game.thumbnail}
+                      alt={game.name}
+                      width={320}
+                      height={220}
+                      className="mx-auto max-h-56 object-contain transition-transform duration-300 group-hover:scale-110"
+                    />
+                    <p className="mt-6 text-center text-base font-medium text-slate-700">
+                      {game.description}
+                    </p>
+                  </div>
+                </article>
+              </a>
+            )}
           </li>
         ))}
         <li
