@@ -26,6 +26,18 @@ export const games = [
     thumbnail: '/images/games/lotto/lotto-thumbnail.png',
     description: '로또는 게임이다. 로또 번호를 생성해보자! (고정 번호, 제외 번호 설정 가능)',
     url: 'https://chaechae-games.vercel.app/lotto',
-  }
+  },
+  {
+    name: '랜덤라이프',
+    url: 'https://randomlife.chaechae.life',
+    thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
+    description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
+  },
+  {
+    name: '시간죽이기',
+    url: 'https://killingtime.chaechae.life',
+    thumbnail: '/images/games/killingtime/killingtime-thumbnail.png',
+    description: '시간을 죽이는 게임입니다.',
+  },
   // 추후 게임 추가 가능
 ];
