@@ -1,0 +1,197 @@
+---
+author: mingke
+date: 2025/11/12
+description: 최근 교육하고 있는 곳에서 네이버클라우드를 사용하고 있어서 네이버클라우드에 FastAPI 서버를 배포하는 연습을 진행했습니다. 사용한 서비스는 네이버클라우드의 VPC, Server(VPC), Container Registry, Object Storage 입니다.
+tags: [NaverCloud, GithubActions]
+thumbnail: /thumbnails/navercloud-logo.png
+title: 네이버클라우드와 Github Actions을 이용한 간단한 서버 CI/CD 배포하기
+---
+
+### 목차
+
+## 네이버클라우드에 배포하기
+
+최근 교육하고 있는 곳에서 네이버클라우드를 사용하고 있어서 네이버클라우드에 FastAPI 서버를 배포하는 연습을 진행했습니다.
+
+사용한 서비스는 네이버클라우드의 `VPC` , `Server(VPC)` , `Container Registry` , `Object Storage` 입니다.
+
+`VPC` 서비스에서 VPC, Subnet등을 생성하고 Server(VPC)에서 서버를 생성했습니다. `Container Registry`에 만들어 둔 도커 이미지를 넣었습니다. `Object Storage`는 `Container Registry` 를 만들기 위해 수동으로 생성해줘야 해서 버킷을 하나 만들어줬습니다.
+
+**개발을 완료하고 Docker 이미지를 빌드해서** `Container Registry`**로 이미지를 Push하고 SSH로** `Server(VPC)` **에 접속해서** `Container Registry`**에 저장된 Docker 이미지를 Pull합니다. 그리고** `docker container run` **명령으로 컨테이너를 실행하면 간단한 배포 작업 완료입니다.**
+
+## Github Actions로 배포과정 자동화하기
+
+이렇게 **네이버클라우드에 배포를 한 번 해봤다면 이 과정을 자동화**하면 좋겠죠. 매번 빌드하고 Push하고 SSH접속하고 Pull하고 container run 명령 실행하고 너무 귀찮습니다. 프로세스가 명확하기 때문에 쉽게 자동화할 수 있습니다.
+
+```yaml
+name: Deploy Backend to NCP Server
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to NCP Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.NCP_ACCESS_KEY }}
+          password: ${{ secrets.NCP_SECRET_KEY }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.REGISTRY_URL }}/fastapi-example:${{ github.sha }}
+            ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Deploy to Server via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.NCP_SERVER_HOST }}
+          username: ${{ secrets.NCP_SERVER_USER }}
+          password: ${{ secrets.NCP_SERVER_PASSWORD }}
+          port: 22
+
+          script: |
+            echo ${{ secrets.NCP_SECRET_KEY }} | docker login -u ${{ secrets.NCP_ACCESS_KEY }} --password-stdin ${{ secrets.REGISTRY_URL }}
+
+            docker pull ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+
+            echo "Stopping old container..."
+            docker stop fastapi-example || true
+            docker rm fastapi-example || true
+
+            echo "Starting new container..."
+            docker run -d \
+              --name fastapi-example \
+              -p 8000:8000 \
+              --restart always \
+              ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+              
+            echo "Cleaning up old images..."
+            docker image prune -f
+
+            echo "Deployment successful!"
+```
+
+코드 설명에 앞서 사용한 환경 변수는 다음과 같습니다
+
+- `secrets.REGISTRY_URL` : `Container Registry`의 URL입니다. 네이버클라우드 `Container Registry`에 들어가서 확인할 수 있습니다.
+  <Image
+    alt="Container Registry의 Public Endpoint"
+    caption="Container Registry의 Public Endpoint"
+    src="/ncloud-ci-ci-deployment/01.png"
+  />
+- `secrets.NCP_ACCESS_KEY` : Access Key를 발급받으면 나오는 **Access Key Id** 입니다.
+- `secrets.NCP_SECRET_KEY` : Access Key를 발급받으면 나오는 **Secret Key** 입니다.
+  <Image
+    alt="네이버클라우드 Access Key"
+    caption="네이버클라우드 Access Key"
+    src="/ncloud-ci-ci-deployment/02.png"
+  />
+- `secrets.NCP_SERVER_HOST` : `Server(VPC)`의 공인 IP입니다.
+- `secrets.NCP_SERVER_USER` : 일반적으로 root 입니다.
+- `secrets.NCP_SERVER_PASSWORD` : `Server(VPC)`에서 관리자 비밀번호 확인하기에서 확인할 수 있습니다.
+  <Image
+    alt="관리자 비밀번호 확인 방법"
+    caption="관리자 비밀번호 확인 방법"
+    src="/ncloud-ci-ci-deployment/03.png"
+  />
+
+이제 step별로 자세하게 알아보겠습니다.
+
+- checkout으로 코드를 Github에 저장된 코드를 가져옵니다.
+
+```yaml
+- name: Checkout code
+  uses: actions/checkout@v5
+```
+
+- Docker 이미지를 빌드하기 위해 buildx를 세팅합니다.
+
+```yaml
+- name: Set up Docker Buildx
+  uses: docker/setup-buildx-action@v3
+```
+
+- 네이버클라우드 `Container Registry` 에 접근할 수 있도록 로그인합니다. username과 password는 앞서 언급했듯, 네이버클라우드 계정에서 발급받은 **Access Key Id와 Secret Key를 넣으면 됩니다.**
+
+```yaml
+- name: Login to NCP Container Registry
+  uses: docker/login-action@v3
+  with:
+    registry: ${{ secrets.REGISTRY_URL }}
+    username: ${{ secrets.NCP_ACCESS_KEY }}
+    password: ${{ secrets.NCP_SECRET_KEY }}
+```
+
+- 로그인 후에 이미지를 빌드하고 `Container Registry` 에 Push합니다. latest 태그와 github commit hash를 같이 저장해서 버전을 관리합니다. 캐시도 적용하여 빌드 속도를 높입니다.
+
+```yaml
+- name: Build and Push Docker Image
+  uses: docker/build-push-action@v6
+  with:
+    context: .
+    push: true
+    tags: |
+      ${{ secrets.REGISTRY_URL }}/fastapi-example:${{ github.sha }}
+      ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+    cache-from: type=gha
+    cache-to: type=gha,mode=max
+```
+
+- 이미지 Push가 완료되면 `Server(VPC)`에 SSH로 접속하여 이미지 Pull과 container run을 실행합니다. script를 살펴보면 먼저 실행 중인 컨테이너를 중지하고 삭제합니다. 여기서 잠깐 다운타임이 발생합니다. 무중단 배포는 아니게 되는거죠. 바로 새로운 컨테이너를 실행하고 필요없어진 이미지들을 제거합니다.
+
+```yaml
+- name: Deploy to Server via SSH
+  uses: appleboy/ssh-action@master
+  with:
+    host: ${{ secrets.NCP_SERVER_HOST }}
+    username: ${{ secrets.NCP_SERVER_USER }}
+    password: ${{ secrets.NCP_SERVER_PASSWORD }}
+    port: 22
+
+    script: |
+      echo ${{ secrets.NCP_SECRET_KEY }} | docker login -u ${{ secrets.NCP_ACCESS_KEY }} --password-stdin ${{ secrets.REGISTRY_URL }}
+
+      docker pull ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+
+      echo "Stopping old container..."
+      docker stop fastapi-example || true
+      docker rm fastapi-example || true
+
+      echo "Starting new container..."
+      docker run -d \
+        --name fastapi-example \
+        -p 8000:8000 \
+        --restart always \
+        ${{ secrets.REGISTRY_URL }}/fastapi-example:latest
+        
+      echo "Cleaning up old images..."
+      docker image prune -f
+
+      echo "Deployment successful!"
+```
+
+## 마무리
+
+간단하게 네이버클라우드에 서버를 배포하는 프로세스와 Github Actions를 이용해서 자동화하는 방법을 알아봤습니다. 사용한 코드와 Dockerfile등은 아래 링크에서 볼 수 있습니다. 패키지 관리자로 uv를 사용했기 때문에 uv도 알고 있어야 합니다.
+
+<Link url="https://github.com/Jungminchae/fastapi-example" />
+
+<Link url="https://chaechae.life/blog/python-uv" />
