@@ -20,6 +20,7 @@ export const tags = [
   'JavaScript',
   'Kiro',
   'MCP',
+  'NaverCloud',
   'Nextjs',
   'Nodejs',
   'PostgreSQL',
