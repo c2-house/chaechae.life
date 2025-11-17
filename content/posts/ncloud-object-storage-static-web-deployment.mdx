@@ -1,0 +1,73 @@
+---
+author: mingke
+date: 2025/11/17
+description: 웹 프론트엔드를 배포하는 여러가지 방법 중에 오브젝트 스토리지를 이용한 정적 웹 호스팅 방법이 있습니다. AWS를 이용해보셨다면 AWS S3를 이용한 정적 호스팅을 들어보셨을거라고 생각합니다. 네이버클라우드에도 비슷하게 Object Storage라는 서비스를 이용해서 정적 웹 호스팅을 할 수 있습니다.
+tags: [NaverCloud]
+thumbnail: /thumbnails/navercloud-logo.png
+title: 네이버클라우드 Object Storage 정적 웹 호스팅 해보기
+---
+
+### 목차
+
+## 네이버클라우드 정적 웹 호스팅
+
+웹 프론트엔드를 배포하는 여러가지 방법 중에 **오브젝트 스토리지를 이용한 정적 웹 호스팅** 방법이 있습니다. AWS를 이용해보셨다면 `AWS S3`를 이용한 정적 호스팅을 들어보셨을거라고 생각합니다. 네이버클라우드에도 비슷하게 `Object Storage`라는 서비스를 이용해서 정적 웹 호스팅을 할 수 있습니다.
+
+S3를 이용한 배포는 `CloudFront`라는 CDN 서비스와 연결하고 도메인 연결까지해서 사용할 수 있습니다만, **제가 시도해 본 바로**는 네이버클라우드에서는 CDN이 있긴 하지만 도메인 연결에 제약이 좀 있습니다. 그래서 아직은 `Object Storage`를 이용한 정적 웹 호스팅은 데모용으로만 적합하지 않나 싶습니다.
+
+## Object Storage 버킷 생성하기
+
+우선 너무 당연하게도 `Object Storage`에 버킷을 생성해야합니다. 버킷 생성에는 다음과 같은 4단계가 있습니다.
+
+<Image
+  alt="Object Storage 버킷 생성 프로세스"
+  src="/ncloud-object-storage-static-web-deployment/01.png"
+/>
+
+**기본 정보에서 버킷 이름을 설정**하고, **설정 관리는 그냥 넘어갑니다.** 혹시라도 ‘보안을 위해 암호화를 해야지’라고 생각해서 암호화 설정을 한다면 정적 웹호스팅은 할 수 없습니다. **권한 관리에서 전체 공개를 공개로 설정**해야합니다. 전체 공개로해야 일반 유저가 접속할 수 있겠죠.
+
+<Image
+  alt="Object Storage 권한 관리"
+  caption="반드시 공개로 설정"
+  src="/ncloud-object-storage-static-web-deployment/02.png"
+/>
+
+생성된 버킷으로 이동해서 다음과 같이 **정적 웹 사이트 호스팅을 선택**해줍니다.
+
+<Image
+  alt="버킷에서 정적 웹 사이트 호스팅 설정"
+  src="/ncloud-object-storage-static-web-deployment/03.png"
+/>
+
+아래와 같이 정적 웹사이트 활성화하고 인덱스 파일에 인덱스 파일 이름을 넣어주면 됩니다.
+
+<Image
+  alt="정적 웹 사이트 호스팅 설정 화면"
+  src="/ncloud-object-storage-static-web-deployment/04.png"
+/>
+
+글에서 다루지는 않았는데 당연히 버킷을 만들고 index.html파일을 업로드 해주어야 합니다. 저는 테스트에서 vite로 리액트를 셋팅하고 바로 빌드해서 `dist`에 생성된 파일들을 모두 업로드해주었습니다.
+
+<Image
+  alt="버킷에 올라간 파일들"
+  caption="버킷에 올라간 파일들"
+  src="/ncloud-object-storage-static-web-deployment/05.png"
+/>
+
+<Ads />
+
+## 배포 확인
+
+배포 확인은 정적 웹 사이트 호스팅을 설정할 때 나온 Link로 접속하면 확인할 수 있습니다.
+
+<Image
+  alt="배포된 화면"
+  caption="배포 화면"
+  src="/ncloud-object-storage-static-web-deployment/06.png"
+/>
+
+## 마무리
+
+네이버클라우드의 `Object Storage`로 배포하는 방법을 알아봤습니다. AWS S3로 배포하는 것처럼 어렵지 않지만 콘솔에서 느껴지는 DX가 AWS에 못미친다는 느낌은 좀 들어서 아쉬웠네요.
+
+<Link url="https://chaechae.life/blog/ncloud-ci-ci-deployment" />
