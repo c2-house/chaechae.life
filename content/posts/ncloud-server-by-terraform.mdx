@@ -42,7 +42,7 @@ provider "ncloud" {
 }
 ```
 
-주목할 점은 var로 설정된 부분인데 `ncloud_access_key`와 `ncloud_secret_key`는 `terraform.tfvars`에서 관리하고 `.gitignore`에 넣어 원격 저장소에를 올라가지 않도록 합니다. region과 site는 민감한 정보는 아니기 때문에 굳이 다음과 같이 설정해주었습니다.
+주목할 점은 var로 설정된 부분인데 `ncloud_access_key`와 `ncloud_secret_key`는 `terraform.tfvars`에서 관리하고 `.gitignore`에 넣어 원격 저장소에 올라가지 않도록 합니다. region과 site는 민감한 정보는 아니기 때문에 굳이 다음과 같이 설정해주었습니다.
 
 ```hcl
 # variables.tf
@@ -61,14 +61,14 @@ variable "ncloud_secret_key" {
 
 variable "region" {
   type        = string
-  sensitive   = true
+  sensitive   = false
   description = "네이버클라우드 region"
   default     = "KR"
 }
 
 variable "site" {
   type        = string
-  sensitive   = true
+  sensitive   = false
   description = "네이버클라우드 site"
   default     = "public"
 }
@@ -81,7 +81,7 @@ variable "site" {
 
 ## VPC 생성하기
 
-VPC를 생성하면서 Subnet도 함께 만들어 줍니다. 네트워크 인터페이스와 ACG만들어서 디테일하게 구성할 수 있지만 만들지 않으면 기본값으로 생성되기 때문에 예시에서는 VPC와 Subnet까지만 생성합니다.
+VPC를 생성하면서 Subnet도 함께 만들어 줍니다. 네트워크 인터페이스와 ACG를 만들어서 디테일하게 구성할 수 있지만 만들지 않으면 기본값으로 생성되기 때문에 예시에서는 VPC와 Subnet까지만 생성합니다.
 
 ```hcl
 # vpc.tf
@@ -104,7 +104,7 @@ resource "ncloud_subnet" "all_subnets" {
 }
 ```
 
-VPC를 만들기 위해서 `ipv4_cidr_block`만 잘 지정해주면 됩니다. subnet은 여러개 만들 것이기 때문에 `all_subnets`라고 이름지었습니다. `var.subnets`를 보면 알 수 있듯이 `variables.tf`에 subnet들을 추가해줍니다.
+VPC를 만들기 위해서 `ipv4_cidr_block`만 잘 지정해주면 됩니다. subnet은 여러 개 만들 것이기 때문에 `all_subnets`라고 이름 지었습니다. `var.subnets`를 보면 알 수 있듯이 `variables.tf`에 subnet들을 추가해줍니다.
 
 ```hcl
 # variables.tf
@@ -121,7 +121,7 @@ variable "subnets" {
 }
 ```
 
-subnet들은 `cidr`, `zone`, `type`, `usage_type`을 속성을 가집니다. 각각 서브넷의 범위, 가용 영역, 유형(퍼블릭, 프라이빗), 사용유형(일반, 로드밸런서)를 뜻합니다. `terraform.tfvars`에 subnet 데이터들을 입력해줍니다.
+subnet들은 `cidr`, `zone`, `type`, `usage_type`을 속성을 가집니다. 각각 서브넷의 범위, 가용 영역, 유형(퍼블릭, 프라이빗), 사용 유형(일반, 로드밸런서)를 뜻합니다. `terraform.tfvars`에 subnet 데이터들을 입력해줍니다.
 
 ```hcl
 # terraform.tfvars
@@ -192,7 +192,7 @@ resource "ncloud_public_ip" "tf-server-public-ip" {
 
 ```
 
-공개된 public 서브넷에 위치한 공개된 서버를 하나 만들어봤습니다. `server_image_number`와 `server_spec_code`는 콘솔에 들어가서 알아왔습니다. `104630229`는 `ubuntu-24.04`입니다.
+공개된 public 서브넷에 위치한 공개된 서버를 하나 만들어봤습니다. `server_image_number`와 `server_spec_code`는 콘솔에 들어가서 알아왔습니다. `104630229`는 `ubuntu-24.04`입니다. 이런 값들은 하드코딩하지 말고 변수로 관리하면 변경에 대응하기도 좋고 서버를 여러 개 만들 때도 좋습니다.
 
 `terraform plan`으로 확인하고 `terraform apply`로 생성해봅니다.
 
@@ -202,6 +202,6 @@ resource "ncloud_public_ip" "tf-server-public-ip" {
 
 ## 마무리
 
-terraform으로 간단한 네이버클라우드 인프라를 생성해봤습니다. 인프라가 복잡해질 수록 코드로 관리하는 것이 더 유용하게 쓰일 수 있을 것 같습니다.
+terraform으로 간단한 네이버클라우드 인프라를 생성해봤습니다. 인프라가 복잡해질수록 코드로 관리하는 것이 더 유용하게 쓰일 수 있을 것 같습니다.
 
 <Link url="https://chaechae.life/blog/terraform-aws-vpc" />
