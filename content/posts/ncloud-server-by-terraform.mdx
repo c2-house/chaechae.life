@@ -1,0 +1,207 @@
+---
+author: mingke
+date: 2025/11/18
+description: 배포를 하기 위해 네이버클라우드 서버를 생성하고 배포 자동화까지 해봤습니다. 이번에는 Terraform으로 인프라를 코드로 관리해보려고 합니다. 네이버클라우드도 Terraform으로 관리할 수 있습니다.
+tags: [NaverCloud, Terraform]
+thumbnail: /thumbnails/terraform-logo.png
+title: 네이버클라우드 서버 Terraform으로 생성하기
+---
+
+### 목차
+
+## Terraform으로 관리하기
+
+<Link url="https://chaechae.life/blog/ncloud-ci-ci-deployment" />
+
+배포를 하기 위해 네이버클라우드 서버를 생성하고 배포 자동화까지 해봤습니다. 이번에는 Terraform으로 인프라를 코드로 관리해보려고 합니다. 네이버클라우드도 Terraform으로 관리할 수 있습니다. 서버를 생성하기 위한 VPC 생성과 서버 생성을 Terraform으로 실행하는 방법을 알아보도록 하겠습니다. Terraform은 설치되어 있다고 가정합니다. 아래 문서 링크를 참고해서 만들었습니다.
+
+<Link url="https://registry.terraform.io/providers/NaverCloudPlatform/ncloud/latest/docs" />
+
+## Provider 설정하기
+
+Provider 설정 아주 간단합니다.
+
+```hcl
+# provider.tf
+
+terraform {
+  required_providers {
+    ncloud = {
+      source = "NaverCloudPlatform/ncloud"
+    }
+  }
+  required_version = ">= 0.13"
+}
+
+provider "ncloud" {
+  access_key  = var.ncloud_access_key
+  secret_key  = var.ncloud_secret_key
+  region      = var.region
+  site        = var.site
+  support_vpc = true
+}
+```
+
+주목할 점은 var로 설정된 부분인데 `ncloud_access_key`와 `ncloud_secret_key`는 `terraform.tfvars`에서 관리하고 `.gitignore`에 넣어 원격 저장소에 올라가지 않도록 합니다. region과 site는 민감한 정보는 아니기 때문에 굳이 다음과 같이 설정해주었습니다.
+
+```hcl
+# variables.tf
+
+variable "ncloud_access_key" {
+  type        = string
+  sensitive   = true
+  description = "네이버클라우드 Access Key"
+}
+
+variable "ncloud_secret_key" {
+  type        = string
+  sensitive   = true
+  description = "네이버클라우드 Secret Key"
+}
+
+variable "region" {
+  type        = string
+  sensitive   = false
+  description = "네이버클라우드 region"
+  default     = "KR"
+}
+
+variable "site" {
+  type        = string
+  sensitive   = false
+  description = "네이버클라우드 site"
+  default     = "public"
+}
+...
+```
+
+이렇게 선언하고 `terraform init` 을 먼저 실행하여 초기화해줍니다. 이제 VPC를 생성할 준비가 끝났습니다.
+
+<Ads />
+
+## VPC 생성하기
+
+VPC를 생성하면서 Subnet도 함께 만들어 줍니다. 네트워크 인터페이스와 ACG를 만들어서 디테일하게 구성할 수 있지만 만들지 않으면 기본값으로 생성되기 때문에 예시에서는 VPC와 Subnet까지만 생성합니다.
+
+```hcl
+# vpc.tf
+
+resource "ncloud_vpc" "tf_vpc" {
+  name            = "tf-vpc"
+  ipv4_cidr_block = "192.168.0.0/16"
+}
+
+resource "ncloud_subnet" "all_subnets" {
+  for_each = var.subnets
+
+  vpc_no         = ncloud_vpc.tf_vpc.id
+  name           = "tf-subnet-${each.key}"
+  subnet         = each.value.cidr
+  zone           = each.value.zone
+  network_acl_no = ncloud_vpc.tf_vpc.default_network_acl_no
+  subnet_type    = each.value.type
+  usage_type     = each.value.usage_type
+}
+```
+
+VPC를 만들기 위해서 `ipv4_cidr_block`만 잘 지정해주면 됩니다. subnet은 여러 개 만들 것이기 때문에 `all_subnets`라고 이름 지었습니다. `var.subnets`를 보면 알 수 있듯이 `variables.tf`에 subnet들을 추가해줍니다.
+
+```hcl
+# variables.tf
+# 이어서 작성
+
+variable "subnets" {
+  description = "생성할 서브넷 목록"
+  type = map(object({
+    cidr       = string
+    zone       = string
+    type       = string
+    usage_type = string
+  }))
+}
+```
+
+subnet들은 `cidr`, `zone`, `type`, `usage_type`을 속성을 가집니다. 각각 서브넷의 범위, 가용 영역, 유형(퍼블릭, 프라이빗), 사용 유형(일반, 로드밸런서)를 뜻합니다. `terraform.tfvars`에 subnet 데이터들을 입력해줍니다.
+
+```hcl
+# terraform.tfvars
+
+subnets = {
+  "public-1" = {
+    cidr       = "192.168.1.0/24"
+    zone       = "KR-1"
+    type       = "PUBLIC"
+    usage_type = "GEN"
+  },
+  "public-2" = {
+    cidr       = "192.168.2.0/24"
+    zone       = "KR-2"
+    type       = "PUBLIC"
+    usage_type = "GEN"
+  },
+
+  "private-1" = {
+    cidr       = "192.168.11.0/24"
+    zone       = "KR-1"
+    type       = "PRIVATE"
+    usage_type = "GEN"
+  },
+  "private-2" = {
+    cidr       = "192.168.12.0/24"
+    zone       = "KR-2"
+    type       = "PRIVATE"
+    usage_type = "GEN"
+  },
+
+  "lb-1" = {
+    cidr       = "192.168.21.0/24"
+    zone       = "KR-1"
+    type       = "PRIVATE"
+    usage_type = "LOADB"
+  },
+  "lb-2" = {
+    cidr       = "192.168.22.0/24"
+    zone       = "KR-2"
+    type       = "PRIVATE"
+    usage_type = "LOADB"
+  }
+}
+```
+
+## Server 생성하기
+
+이제 서버를 생성할 수 있습니다. `login_key_name` 같은 경우는 이전에 콘솔에서 미리 만들어 놓은 값을 사용했습니다. `login_key_name`의 값은 `terraform.tfvars`에 추가했습니다.
+
+```hcl
+variable "login_key_name" {
+  description = "Ncloud 콘솔에 미리 생성된 SSH 로그인 키 이름"
+  type        = string
+}
+
+resource "ncloud_server" "tf_server" {
+  name                = "tf-server-public"
+  subnet_no           = ncloud_subnet.all_subnets["public-1"].id
+  server_image_number = "104630229"
+  server_spec_code    = "s2-g3a"
+  login_key_name      = var.login_key_name
+}
+
+resource "ncloud_public_ip" "tf-server-public-ip" {
+  server_instance_no = ncloud_server.tf_server.id
+}
+
+```
+
+공개된 public 서브넷에 위치한 공개된 서버를 하나 만들어봤습니다. `server_image_number`와 `server_spec_code`는 콘솔에 들어가서 알아왔습니다. `104630229`는 `ubuntu-24.04`입니다. 이런 값들은 하드코딩하지 말고 변수로 관리하면 변경에 대응하기도 좋고 서버를 여러 개 만들 때도 좋습니다.
+
+`terraform plan`으로 확인하고 `terraform apply`로 생성해봅니다.
+
+<Image alt="인프라 생성 확인" caption="생성 확인" src="/ncloud-server-by-terraform/01.png" />
+
+3분 8초 걸렸습니다. 좀 걸리긴 하네요.
+
+## 마무리
+
+terraform으로 간단한 네이버클라우드 인프라를 생성해봤습니다. 인프라가 복잡해질수록 코드로 관리하는 것이 더 유용하게 쓰일 수 있을 것 같습니다.
+
+<Link url="https://chaechae.life/blog/terraform-aws-vpc" />
