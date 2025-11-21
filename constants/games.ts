@@ -34,6 +34,12 @@ export const games = [
     description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
   },
   {
+    name: '십자말풀이',
+    url: 'https://crossword.chaechae.life',
+    thumbnail: '/images/games/crossword/crossword-thumbnail.png',
+    description: '십자말풀이 게임으로 두뇌를 자극하세요!',
+  },
+  {
     name: '시간죽이기',
     url: 'https://killingtime.chaechae.life',
     thumbnail: '/images/games/killingtime/killingtime-thumbnail.png',
