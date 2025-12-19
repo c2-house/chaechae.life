@@ -18,7 +18,7 @@
     "contentlayer": "^0.3.4",
     "dayjs": "^1.11.10",
     "lucide-react": "^0.514.0",
-    "next": "^14.2.35",
+    "next": "^13.4.8",
     "next-contentlayer": "^0.3.4",
     "react": "^18",
     "react-dom": "^18",
