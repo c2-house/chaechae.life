@@ -1,0 +1,160 @@
+---
+author: mingke
+date: 2026/01/26
+description: 오늘의 주제는 친구의 ‘Gemini를 내 코드에서 불러다가 쓸 수 있나?’ 라는 질문으로부터 시작이 되었습니다. AI Agent를 사용해서 복잡하게도 만들 수 있지만, 친구의 경우는 그런 경우가 아니었고 하루 한 번 요청하는 정도면 되는 것이었습니다. Langchain이니 LangGraph 이런 것까지 갈 필요도 없죠.
+tags: [AI, Python]
+thumbnail: /thumbnails/python-logo.png
+title: Google GenAI SDK - 파이썬으로 Gemini API 연동하는 방법
+---
+
+### 목차
+
+## API로 Gemini 호출하기
+
+오늘의 주제는 친구의 ‘Gemini를 내 코드에서 불러다가 쓸 수 있나?’ 라는 질문으로부터 시작이 되었습니다. AI Agent를 사용해서 복잡하게도 만들 수 있지만, 친구의 경우는 그런 경우가 아니었고 하루 한 번 요청하는 정도면 되는 것이었습니다. Langchain이니 LangGraph 이런 것까지 갈 필요도 없죠.
+
+Google AI Studio에서 API키를 발급받아서 구글 genai sdk를 이용하면 아주 간단하게 사용할 수 있습니다. 한 때 이용자가 하루 800명씩 이용하던 아래 서비스가 Google genai sdk를 이용해서 만든 것입니다.
+
+<Link url="https://randomlife.chaechae.life/" />
+
+<Ads />
+
+## Google AI Studio에서 API키 발급받기
+
+가장 먼저 할 일은 "나 Gemini 쓸 거야!"라고 Google에게 알리고, 열쇠(Key)를 받는 것입니다. 이 열쇠가 있어야 코드가 작동합니다.
+
+- **Google AI Studio** (aistudio.google.com)에 접속합니다.
+- Google 계정으로 로그인합니다.
+- 좌측 하단의 `Get API key` 버튼을 클릭합니다.
+- `API키 만들기` 를 누르고 키를 생성합니다.
+- 생성된 키를 복사해서 메모장에 잘 저장해둡니다.
+
+<Image alt="Google AI Studio 캡처" src="/google-genai-gemini/01.png" />
+
+API키를 발급 받았으면 준비 끝입니다.
+
+<Ads />
+
+## google genai 설치하기
+
+파이썬에서 다음과 같이 설치합니다.
+
+```bash
+pip install google-genai
+
+# uv를 쓴다면
+uv pip install google-genai
+```
+
+설치가 되었으면 코드를 작성하면 됩니다.
+
+## API로 Gemini 호출하기
+
+다음과 같은 예시 코드를 작성해보았습니다. 로컬에 있는 파읽을 읽어서 함께 보내야한다는 요청이 있어서 관련해서 예시 코드를 작성했습니다.
+
+`data.txt`라는 파일을 하나 생성해서 같이 보내보겠습니다.
+
+```python
+# main.py
+import sys
+from google import genai
+from google.genai import types, errors
+
+API_KEY = "발급받은 API키"
+GEMINI_MODEL = "gemini-3-flash-preview"
+FILE_PATH = "data.txt"
+
+def create_genai_client(api_key: str | None = None) -> genai.Client:
+    """
+    Google Gen AI 클라이언트를 생성하여 반환합니다.
+    """
+    if not api_key:
+        raise ValueError("API Key가 설정되지 않았습니다.")
+
+    return genai.Client(api_key=api_key)
+
+def read_local_file(file_path: str) -> str:
+    """
+    로컬 경로의 텍스트 파일을 읽어서 문자열로 반환합니다.
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError:
+        print(f"[Error] 파일을 찾을 수 없습니다: {file_path}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"[Error] 파일 읽기 중 오류 발생: {e}")
+        sys.exit(1)
+
+def query_gemini_with_context(
+    client: genai.Client,
+    model_name: str,
+    prompt: str,
+    context_text: str
+) -> str | None:
+    """
+    프롬프트와 컨텍스트(파일 내용)를 결합하여 Gemini 모델에 요청을 보냅니다.
+    """
+    try:
+        contents = [
+            prompt,
+            context_text
+        ]
+
+        response = client.models.generate_content(
+            model=model_name,
+            contents=contents,
+            config=types.GenerateContentConfig(
+                temperature=0.7,
+            )
+        )
+        return response.text
+
+    except errors.APIError as e:
+        print(f"[API Error] Google API 호출 중 오류 발생: {e.message}")
+        return None
+    except Exception as e:
+        print(f"[Error] 알 수 없는 오류 발생: {e}")
+        return None
+
+def main():
+    try:
+        client = create_genai_client(API_KEY)
+    except ValueError as e:
+        print(e)
+        return
+
+    file_path = FILE_PATH
+    context_text = read_local_file(file_path)
+    if not context_text:
+        print("[Error] 파일을 찾을 수 없습니다.")
+        return
+
+    prompt = "google genai sdk 테스트 중이다."
+    response = query_gemini_with_context(client, GEMINI_MODEL, prompt, context_text)
+    if response:
+        print("[Response]", response)
+    else:
+        print("[Error] Gemini 모델에 대한 응답을 받을 수 없습니다.")
+
+if __name__ == "__main__":
+    main()
+
+```
+
+위 코드를 실행하면 `data.txt`의 내용을 읽은 뒤, "google genai sdk 테스트 중이다."라는 멘트와 함께 Gemini에게 전송합니다. Gemini는 파일 내용을 바탕으로 똑똑하게 답변을 줄 것입니다.
+
+코드를 보면 1. 클라이언트 생성(`create_genai_client`), 2. 파일 읽기(`read_local_file`), 3. 질문하기(`query_gemini_with_context`) 로 기능이 딱딱 나뉘어 있어 이해하기 쉬우실 거라고 생각합니다.
+
+코드를 좀 안다면 아래 링크에 들어가서 좀 더 자세하게 확인해봐도 좋을 것 같습니다.
+
+<Link url="https://github.com/googleapis/python-genai" />
+
+<Ads />
+
+## 마무리
+
+오늘은 간단하게 **Google genai sdk**를 이용해서 로컬 파일을 읽고 Gemini API를 호출하는 방법을 알아봤습니다. 친구와 대화를 나누면서 복잡한 AI Agent에 대한 수요만 있는 것이 아니고 간단한 곳에도 수요가 있다는 것을 깨닫네요. 다음에는 좀 더 복잡한 Agent와 관련된 글도 한 번 작성해봐야겠습니다.
+
+<Link url="https://chaechae.life/blog/google-agent-ide-antigravity" />
