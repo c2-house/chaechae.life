@@ -6,9 +6,30 @@
   .prose #목차 {
     @apply mb-0 w-fit rounded-t-md bg-slate-200 px-4 tracking-wider;
   }
-
+  
   .prose #목차 + ul {
     @apply rounded-md rounded-tl-none border border-slate-200 py-2 pr-2;
+
+    ul,
+    li {
+      @apply my-0;
+    }
+
+    a {
+      @apply no-underline text-base font-normal;
+    }
+  }
+
+  .prose h1 {
+    @apply text-3xl md:text-4xl mb-6 break-all font-bold;
+  }
+
+  .prose h2 {
+    @apply mt-20;
+  }
+
+  .prose h3 {
+    @apply mt-14;
   }
 
   .prose h2,
@@ -58,6 +79,14 @@
 @layer utilities {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .no-scrollbar {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 
   .bounce-move {
