@@ -18,7 +18,7 @@ const BlogPage = ({ searchParams: { page } }: Props) => {
       <Sidebar currentTab={defaultTag} />
       <main className="min-h-screen flex-1">
         <section className="py-5">
-          <PostList posts={posts} page={page} countLabel={defaultTag} />
+          <PostList posts={posts} page={page} countLabel={defaultTag} currentTab={defaultTag} />
         </section>
         <ResponsiveAds />
       </main>

@@ -32,7 +32,7 @@ const TagPage = ({ params: { tagName }, searchParams: { page } }: Props) => {
       <Sidebar currentTab={tagName} />
       <main className="min-h-screen flex-1">
         <section className="py-5">
-          <PostList posts={posts} page={page} countLabel={currentTag} />
+          <PostList posts={posts} page={page} countLabel={currentTag} currentTab={tagName} />
         </section>
         <ResponsiveAds />
       </main>

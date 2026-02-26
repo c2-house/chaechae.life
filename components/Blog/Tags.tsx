@@ -35,7 +35,7 @@ export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
 
   return (
     <nav>
-      <ul className="not-prose flex flex-wrap justify-center gap-x-2 gap-y-3 p-2 text-sm text-slate-700">
+      <ul className="not-prose flex flex-wrap justify-center gap-x-2 gap-y-3 text-sm text-slate-700">
         {allTags.map((tag) => (
           <li key={tag}>
             <Link

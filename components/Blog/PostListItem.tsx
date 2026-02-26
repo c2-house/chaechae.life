@@ -42,7 +42,7 @@ const PostListItem = ({ post }: { post: BlogPost }) => {
           <p className="mt-2 hidden text-slate-700 md:line-clamp-2">{post.description}</p>
         </PostLink>
         <time
-          className="my-2 block text-sm text-slate-500"
+          className="mb-2 mt-1 block text-sm text-slate-500 md:mt-2"
           dateTime={dayjs(post.date).format('YYYY-MM-DD')}
         >
           {dayjs(post.date).format('YYYY년 M월 D일')}
