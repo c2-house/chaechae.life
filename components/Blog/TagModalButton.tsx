@@ -53,7 +53,7 @@ const TagModalButton = ({ currentTab }: { currentTab?: string }) => {
               className="no-scrollbar max-h-[60vh] overflow-y-auto py-2"
               onClick={() => setIsOpen(false)}
             >
-              <TagNavbar currentTab={currentTab || '전체글'} />
+              <TagNavbar currentTab={currentTab || ''} />
             </div>
           </div>
         </div>

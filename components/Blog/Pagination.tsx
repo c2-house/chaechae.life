@@ -1,6 +1,9 @@
+'use client';
+
 import clsx from 'clsx';
 import Link from 'next/link';
 import Image from 'next/image';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { ChevronRightIcon, ChevronLeftIcon } from '@/public/icons';
 
 interface Props {
@@ -9,10 +12,19 @@ interface Props {
 }
 
 const Pagination = ({ currentPage, totalPages }: Props) => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
+  const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
+
   return (
     <div className="flex items-center justify-center gap-4">
       <Link
-        href={`?page=${currentPage - 1}`}
+        href={createPageURL(currentPage - 1)}
         aria-disabled={currentPage === 1}
         className={clsx(
           'group flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-slate-100',
@@ -33,7 +45,7 @@ const Pagination = ({ currentPage, totalPages }: Props) => {
         {currentPage} / {totalPages}
       </span>
       <Link
-        href={`?page=${currentPage + 1}`}
+        href={createPageURL(currentPage + 1)}
         aria-disabled={currentPage === totalPages}
         className={clsx(
           'group flex items-center gap-1 rounded-md px-2 py-1 transition-colors hover:bg-slate-100',
