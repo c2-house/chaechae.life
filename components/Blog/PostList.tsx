@@ -3,15 +3,18 @@ import type { BlogPost } from '@/lib/lifePosts';
 import PostListItem from './PostListItem';
 import BlogInfeedAds from '../AdSense/BlogInfeedAds';
 import Pagination from './Pagination';
+import TagModalButton from './TagModalButton';
+import MobileSearchButton from './MobileSearchButton';
 
 interface Props {
   posts: BlogPost[];
   page?: string;
   countLabel?: string;
+  currentTab?: string;
   showAds?: boolean;
 }
 
-const PostList = ({ posts, page, countLabel, showAds = true }: Props) => {
+const PostList = ({ posts, page, countLabel, currentTab, showAds = true }: Props) => {
   const currentPage = Number(page) || 1;
   const postsPerPage = 10;
   const totalPages = Math.ceil(posts.length / postsPerPage);
@@ -29,12 +32,16 @@ const PostList = ({ posts, page, countLabel, showAds = true }: Props) => {
 
   return (
     <>
-      {countLabel && (
-        <div className="mb-5 flex items-center gap-2 font-semibold md:mb-7 md:text-xl">
+      <div className="mb-5 flex h-8 items-center justify-between gap-3 md:mb-7 md:text-xl">
+        <div className="flex shrink-0 items-center gap-2 font-semibold">
           {countLabel}
           <span className="text-sm font-medium text-gray-500">({posts.length})</span>
         </div>
-      )}
+        <div className="flex items-center gap-2">
+          <MobileSearchButton />
+          <TagModalButton currentTab={currentTab} />
+        </div>
+      </div>
       <ul>
         {currentPosts.map((post, index) => (
           <li key={post.slug}>
