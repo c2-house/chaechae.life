@@ -4,6 +4,7 @@ import PostListItem from './PostListItem';
 import BlogInfeedAds from '../AdSense/BlogInfeedAds';
 import Pagination from './Pagination';
 import TagModalButton from './TagModalButton';
+import MobileSearchButton from './MobileSearchButton';
 
 interface Props {
   posts: BlogPost[];
@@ -31,12 +32,15 @@ const PostList = ({ posts, page, countLabel, currentTab, showAds = true }: Props
 
   return (
     <>
-      <div className="mb-5 flex items-center justify-between gap-3 md:mb-7 md:text-xl">
-        <div className="flex items-center gap-2 font-semibold">
+      <div className="mb-5 flex h-8 items-center justify-between gap-3 md:mb-7 md:text-xl">
+        <div className="flex shrink-0 items-center gap-2 font-semibold">
           {countLabel}
           <span className="text-sm font-medium text-gray-500">({posts.length})</span>
         </div>
-        <TagModalButton currentTab={currentTab} />
+        <div className="flex items-center gap-2">
+          <MobileSearchButton />
+          <TagModalButton currentTab={currentTab} />
+        </div>
       </div>
       <ul>
         {currentPosts.map((post, index) => (

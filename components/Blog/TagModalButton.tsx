@@ -28,7 +28,7 @@ const TagModalButton = ({ currentTab }: { currentTab?: string }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="rounded-full border border-indigo-600 px-2 py-0.5 text-sm text-indigo-600 lg:hidden"
+        className="shrink-0 rounded-full border border-indigo-600 px-2 py-0.5 text-sm text-indigo-600 lg:hidden"
       >
         태그 목록
       </button>
