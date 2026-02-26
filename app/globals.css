@@ -60,6 +60,14 @@
     padding-bottom: env(safe-area-inset-bottom);
   }
 
+  .no-scrollbar {
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
   .bounce-move {
     animation: move 5s infinite;
   }
