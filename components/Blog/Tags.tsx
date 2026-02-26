@@ -30,33 +30,8 @@ export const Tags = ({ tags, addLink = true }: { tags: string[] | null; addLink?
 };
 
 export const TagNavbar = ({ currentTab }: { currentTab: string }) => {
-  const allTags = ['All', ...tags];
-
-  return (
-    <nav>
-      <ul className="not-prose my-5 flex flex-wrap justify-center gap-2 text-sm text-slate-700 md:gap-3 md:text-base">
-        {allTags.map((tag) => (
-          <li key={tag}>
-            <Link
-              href={tag === 'All' ? `/blog` : `/blog/tag/${slugify(tag)}`}
-              className={clsx(
-                'inline-flex rounded-full border px-3 py-1 transition-colors sm:px-4',
-                decodeURIComponent(currentTab) === slugify(tag)
-                  ? 'border-indigo-600 bg-indigo-600 text-white'
-                  : 'border-slate-200 hover:border-indigo-600',
-              )}
-            >
-              {tag}
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-};
-
-export const TagSidebar = ({ currentTab }: { currentTab: string }) => {
-  const allTags = ['전체글', ...tags];
+  const defaultTag = '전체글';
+  const allTags = [defaultTag, ...tags];
 
   return (
     <nav>
@@ -64,7 +39,7 @@ export const TagSidebar = ({ currentTab }: { currentTab: string }) => {
         {allTags.map((tag) => (
           <li key={tag}>
             <Link
-              href={tag === '전체글' ? `/blog` : `/blog/tag/${slugify(tag)}`}
+              href={tag === defaultTag ? `/blog` : `/blog/tag/${slugify(tag)}`}
               className={clsx(
                 'inline-flex rounded-full border px-2 py-0.5 transition-colors',
                 decodeURIComponent(currentTab) === slugify(tag)
