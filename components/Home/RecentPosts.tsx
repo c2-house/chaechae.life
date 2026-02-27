@@ -49,7 +49,7 @@ const RecentPosts = ({ posts }: { posts: BlogPost[] }) => {
           <ChevronRightIcon className="h-5 w-5 fill-current" />
         </BlogLink>
       </div>
-      <PostList posts={posts} showAds={false} />
+      <PostList posts={posts} showHeader={false} showAds={false} />
       <div className="mt-8 flex justify-center">
         <BlogLink
           type={postType}

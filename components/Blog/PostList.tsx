@@ -11,10 +11,18 @@ interface Props {
   page?: string;
   countLabel?: string;
   currentTab?: string;
+  showHeader?: boolean;
   showAds?: boolean;
 }
 
-const PostList = ({ posts, page, countLabel, currentTab, showAds = true }: Props) => {
+const PostList = ({
+  posts,
+  page,
+  countLabel,
+  currentTab,
+  showHeader = true,
+  showAds = true,
+}: Props) => {
   const currentPage = Number(page) || 1;
   const postsPerPage = 10;
   const totalPages = Math.ceil(posts.length / postsPerPage);
@@ -32,16 +40,18 @@ const PostList = ({ posts, page, countLabel, currentTab, showAds = true }: Props
 
   return (
     <>
-      <div className="mb-5 flex h-8 items-center justify-between gap-3 md:mb-7 md:text-xl">
-        <div className="flex shrink-0 items-center gap-2 font-semibold">
-          {countLabel}
-          <span className="text-sm font-medium text-gray-500">({posts.length})</span>
+      {showHeader && (
+        <div className="mb-5 flex h-8 items-center justify-between gap-3 md:mb-7 md:text-xl">
+          <div className="flex shrink-0 items-center gap-2 font-semibold">
+            {countLabel}
+            <span className="text-sm font-medium text-gray-500">({posts.length})</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <MobileSearchButton />
+            <TagModalButton currentTab={currentTab} />
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <MobileSearchButton />
-          <TagModalButton currentTab={currentTab} />
-        </div>
-      </div>
+      )}
       <ul>
         {currentPosts.map((post, index) => (
           <li key={post.slug}>

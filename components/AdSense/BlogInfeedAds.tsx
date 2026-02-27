@@ -1,19 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 const BlogInfeedAds = () => {
-  const [isMobileView, setIsMobileView] = useState(false);
-
   useEffect(() => {
-    setIsMobileView(window.innerWidth < 768);
     if (process.env.NODE_ENV !== 'production') return;
-
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (error) {
-      console.error('Error loading Google AdSense:', error);
-    }
+    (window.adsbygoogle = window.adsbygoogle || []).push({});
   }, []);
 
   return (
@@ -21,9 +13,9 @@ const BlogInfeedAds = () => {
       className="adsbygoogle"
       style={{ display: 'block' }}
       data-ad-format="fluid"
-      data-ad-layout-key={isMobileView ? '-ht-f+9-7q+kc' : '-fp-1q+do-pz+7c'}
+      data-ad-layout-key="-g0+2x+bi-dn-n"
       data-ad-client={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID}
-      data-ad-slot={isMobileView ? '8237233960' : '5659758817'}
+      data-ad-slot="5659758817"
     ></ins>
   );
 };
