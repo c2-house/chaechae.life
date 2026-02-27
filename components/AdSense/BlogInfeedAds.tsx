@@ -13,7 +13,7 @@ const BlogInfeedAds = () => {
       className="adsbygoogle"
       style={{ display: 'block' }}
       data-ad-format="fluid"
-      data-ad-layout-key="-fo+43+b3-fr+14"
+      data-ad-layout-key="-fo+40+bw-fp-22"
       data-ad-client={process.env.NEXT_PUBLIC_GOOGLE_ADSENSE_CLIENT_ID}
       data-ad-slot="5659758817"
     ></ins>
