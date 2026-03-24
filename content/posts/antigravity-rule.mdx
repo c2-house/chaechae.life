@@ -1,0 +1,80 @@
+---
+date: 2026/03/24
+description: Antigravity에서 AI 에이전트가 내가 설정한 규칙을 따르도록 하는 방법을 알아보겠습니다. 바로 GEMINI.md에 규칙을 설정하는 것인데요, GEMINI.md를 작성하면 Antigravity에서 실행하는 모든 프로젝트에 자동으로 반영이 됩니다. 그래서 글로벌 규칙(Rule)이라고 부릅니다.
+tags: [Tools]
+author: mingke
+thumbnail: /thumbnails/antigravity-logo.png
+title: Antigravity에 규칙(Rule) 설정하는 방법
+---
+
+### 목차
+
+## GEMINI.md로 글로벌 규칙 설정하기
+
+요즘 AI들은 그냥 대충 말만해도 너무 잘 알아듣고 일반적으로 좋은 성능을 냅니다. 하지만 **AI를 내 입맛대로 길들이고 싶다면 AI에게 규칙을 알려줘야 합니다.** 프롬프트마다 일일히 적어줄 수도 있겠지만 그건 너무 귀찮습니다. 
+
+Antigravity에서 AI 에이전트가 내가 설정한 규칙을 따르도록 하는 방법을 알아보겠습니다. 바로 GEMINI.md에 규칙을 설정하는 것인데요, **GEMINI.md를 작성하면 Antigravity에서 실행하는 모든 프로젝트에 자동으로 반영**이 됩니다. 그래서 글로벌 규칙(Rule)이라고 부릅니다.  
+
+아래는 규칙을 설정하기 전에 응답입니다. 날 도와줄 준비가 되었냐고 물어봅니다.
+
+<Image alt="설정 없이 질문" caption="설정 없이 질문" src="/antigravity-rule/01.png" /> 
+
+이제 우측 Agent 대화창에서 오른쪽 위를 보면 아래 이미지 처럼 **점이 3개**가 있습니다. 그것을 **클릭**하고 **그 다음 Customization을 클릭**합니다.
+
+<Image alt="규칙 설정 화면" caption="규칙 설정 화면" src="/antigravity-rule/02.png" />
+
+그 다음 화면에서 **Global을 클릭**해줍니다. 그러면 **비어있는 GEMINI.md가 나옵니다. 거기에 규칙을 적어주면 됩니다.**
+
+<Image alt="Global 클릭" caption="Global 클릭" src="/antigravity-rule/03.png" />
+
+<Image alt="GEMINI.md" caption="GEMINI.md" src="/antigravity-rule/04.png" />
+
+<Ads />
+
+아래와 같이 GEMINI.md를 채워봤습니다.
+
+```markdown
+# 반드시 지켜야 할 규칙
+1. 모든 답변은 언어에 상관없이 한국어로만 대답한다.
+```
+
+그리고 다시 대화 세션을 만들어서 질문해봤습니다.
+
+<Image alt="규칙 적용 후 응답" caption="규칙 적용 후 응답" src="/antigravity-rule/05.png" />
+
+영어로 질문했지만 한국어로 답변해야하는 규칙 때문에 한국어로 대답하고 있습니다. 
+글로벌 규칙인 `GEMINI.md`는 어떤 프로젝트를 하든 상관없이, AI가 항상 지켜야 할 나만의 **기본 대화 매뉴얼**입니다. '답변은 항상 결론부터 짧게 해줘', '설명보다 코드를 먼저 보여줘'처럼 모든 작업에 공통으로 적용하고 싶은 AI의 성향과 기본 태도를 적어두는 공간입니다!
+
+## 프로젝트 단위의 규칙
+
+적용되어야 하는 규칙은 프로젝트마다 다를 수 있습니다. Antigravity에서 당연하게도 프로젝트 단위로 규칙을 적용시킬 수 있습니다. 엄밀히 말하면 Workspace단위로, 작업 공간 별로 규칙을 따로 정할 수 있습니다. 
+
+위의 이미지 중에서 Global 옆에 보면 **Workspace가 보일 것 입니다. 그것을 클릭**하면 규칙 이름을 정하라고 나옵니다. **규칙 이름을 정하고 입력**하면, 입력한 이름의 **md파일이 생기는데 거기에 규칙**을 넣으면 됩니다.
+
+<Image alt="Workspace레벨 규칙 설정 방법" caption="Workspace레벨 규칙 설정 방법" src="/antigravity-rule/06.png" />
+
+`.agents/rules` 경로 아래에 md파일들이 생성됩니다. Workspace레벨의 규칙은 여러 개 만들 수 있습니다.
+
+<Ads />
+
+answer-style규칙을 만들어서 아래와 같이 넣어봤습니다.
+
+```markdown
+# 반드시 지켜야 할 규칙
+1. 모든 답변은 영어로만 한다.
+2. 답변 끝에 항상 "하하하"를 붙인다.
+```
+
+`1. 모든 답변은 영어로만 한다.` 는 앞서 만든 글로벌 규칙과 충돌합니다. **규칙의 충돌이 발생하면 Workspace레벨의 규칙**을 따릅니다.
+
+<Image alt="규칙 충돌 시 Workspace레벨 규칙 적용" caption="규칙 충돌 시 Workspace레벨 규칙 적용" src="/antigravity-rule/07.png" />
+
+규칙을 어떻게 넣어주면 좋을지 모르겠다면, 고민해도 정말 모르겠다면 AI에게 직접 작성하라고 시킬 수 있습니다. 대충 아래와 같이 시켜봤습니다. 결과물 나오면 복붙해서 넣으면 됩니다. 
+
+<Image alt="규칙 작성 요청" caption="규칙 작성 요청" src="/antigravity-rule/08.png" />
+
+<Ads />
+
+## 마무리
+
+AI를 잘 쓰기 위한 첫 걸음인 것 같습니다. 좀 더 효과적이고 효율적인 AI 사용을 위해 많은 고민이 필요합니다. 어떤 규칙을 넣어주면 AI가 더 좋은 응답과 결과물을 내놓을지 계속해서 고민해봐야 하겠습니다.
