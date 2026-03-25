@@ -1,0 +1,61 @@
+---
+author: mingke
+date: 2026/03/25
+description: SKILL(스킬)은 AI 에이전트가 특정 작업을 완벽하게 수행할 수 있도록 쥐여주는 모듈화된 능력 패키지입니다. Antropic에서 먼저 개발되어 Claude Code에서 먼저 사용되면서 유명해졌습니다. Antigravity에도 추후에 도입되었고 비슷하게 사용할 수 있습니다.
+tags: [Tools]
+thumbnail: /thumbnails/antigravity-logo.png
+title: Antigravity SKILL사용하는 방법 알아보기
+---
+
+### 목차
+
+## SKILL이란?
+
+SKILL(스킬)은 AI 에이전트가 **특정 작업을 완벽하게 수행할 수 있도록 쥐여주는 모듈화된 능력 패키지**입니다. Antropic에서 먼저 개발되어 Claude Code에서 먼저 사용되면서 유명해졌습니다. Antigravity에도 추후에 도입되었고 비슷하게 사용할 수 있습니다.
+
+스킬은 RPG게임에서 사용되는 스킬과 역할이 동일하다고 볼 수 있습니다. 뼈대가 되는 **기본 캐릭터(AI 에이전트)는** 일반적인 대화나 사고 능력을 갖추고 있습니다. 하지만 이 캐릭터가 상황에 맞게 특수한 마법을 쓰거나 정교한 자동 전투 로직을 따르게 하려면 스킬을 배워야 합니다.
+
+**게임에서 목적에 맞게 여러 스킬들이 존재하듯이 Antigravity에서 사용되는 스킬도 목적에 맞게 스킬을 구성해야합니다.**
+
+<Ads />
+
+## Antigravity에 SKILL 장착 및 사용 방법
+
+**프로젝트 단위로 스킬을 구성할 수도 있고** 글로벌하게 모든 프로젝트에서 사용할 수 있는 스킬을 구성할 수도 있습니다.
+
+- 프로젝트 별로 스킬을 구성할 때는 프로젝트 루트 경로에 `.agents/skills/<skill-name>/SKILL.md` 이렇게 파일을 만들어고 `SKILL.md`에 내용을 채우면 됩니다.
+- 글로벌 스킬은 `~/.gemini/antigravity/skills/<skill-name>/SKILL.md` 를 만들고 `SKILL.md`를 채우면 됩니다.
+
+**Antigravity에 스킬을 장착하는 방법은 이렇게 쉽습니다.** 
+
+하지만 사실 어떤 스킬을 어떻게 만드느냐가 관건이죠. 이미 Claude Code에서 사용하기 위해 만들어진 SKILL들을 사용할 수 있습니다. 따라서 **내가 직접 만들어도 되고 남들이 만들어서 공유해준 스킬들을 가져다 사용해도 됩니다.**
+
+앤트로픽 공식 레포에서 공유된 스킬들을 가져다가 기본 스킬처럼 한 번 써보는 것도 좋은 것 같습니다. 그리고 앤트로픽에서 스킬을 만든 것을 보면 스킬이 SKILL.md만 있는 것이 아니고 여러 구성 요소들이 있습니다. 그런 것들을 참조해서 내가 스킬을 만들 때도 이용해 볼 수 있겠습니다.
+
+<Link url="https://github.com/anthropics/skills" />
+
+<Image alt="skill-creator 스킬" caption="skill-creator 스킬" src="/antigravity-skill/01.png" />
+
+앤트로픽에서 만든 skill-creator라는 스킬을 사용해서 스킬을 만들어볼 수 있습니다. **스킬을 만드는 스킬을 사용해서 스킬을 만드는 것 입니다.**
+
+AI에게 **uv를 이용한 PyPI 배포 스킬을 만들기 위한 프롬프트를 만들어달라고 요청**했습니다.
+
+<Image alt="uv를 이용한 PyPI 배포 스킬을 만들기 위한 프롬프트" caption="uv를 이용한 PyPI 배포 스킬을 만들기 위한 프롬프트" src="/antigravity-skill/02.png" />
+
+스킬 만들어 달라고 요청했더니 알아서 가지고 있는 **skill-creator 스킬을 활용해서 스킬을 만드는 모습을 볼 수 있습니다.**
+
+<Image alt="skill-creator 스킬을 활용한 스킬 생성" caption="skill-creator 스킬을 활용한 스킬 생성" src="/antigravity-skill/03.png" />
+
+새로운 세션을 열어서 대충 아래와 같이 요청하니까 **막 만들어진 스킬을 활용해서 작업**합니다. 
+
+<Image alt="새로운 스킬을 활용한 작업" caption="새로운 스킬을 활용한 작업" src="/antigravity-skill/04.png" />
+
+<Image alt="새로운 스킬 활용 작업 결과" caption="새로운 스킬 활용 작업 결과" src="/antigravity-skill/05.png" />
+
+간단한 작업을 하는 것이지만 문맥상 저 스킬을 사용해야겠다고 스스로 인지하고 스킬을 사용합니다. 다시 말하면 **스킬을 사용해달라고 요청하지 않아도 에이전트가 문맥을 파악해서 알아서 스킬을 사용하기 때문에 우리는 스킬을 장착하기만 하면 됩니다.**
+
+<Ads />
+
+## 마무리
+
+클로드 코드(Claude Code)에서만 스킬을 쓰는 게 아닙니다. Antigravity에서도 얼마든지 쓸 수 있습니다. 단순한 텍스트 생성기를 넘어, 명확한 도구와 목적을 가진 든든한 에이전트로 진화시켜 보면 좋겠습니다.
