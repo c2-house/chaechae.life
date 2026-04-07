@@ -1,0 +1,108 @@
+---
+author: mingke
+date: 2026/04/07
+description: 랜덤 라이프라는 웹 사이트를 Google AI Studio에서 발급받은 API를 가지고 운영하고 있었습니다. 3개월 동안 300달러까지 무료로 사용할 수 있었기 때문에 안심하고 사용하고 있었습니다. 그런데 갑자기 API사용료가 결제되어서 깜짝 놀랐는데요, 알고 보니 이제 Google AI Studio에서 발급받은 API는 무료로 사용할 수 없도록 정책이 바뀌었는데 그걸 모르고 계속 쓰고 있던 것이었습니다.
+tags: [AI]
+thumbnail: /thumbnails/antigravity-logo.png
+title: Google GenAI SDK로 Vertex AI 사용하기
+---
+
+### 목차
+
+## Google AI Studio API 무료 사용 종료
+
+[랜덤 라이프](https://randomlife.chaechae.life/)라는 웹 사이트를 Google AI Studio에서 발급받은 API를 가지고 운영하고 있었습니다. **3개월 동안 300달러까지 무료**로 사용할 수 있었기 때문에 안심하고 사용하고 있었습니다. 그런데 갑자기 API사용료가 결제되어서 깜짝 놀랐는데요, 알고 보니 **이제 Google AI Studio에서 발급받은 API는 무료로 사용할 수 없도록 정책이 바뀌었는데** 그걸 모르고 계속 쓰고 있던 것이었습니다. 
+
+아직 기간도 남고 300달러의 크레딧이 남아서 아까워 하고 있었는데 찾아보니 **Vertex AI에서 API를 호출하면 크레딧을 사용**할 수 있더군요. **Gemini API 3개월 300달러 무료 사용은 이제 Vertex AI에서만 사용가능합니다. 2026년 3월 2일부터 변경되었습니다.**
+
+<Link url="https://ai.google.dev/gemini-api/docs/billing?hl=ko#cloud-billing" />
+
+<Image alt="Google AI Studio API 정책 변경" caption="Google AI Studio API 정책 변경" src="/google-genai-sdk-vertex-ai/01.png" />
+
+구글이 명확한 안내를 해주지 않아 저처럼 갑자기 결제 당한 사람들이 레딧에도 꽤 있는 것을 발견했습니다.
+
+<Link url="https://www.reddit.com/r/googlecloud/comments/1rtljot/psa_gcp_300_free_credits_no_longer_work_with_ai/?captcha=1" />
+
+<Ads />
+
+## GenAI SDK로 Vertex AI API 호출하기
+
+Google AI Studio에서는 API만 발급받아서 API Key만 넣어주면 됐는데 Vertex AI는 그렇게 할 수 없습니다. 사실 **Vertex AI도 API키 발급받아서 그냥 넣어주면 호출은 되는데 크레딧이 아니라 돈으로 나가더라구요.** 
+
+```jsx
+// Before AI Studio API 사용 
+try {
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+    });
+    
+    const result = response.text ?? "";
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error("Error generating content:", error);
+    return res.status(500).json({ error: 'Failed to generate content' });
+  }
+  
+  
+// After Vertex AI 사용
+  const serviceAccount = JSON.parse(process.env.GCP_SERVICE_ACCOUNT_KEY);
+  ...
+  try {
+    const ai = new GoogleGenAI({
+      vertexai: true,
+      project: "Project ID",
+      location: "global",
+      apiVersion: 'v1',
+      googleAuthOptions: {
+        credentials: {
+          client_email: serviceAccount.client_email,
+          private_key: serviceAccount.private_key.replace(/\\n/g, '\n'),
+        }
+      },
+    });
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+    });
+
+    const result = response.text ?? "";
+    return res.status(200).json({ result });
+  } catch (error) {
+    console.error("Error generating content:", error);
+    return res.status(500).json({ error: 'Failed to generate content' });
+  }
+```
+
+우선 코드는 이렇게 됩니다. 별로 어려운 것 없고 간단합니다. Vertex AI를 사용할 땐 API Key를 넣지 않고 project, location, apiVersion, googleAuthOptions를 넣어줍니다.
+
+- project는 GCP에서 생성한 Project의 ID를 넣어주면 됩니다. **GCP 콘솔에서 프로젝트 만들었을 때 이름이 아니고 빨간 박스를 클릭하면 나오는 Project ID를 넣어주면 됩니다.**
+
+<Image alt="project 이름이 아니라 ID를 넣어야 합니다." caption="project 이름이 아니라 ID를 넣어야 합니다." src="/google-genai-sdk-vertex-ai/02.png" />
+
+- location은 구글 문서를 찾아보니 ‘global’이라고 되어 있어서 그걸 넣어줬습니다. 서울 리전을 로케이션으로 넣어주니까 에러가 나더라구요.
+- apiVersion은 Vertex AI를 genai sdk에서 쓰려면 v1으로 하라고 genai 문서에 나와있었습니다.
+- googleAuthOptions는 Vertex AI를 사용하려면 기본적으로 인증이 필요합니다. 인증을 위해 넣은 것 입니다.
+
+<Ads />
+
+## GCP에서 설정하기
+
+코드만 위와 같이 넣는다고 되는 것이 아닙니다. GCP에서 설정이 필요합니다. 
+
+우선 **Vertex AI API 활성화** 합니다.
+
+<Image alt="vertex ai api 활성화" caption="vertex ai api 활성화" src="/google-genai-sdk-vertex-ai/03.png" />
+
+그 다음으로 **IAM 및 관리자 > 서비스 계정으로 이동해서 서비스 계정을 만들어야 합니다. 계정을 만들면서 Vertex AI 권한을 같이 넣어줍니다.** 
+
+생성이 완료되면 작업 탭을 눌러 **키관리 > 키추가 > 새 키 만들기 해서 JSON으로 만들어서 나오는 키를 잘 저장해둡니다.**
+
+생성된 키를 보면 안에 `client_email`과 `private_key`가 있습니다. 그 값들이 위에 있는 코드에서 사용됩니다. 당연히 이 키들은 github에 올라가도 안되고 클라이언트 사이드에서 사용되어도 안 됩니다. 환경 변수로 관리하고 서버 사이드에서만 사용할 것을 권장합니다.
+
+## 마무리
+
+기존에 API 방식보다 설정하기 번거롭긴 하지만 무료 크레딧을 알차게 사용하려면 어쩔 수 없는 것 같습니다. 랜덤 라이프에 AI 기능을 없앨까 했는데, 그래도 Vertex AI 덕분에 아직 살려 놓을 수 있었습니다.
+
+<Link url="https://chaechae.life/blog/antigravity-rule" />
