@@ -1,0 +1,48 @@
+---
+author: mingke
+date: 2026/05/18
+description: 최근 초보자들을 대상으로한 AI 교육에서 Streamlit을 많이 사용하고 있습니다. Streamlit은 프론트엔드를 몰라도 파이썬 코딩만으로 쉽게 인터렉티브한 웹 앱을 만들 수 있는 프레임워크입니다. 그런데 지금은 AI가 코딩을 합니다. Streamlit에는 AI가 Streamlit 코딩을 제대로 할 수 있도록 도와주는 SKILL이 있습니다. 1.57버전 이후부터는 라이브러리안에 SKILL이 담겨져있습니다.
+tags: [Python, Streamlit]
+thumbnail: /thumbnails/python-logo.png
+title: Streamlit Agent Skill로 쉽게 개발하기
+---
+
+### 목차
+
+## Streamlit Agent Skill
+
+최근 초보자들을 대상으로한 AI 교육에서 Streamlit을 많이 사용하고 있습니다. **Streamlit**은 프론트엔드를 몰라도 **파이썬 코딩만으로 쉽게 인터렉티브한 웹 앱을 만들 수 있는 프레임워크**입니다. 그런데 지금은 AI가 코딩을 합니다. Streamlit에는 **AI가 Streamlit 코딩을 제대로 할 수 있도록 도와주는 SKILL**이 있습니다. **1.57버전 이후**부터는 라이브러리안에 SKILL이 담겨져있습니다. 
+
+<Image alt="Streamlit Agent Skills" caption="Streamlit Agent Skills" src="/streamlit-agent-skills/01.png" />
+
+이 SKILL을 사용하기 위해서 스킬 설치가 필요합니다. 사용하고 있는 Agent에 따라서 설치 방법이 조금 다르기 때문에 Github에서 확인하고 알려주는 방법대로 설치하면 됩니다.
+
+<Link url="https://github.com/streamlit/agent-skills" />
+
+저는 구글 주주에 구글 제품을 좋아하기 때문에 `gemini-cli`를 사용했습니다.
+
+```bash
+gemini skills install https://github.com/streamlit/agent-skills.git
+```
+
+<Ads />
+
+## Gemini-cli로 개발하기
+
+설치가 되었다면 프롬프트 넣어주고 개발하면 됩니다. Streamlit이 미리 설치되어 있지 않다면 Agent가 설치를 시도할 겁니다. 저는 간단한 채팅앱을 랜딩페이지를 포함해서 2페이지 짜리를 만들라고 프롬프트를 넣어서 요청해보았습니다.
+
+<Image alt="활성화 되는 스킬" caption="활성화 되는 스킬" src="/streamlit-agent-skills/02.png" />
+
+<Image alt="레퍼런스 읽는 중" caption="레퍼런스 읽는 중" src="/streamlit-agent-skills/03.png" />
+
+스킬이 알아서 활성화 되고 레퍼런스들을 참조해서 개발을 시작합니다. 결과물은 꽤 훌륭했습니다. 써보니 Streamlit 스킬을 사용하지 않을 이유가 없네요. 
+
+<Ads />
+
+## 마무리
+
+스터디 모집 매니저 AI를 Streamlit SKILL을 장착한 프롬프트 한 방으로 만들어봤습니다. 레퍼런스들을 많이 참조해서 그런가 깔끔한 느낌이납니다. Streamlit을 사용한다면 SKILL도 함께 써보는 것도 좋겠습니다.
+
+<Image alt="스터디 모집 AI 챗봇 랜딩페이지" caption="스터디 모집 AI 챗봇 랜딩페이지" src="/streamlit-agent-skills/04.png" />
+
+<Link url="https://chaechae.life/blog/antigravity-skill" />
