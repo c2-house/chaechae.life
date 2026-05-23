@@ -1,0 +1,68 @@
+---
+author: mingke
+date: 2026/05/23
+description: Agent가 코딩할 때 이제 SKILL을 장착시켜주는 것이 많이 보편화 되었습니다. 라이브러리들도 업데이트가 되는 것을 보면 Agent SKILL을 내장시키는 경우가 많습니다. 라이브러리를 개발한 사람이 만든 SKILL이면 어느 정도 믿고 쓰기 괜찮다고 생각합니다. 제가 많이 쓰는 FastAPI의 경우에도 라이브러리 안에 Agent SKILL이 내장되어 있습니다.
+tags: [AI]
+thumbnail: /library-skills/00.png
+title: Library Skills로  라이브러리 내장  SKILL 활성화하기
+---
+
+### 목차
+
+## 라이브러리에 내장된 SKILL
+
+Agent가 코딩할 때 이제 SKILL을 장착시켜주는 것이 많이 보편화 되었습니다. 라이브러리들도 업데이트가 되는 것을 보면 Agent SKILL을 내장시키는 경우가 많습니다. 라이브러리를 개발한 사람이 만든 SKILL이면 어느 정도 믿고 쓰기 괜찮다고 생각합니다. 제가 많이 쓰는 **FastAPI의 경우에도 라이브러리 안에 Agent SKILL이 내장**되어 있습니다.
+
+<Image alt="FastAPI 내장 SKILL" caption="FastAPI 내장 SKILL" src="/library-skills/01.png" />
+
+이전 글에서 다뤘던 Streamlit도 마찬가지로 내장된 SKILL이 존재합니다. 이런 스킬을 활용해서 Agent가 더 똑부러지게 코드를 작성할 수 있습니다.
+
+<Ads />
+
+## 라이브러리에 내장된 스킬을 활용하는 법
+
+그냥 라이브러리를 설치만 한다고 Agent가 알아서 스킬을 사용하지 않습니다. 스킬을 사용할 수 있도록 **세팅을 해줘야합니다. Library Skills를 이용하면 세팅을 쉽게 할 수 있습니다. Library Skills는 FastAPI 창시자가 개발한 라이브러리입니다.**
+
+<Link url="https://library-skills.io/" />
+
+**Library Skills는 라이브러리에 내장된 스킬(SKILL)을 찾아서 프로젝트에서 활용할 수 있도록 해주는 라이브러리입니다.**
+
+파이썬 프로젝트를 한다면 `uvx`로 자바스크립트 프로젝트를 한다면 `npx`를 이용하면 됩니다.
+
+uv가 설치되어 있지 않다면 설치하는 것을 권장드립니다.
+
+<Link url="https://chaechae.life/blog/python-uv" />
+
+- Python
+
+```bash
+uvx library-skills
+```
+
+- Javascript
+
+```bash
+npx library-skills
+```
+
+명령어 한 줄이면 SKILL을 찾아서 장착시킬 수 있습니다. 테스트를 위해 새로운 프로젝트를 만들고 `FastAPI`와 `Streamlit`을 설치한 뒤 `library-skills`를 실행해봤습니다.
+
+<Image alt="library-skills 실행" caption="library-skills 실행" src="/library-skills/02.png" />
+
+**Space바를 누르면 설치할 SKILL을 선택**할 수 있습니다. 선택하고 엔터만 누르면 바로 세팅이 완료됩니다.
+
+<Image
+  alt="library-skills 실행 결과"
+  caption="library-skills 실행 결과"
+  src="/library-skills/03.png"
+/>
+
+정말 쉽습니다. 편리하게 내장된 SKILL을 내 프로젝트에 세팅하고 Agent를 굴려서 코드를 작성하면 되겠습니다.
+
+<Ads />
+
+## 마무리
+
+라이브러리에 내장된 SKILL을 찾는 라이브러리 `library-skills`에 대해서 알아봤습니다. 앞으로는 Agent를 똑똑하게 잘 사용할 수 있는 사람이 살아남는다고 하니 이런 도구들을 잘 알아두고 사용하는게 좋겠습니다.
+
+<Link url="https://chaechae.life/blog/fastapi-deploy-railway" />
