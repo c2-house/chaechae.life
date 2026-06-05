@@ -1,0 +1,79 @@
+---
+author: mingke
+date: 2026/06/04
+description: 부트캠프에 입문하고 처음보는 프로그램들을 설치하다보면 옆에 사람은 잘 되는데, 나는 안되는 경험을 종종하게됩니다. 수동으로 하나하나 설치해보면서 이해하는 과정은 물론 중요하긴 합니다. 하지만 굳이 계속 그 방식을 고수할 필요는 없습니다.
+tags: [Tools]
+thumbnail: /scoop-package-manager/00.png
+title: 부트캠프 입문자를 위한 윈도우 패키지 매니저 scoop 알아보기
+---
+
+### 목차
+
+## 설치는 어려워
+
+부트캠프에 입문하고 처음보는 프로그램들을 설치하다보면 **옆에 사람은 잘 되는데, 나는 안되는 경험을 종종하게됩니다**. 수동으로 하나하나 설치해보면서 이해하는 과정은 물론 중요하긴 합니다. 하지만 굳이 계속 그 방식을 고수할 필요는 없습니다. **입문자에게 프로그램들을 제대로 설치하는 것은 어렵고 귀찮은 일**입니다. **프로그램 설치 및 관리를 아주 쉽게 할 수 있도록 도와주는 툴**이 있습니다. 바로 **윈도우 패키지 매니저**인 `scoop`입니다.
+
+저는 주로 MacOS를 쓰는데, 누가 맥이 왜 개발할 때 좋냐고 물어보면 여러가지 이유 중에 제일 먼저 `Homebrew`를 쓸 수 있기 때문이라고 말하곤 했습니다. `Homebrew`만 있으면 모든 설치가 쉬워지거든요. 윈도우에서 `scoop`이 그것과 닮았습니다. 이번 포스팅에서 설치 및 사용법을 알아보려고 합니다.
+
+<Ads />
+
+## scoop 설치
+
+아래 링크에 들어가서 보면 자세한 정보들이 나와있습니다.
+
+<Link url="https://scoop.sh/" />
+
+윈도우에서 Powershell을 켜고 아래 명령어를 입력하면 scoop설치 끝입니다.
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Invoke-RestMethod -Uri https://get.scoop.sh | Invoke-Expression
+```
+
+첫 번째 명령어는 인터넷에서 다운로드한 스크립트를 실행할 수 있도록 **보안 설정을 낮춰주는 명령**이고, 두 번째는 `scoop`**을 인터넷을 통해 설치하라는 명령**입니다.
+
+<Image
+  alt="scoop 설치 완료 화면"
+  caption="scoop 설치 완료 화면"
+  src="/scoop-package-manager/01.png"
+/>
+
+## scoop으로 프로그램 설치하기
+
+`scoop`설치가 끝났으면 프로그램을 한 번 설치해봐야죠. 아주 기본적인 프로그램인 `git`을 설치해보겠습니다.
+
+아래 명령이면 **딸깍 설치 가능**입니다.
+
+```powershell
+scoop install git
+```
+
+<Image
+  alt="scoop으로 git설치"
+  caption="scoop으로 git설치"
+  src="/scoop-package-manager/02.png"
+/>
+
+## scoop으로 설치가 가능한 것들 알아보기
+
+`scoop`으로 설치할 수 있는게 어떤 것들이 있는지 궁금할 것 같습니다. 그러면 `scoop`사이트에 들어가서 검색해보면 됩니다. 위에 있는 공식 사이트 들어가서 검색했을 때 나온다면 다 `scoop`으로 다운받을 수 있습니다.
+
+<Image
+  alt="scoop에서 앱 검색"
+  caption="scoop에서 앱 검색"
+  src="/scoop-package-manager/03.png"
+/>
+
+`nodejs`도 한 번 설치해보겠습니다. 빨간 박스에 있는 명령어를 복사해서 Powershell에 입력하면 됩니다. 딸깍 했더니 설치가 끝났네요.
+
+<Image alt="노드설치결과" caption="node 설치 완료" src="/scoop-package-manager/04.png" />
+
+<Ads />
+
+## 마무리
+
+이번 포스팅에서 윈도우 패키지 매니저 scoop에 대해서 알아봤습니다. 패키지 매니저를 이용해서 설치하면 환경 셋팅하다 문제가 생길 확률도 줄어들고 아주 편리합니다. 설치 파일을 다운로드해서 설치하는 경험을 충분히 해보셨다면 개발자 스럽게 CLI(Command Line Interface)를 이용해서 다운받는 것도 시도해보면 좋을 것 같습니다.
+
+- 다른 윈도우용 패키지 매니저가 궁금하다면
+
+<Link url="https://chaechae.life/blog/chocolatey-package-manager" />
