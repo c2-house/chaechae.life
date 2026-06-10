@@ -1,5 +1,17 @@
 export const games = [
   {
+    name: '랜덤라이프',
+    url: 'https://randomlife.chaechae.life',
+    thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
+    description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
+  },
+  {
+    name: '오목',
+    url: 'https://omok.chaechae.life',
+    thumbnail: '/images/games/omok/omok-thumbnail.png',
+    description: '레트로 감성의 윈도우 2000 스타일 오목 게임! 컴퓨터를 상대로 실력을 겨뤄보세요.',
+  },
+  {
     name: '똥피하기',
     slug: 'poop-dodge',
     thumbnail: '/images/games/poop/poop-dodge-thumbnail.png',
@@ -26,12 +38,6 @@ export const games = [
     thumbnail: '/images/games/lotto/lotto-thumbnail.png',
     description: '로또는 게임이다. 로또 번호를 생성해보자! (고정 번호, 제외 번호 설정 가능)',
     url: 'https://chaechae-games.vercel.app/lotto',
-  },
-  {
-    name: '랜덤라이프',
-    url: 'https://randomlife.chaechae.life',
-    thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
-    description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
   },
   {
     name: '십자말풀이',
