@@ -45,5 +45,11 @@ export const games = [
     thumbnail: '/images/games/killingtime/killingtime-thumbnail.png',
     description: '시간을 죽이는 게임입니다.',
   },
+  {
+    name: '오목',
+    url: 'https://omok.chaechae.life',
+    thumbnail: '/images/games/omok/omok-thumbnail.png',
+    description: '언제 어디서나 간편하게 즐기는 오목 게임! 친구 또는 AI와 함께 실력을 겨뤄보세요.',
+  },
   // 추후 게임 추가 가능
 ];
