@@ -9,7 +9,7 @@ export const games = [
     name: '오목',
     url: 'https://omok.chaechae.life',
     thumbnail: '/images/games/omok/omok-thumbnail.png',
-    description: '언제 어디서나 간편하게 즐기는 오목 게임! 친구 또는 AI와 함께 실력을 겨뤄보세요.',
+    description: '레트로 감성의 윈도우 2000 스타일 오목 게임! 컴퓨터를 상대로 실력을 겨뤄보세요.',
   },
   {
     name: '똥피하기',
