@@ -1,5 +1,17 @@
 export const games = [
   {
+    name: '랜덤라이프',
+    url: 'https://randomlife.chaechae.life',
+    thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
+    description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
+  },
+  {
+    name: '오목',
+    url: 'https://omok.chaechae.life',
+    thumbnail: '/images/games/omok/omok-thumbnail.png',
+    description: '언제 어디서나 간편하게 즐기는 오목 게임! 친구 또는 AI와 함께 실력을 겨뤄보세요.',
+  },
+  {
     name: '똥피하기',
     slug: 'poop-dodge',
     thumbnail: '/images/games/poop/poop-dodge-thumbnail.png',
@@ -28,12 +40,6 @@ export const games = [
     url: 'https://chaechae-games.vercel.app/lotto',
   },
   {
-    name: '랜덤라이프',
-    url: 'https://randomlife.chaechae.life',
-    thumbnail: '/images/games/randomlife/randomlife-thumbnail.png',
-    description: '다시 태어난다면 어떤 삶을 살게 될까요? 랜덤라이프에서 확인해보세요!',
-  },
-  {
     name: '십자말풀이',
     url: 'https://crossword.chaechae.life',
     thumbnail: '/images/games/crossword/crossword-thumbnail.png',
@@ -44,12 +50,6 @@ export const games = [
     url: 'https://killingtime.chaechae.life',
     thumbnail: '/images/games/killingtime/killingtime-thumbnail.png',
     description: '시간을 죽이는 게임입니다.',
-  },
-  {
-    name: '오목',
-    url: 'https://omok.chaechae.life',
-    thumbnail: '/images/games/omok/omok-thumbnail.png',
-    description: '언제 어디서나 간편하게 즐기는 오목 게임! 친구 또는 AI와 함께 실력을 겨뤄보세요.',
   },
   // 추후 게임 추가 가능
 ];
