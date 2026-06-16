@@ -12,6 +12,12 @@ export const games = [
     description: '레트로 감성의 윈도우 2000 스타일 오목 게임! 컴퓨터를 상대로 실력을 겨뤄보세요.',
   },
   {
+    name: '팝잇',
+    url: 'https://popit.chaechae.life',
+    thumbnail: '/images/games/popit/popit-thumbnail.png',
+    description: '시원하게 팝잇을 터뜨리며 스트레스 해소와 두뇌 개발을 동시에 해보세요!',
+  },
+  {
     name: '똥피하기',
     slug: 'poop-dodge',
     thumbnail: '/images/games/poop/poop-dodge-thumbnail.png',
