@@ -18,6 +18,12 @@ export const games = [
     description: '시원하게 팝잇을 터뜨리며 스트레스 해소와 두뇌 개발을 동시에 해보세요!',
   },
   {
+    name: '에코키우기',
+    url: 'https://eko.chaechae.life',
+    thumbnail: '/images/games/eko/eko-thumbnail.png',
+    description: '귀여운 에코를 키워보세요! 에코와 함께하는 즐거운 육성 시뮬레이션 게임',
+  },
+  {
     name: '똥피하기',
     slug: 'poop-dodge',
     thumbnail: '/images/games/poop/poop-dodge-thumbnail.png',
