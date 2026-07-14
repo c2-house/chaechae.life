@@ -58,6 +58,14 @@ const Header = () => {
                 ))}
                 <li>
                   <a
+                    href="https://games.chaechae.life"
+                    className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
+                  >
+                    Games
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="https://life.chaechae.life"
                     className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
                   >

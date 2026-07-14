@@ -1,7 +1,6 @@
 import { MetadataRoute } from 'next';
 import { allPosts, allProjects } from 'contentlayer/generated';
 import { authors, navLinks, tags } from '@/constants/pages';
-import { games } from '@/constants/games';
 import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
@@ -30,11 +29,6 @@ const sitemap = (): MetadataRoute.Sitemap => {
     lastModified: new Date(),
   }));
 
-  const gamePages = games.map((game) => ({
-    url: `https://chaechae.life/games/${game.slug}`,
-    lastModified: new Date(),
-  }));
-
   return [
     {
       url: 'https://chaechae.life',
@@ -45,7 +39,6 @@ const sitemap = (): MetadataRoute.Sitemap => {
     ...posts,
     ...tagPages,
     ...authorPages,
-    ...gamePages,
   ];
 };
 
