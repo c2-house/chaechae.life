@@ -115,7 +115,12 @@ ECS를 배포할 때는 서비스만 갈아 끼워주면 됩니다. 서비스는
 
 배포를 하려면 GitHub Actions가 AWS에 접근해야 합니다. 위의 빌드 잡에서는 Access Key를 직접 사용했는데, 배포 잡에서는 **OIDC 방식**을 사용합니다. OIDC 방식은 GitHub이 "나는 이 저장소의 Actions입니다"라고 AWS에 증명하면, AWS가 임시 권한을 발급해주는 방식입니다. 키를 직접 저장하지 않기 때문에 보안상 더 안전합니다.
 
-OIDC를 사용하려면 AWS IAM에 GitHub을 "신뢰할 수 있는 공급자"로 등록하는 작업이 필요합니다. 이 설정은 아래에서 다룹니다.
+OIDC를 사용하려면 두 가지가 필요합니다.
+
+1. 워크플로에 `permissions`를 설정해서 OIDC 토큰을 요청할 수 있게 해야 합니다. `id-token: write`가 없으면 토큰 발급이 안 되어 인증에 실패합니다.
+2. AWS IAM에 GitHub을 "신뢰할 수 있는 공급자"로 등록해야 합니다.
+
+IAM 설정은 아래에서 다룹니다.
 
 ```yaml
   deploy:
@@ -123,6 +128,10 @@ OIDC를 사용하려면 AWS IAM에 GitHub을 "신뢰할 수 있는 공급자"로
     runs-on: ubuntu-latest
     # build 잡이 성공해야 deploy 잡이 실행됩니다.
     needs: build
+    # OIDC 토큰을 요청하기 위해 필요한 권한입니다.
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout
@@ -198,6 +207,45 @@ ECS에 작업 정의를 생성하고, 서비스를 업데이트하고, 서비스
 권한 추가에서 생성한 정책을 추가합니다.
 
 <Image src="/aws-ecs-githubactions-cicd/03.png" alt="AWS 권한 추가 화면" />
+
+### 신뢰 관계(Trust Policy) 설정
+
+역할을 생성한 후 신뢰 관계를 설정해줘야 합니다. 신뢰 관계는 "어떤 GitHub 저장소의 Actions만 이 역할을 사용할 수 있는지"를 정의하는 것입니다. 역할의 **신뢰 관계** 탭에서 다음과 같이 설정합니다.
+
+```json
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::<AWS_ACCOUNT_ID>:oidc-provider/token.actions.githubusercontent.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
+                    "token.actions.githubusercontent.com:sub": "repo:<GitHub 계정 또는 조직>/<저장소 이름>:ref:refs/heads/main"
+                }
+            }
+        }
+    ]
+}
+```
+
+`sub` 조건에서 특정 저장소와 브랜치를 지정해서 해당 저장소의 main 브랜치에서 실행되는 Actions만 이 역할을 사용할 수 있도록 제한합니다. 여기가 잘못 입력되면 OIDC 인증 에러가 나니 정확하게 입력해야 합니다.
+
+참고로 2026년 7월 15일 이후에 생성된 리포지토리는 `sub` 클레임 형식이 변경되었습니다. 기존에는 `repo:org/repo:ref:refs/heads/main` 형식이었지만, 새 리포지토리에서는 소유자와 리포지토리의 고유 ID가 포함된 형식을 사용합니다.
+
+```json
+// 기존 형식
+"token.actions.githubusercontent.com:sub": "repo:my-org/my-repo:ref:refs/heads/main"
+
+// 2026년 7월 15일 이후 생성된 리포지토리
+"token.actions.githubusercontent.com:sub": "repo:my-org@123456/my-repo@789012:ref:refs/heads/main"
+```
+
+새로 만든 리포지토리에서 OIDC 인증이 안 되면 이 형식을 확인해보면 됩니다.
 
 ## 마무리
 
