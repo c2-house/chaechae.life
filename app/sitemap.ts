@@ -4,10 +4,12 @@ import { authors, navLinks, tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
 const sitemap = (): MetadataRoute.Sitemap => {
-  const navbarPages = navLinks.map((navLink) => ({
-    url: `https://chaechae.life${navLink.path}`,
-    lastModified: new Date(),
-  }));
+  const navbarPages = navLinks
+    .filter((navLink) => !navLink.path.startsWith('http'))
+    .map((navLink) => ({
+      url: `https://chaechae.life${navLink.path}`,
+      lastModified: new Date(),
+    }));
 
   const projects = allProjects.map((project) => ({
     url: `https://chaechae.life/projects/${project.name}`,

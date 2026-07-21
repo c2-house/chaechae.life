@@ -47,34 +47,28 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
           <ul className="flex flex-col items-center gap-2">
             {navLinks.map((link) => (
               <li key={link.name} className="w-full">
-                <Link
-                  href={link.path}
-                  className={clsx(
-                    'inline-block w-full p-2 text-center font-semibold transition-colors',
-                    currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
-                  )}
-                  onClick={() => setIsOpen(false)}
-                >
-                  {link.name}
-                </Link>
+                {link.path.startsWith('http') ? (
+                  <a
+                    href={link.path}
+                    className="inline-block w-full p-2 text-center font-semibold hover:text-slate-500"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link
+                    href={link.path}
+                    className={clsx(
+                      'inline-block w-full p-2 text-center font-semibold transition-colors',
+                      currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
+                    )}
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {link.name}
+                  </Link>
+                )}
               </li>
             ))}
-            <li>
-              <a
-                href="https://games.chaechae.life"
-                className="inline-block w-full p-2 text-center font-semibold hover:text-slate-500"
-              >
-                Games
-              </a>
-            </li>
-            <li>
-              <a
-                href="https://life.chaechae.life"
-                className="inline-block w-full p-2 text-center font-semibold hover:text-slate-500"
-              >
-                Life
-              </a>
-            </li>
           </ul>
         </nav>
       </div>

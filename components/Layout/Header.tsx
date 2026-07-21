@@ -45,33 +45,26 @@ const Header = () => {
               <ul className="flex items-center">
                 {navLinks.map((link) => (
                   <li key={link.name}>
-                    <Link
-                      href={link.path}
-                      className={clsx(
-                        'block px-4 py-1 font-semibold transition-colors',
-                        currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
-                      )}
-                    >
-                      {link.name}
-                    </Link>
+                    {link.path.startsWith('http') ? (
+                      <a
+                        href={link.path}
+                        className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
+                      >
+                        {link.name}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.path}
+                        className={clsx(
+                          'block px-4 py-1 font-semibold transition-colors',
+                          currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
+                        )}
+                      >
+                        {link.name}
+                      </Link>
+                    )}
                   </li>
                 ))}
-                <li>
-                  <a
-                    href="https://games.chaechae.life"
-                    className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
-                  >
-                    Games
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://life.chaechae.life"
-                    className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
-                  >
-                    Life
-                  </a>
-                </li>
               </ul>
             </nav>
 

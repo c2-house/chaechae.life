@@ -1,6 +1,8 @@
 export const navLinks = [
   { name: 'Projects', path: '/projects' },
+  { name: 'Games', path: 'https://games.chaechae.life' },
   { name: 'Tech', path: '/blog' },
+  { name: 'Life', path: 'https://life.chaechae.life' },
 ] as const;
 
 export const authors = ['EKO', 'mingke'] as const;
