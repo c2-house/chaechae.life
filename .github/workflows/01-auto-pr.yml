@@ -1,4 +1,4 @@
-name: Automatically create PR
+name: Automatically create and merge Hermes PR
 
 on:
   push:
@@ -11,9 +11,58 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate Hermes changes
+        if: startsWith(github.ref_name, 'mingke/hermes-')
+        shell: bash
+        run: |
+          git fetch origin main
+
+          echo "Changed files:"
+          git diff --name-only origin/main...HEAD
+
+          INVALID_FILES=$(git diff --name-only origin/main...HEAD | \
+            grep -Ev '^(content/posts/[^/]+\.mdx|public/images/blog/[^/]+/.+)$' || true)
+
+          if [ -n "$INVALID_FILES" ]; then
+            echo "Hermes changed files outside the allowed content paths:"
+            echo "$INVALID_FILES"
+            exit 1
+          fi
+
+      - name: Verify author is mingke
+        if: startsWith(github.ref_name, 'mingke/hermes-')
+        shell: bash
+        run: |
+          FILES=$(git diff --name-only origin/main...HEAD | \
+            grep '^content/posts/.*\.mdx$' || true)
+
+          for FILE in $FILES; do
+            echo "Checking $FILE"
+
+            if ! grep -q '^author: mingke$' "$FILE"; then
+              echo "Invalid author in $FILE"
+              exit 1
+            fi
+          done
+
+      - name: Install dependencies
+        if: startsWith(github.ref_name, 'mingke/hermes-')
+        run: npm ci
+
+      - name: Lint
+        if: startsWith(github.ref_name, 'mingke/hermes-')
+        run: npm run lint
+
+      - name: Build
+        if: startsWith(github.ref_name, 'mingke/hermes-')
+        run: npm run build
 
       - name: Create Pull Request
+        id: cpr
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_TOKEN }}
@@ -22,4 +71,16 @@ jobs:
           branch: ${{ github.ref }}
           assignees: kec0130
           title: BLOG POST UPDATE
-          body: 블로그 업데이트 되었습니다. 확인해주세용.
+          body: 블로그 업데이트 되었습니다.
+
+      - name: Auto merge Hermes PR
+        if: >
+          startsWith(github.ref_name, 'mingke/hermes-') &&
+          steps.cpr.outputs.pull-request-number != ''
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          gh pr merge "${{ steps.cpr.outputs.pull-request-number }}" \
+            --repo "${{ github.repository }}" \
+            --merge \
+            --delete-branch
