@@ -1,0 +1,168 @@
+---
+title: "MCP readOnlyHint, 읽기 전용이라고 쓰면 정말 쓰기가 막힐까?"
+description: "MCP의 readOnlyHint는 권한이 아니라 도구 행동에 대한 힌트입니다. 공식 Python SDK 2.2.0과 SQLite로 힌트·입력 검증·읽기 전용 연결을 비교하고, Agent 도구의 자동 승인 전에 확인할 보안 경계를 정리합니다."
+author: mingke
+date: 2026/09/14
+tags: [AI, MCP, Tools]
+thumbnail: /mcp-readonlyhint-security/00.png
+---
+
+AI Agent에 데이터베이스 조회 도구를 연결한다고 생각해보겠습니다. 설명에 “조회 전용입니다”라고 쓰고, 설정에도 `readOnlyHint: true`를 붙였습니다. 이제 Agent가 잘못된 SQL을 보내더라도 데이터가 바뀌지 않을까요?
+
+**그 설정만으로는 쓰기가 막히지 않습니다.** 이름에 `readOnly`가 들어가 있어서 권한 설정처럼 보이지만, 끝에 붙은 `Hint`를 놓치면 안 됩니다. 서버가 자신의 도구를 어떻게 설명하는지와 실제로 무엇을 할 수 있는지는 다른 문제입니다.
+
+이번에는 그 차이를 말로만 정리하지 않고, 공식 MCP Python SDK와 임시 SQLite 데이터베이스로 확인했습니다. MCP를 처음 연결하는 방법보다, **이미 연결한 도구를 어디까지 믿고 자동 실행해도 되는지**가 궁금한 분들을 위한 글입니다.
+
+> 공식 문서 확인일은 2026년 9월 14일입니다. MCP 명세는 `2026-07-28`, 테스트 패키지는 `mcp==2.2.0`을 기준으로 했습니다. 실험은 Hermes가 별도 Windows 테스트 환경에서 수행했으며, 작성자의 개인 사용 경험이나 운영 DB 테스트가 아닙니다.
+
+## readOnlyHint는 서버가 붙여주는 설명입니다
+
+MCP 서버는 `tools/list` 응답으로 도구 이름, 설명, 입력 스키마 등을 알려줍니다. 여기에 도구의 행동을 설명하는 `annotations`를 추가할 수 있습니다. 예를 들어 다음 값은 도구 정의에 들어가는 메타데이터 일부입니다.
+
+```json
+{
+  "annotations": {
+    "readOnlyHint": true,
+    "openWorldHint": false
+  }
+}
+```
+
+의미는 “이 도구는 환경을 변경하지 않고, 상호작용하는 대상도 닫힌 범위입니다”에 가깝습니다. 하지만 이것을 읽은 클라이언트가 운영체제 권한을 바꾸거나 DB 연결을 읽기 전용으로 바꿔주는 것은 아닙니다.
+
+[공식 Tools 명세](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#tool)는 신뢰할 수 있는 서버에서 온 경우가 아니라면 annotation을 신뢰할 수 없는 정보로 취급해야 한다고 명시합니다. [ToolAnnotations 스키마](https://modelcontextprotocol.io/specification/2026-07-28/schema#toolannotations)도 모든 속성이 **힌트이며 실제 행동을 충실히 설명한다는 보장은 없다**고 설명합니다.
+
+그렇다고 쓸모없는 값은 아닙니다. 신뢰하고 검토한 서버가 정확하게 표시해주면 호스트가 도구를 분류하거나 승인 화면을 구성할 때 참고할 수 있습니다. 다만 어떤 조건에서 자동 승인할지는 호스트의 정책입니다. MCP가 모든 제품에 동일한 승인 UI를 강제하는 것은 아닙니다.
+
+<Image
+  src="/mcp-readonlyhint-security/00.png"
+  alt="MCP 도구 메타데이터, 호스트와 서버의 권한 검사, DB와 API의 실제 접근 제어를 구분한 개념도"
+  caption="직접 제작한 개념도입니다. 힌트를 선언하는 일과 실행 권한을 제한하는 일은 따로 설계해야 합니다."
+/>
+
+## 나머지 Hint도 보안 스위치는 아닙니다
+
+이름만 보고 판단하기 쉬운 값들이 몇 개 더 있습니다. 아래 기본값은 SDK 객체를 출력했을 때 반드시 나타나는 값이라는 뜻이 아니라, **명세에서 정의한 생략 시 해석**입니다.
+
+| 속성 | 명세상 의미 | 생략 시 기본값 |
+| --- | --- | --- |
+| `readOnlyHint` | `true`라면 환경을 변경하지 않는 도구라는 설명 | `false` |
+| `destructiveHint` | `true`라면 파괴적 변경을 할 수 있음. `false`는 추가형 변경만 한다는 설명 | `true` |
+| `idempotentHint` | 같은 인수로 반복 호출해도 환경에 추가 효과가 없다는 설명 | `false` |
+| `openWorldHint` | 외부의 열린 범위와 상호작용할 수 있는지에 대한 설명 | `true` |
+
+`destructiveHint`와 `idempotentHint`는 `readOnlyHint == false`일 때만 의미가 있습니다. 읽기 전용 도구에 값을 잔뜩 붙인다고 더 안전해지는 것은 아닙니다.
+
+특히 **`destructiveHint: false`는 쓰기 금지가 아닙니다.** 새 레코드를 추가하는 도구도 데이터를 변경합니다. `idempotentHint: true` 역시 SDK가 중복 실행을 알아서 제거해준다는 뜻이 아닙니다. 실제 구현에 그 성질이 있어야 맞는 설명입니다.
+
+`openWorldHint: false`를 네트워크 차단 설정으로 읽어서도 안 됩니다. 닫힌 범위의 사내 서비스와 통신하는 것과, 프로세스의 네트워크 접근 자체를 막는 것은 다릅니다.
+
+<Ads />
+
+## 힌트는 그대로 두고 DB 연결만 바꿔봤습니다
+
+이번 실험의 질문은 좁게 잡았습니다. “Agent가 힌트를 얼마나 잘 따르는가”가 아니라, **“힌트가 붙은 도구에 호출이 도달했을 때 SDK가 쓰기를 막는가”**입니다.
+
+테스트 환경은 Windows, Python `3.11.16`, MCP Python SDK `2.2.0`, SQLite `3.53.1`입니다. 공식 SDK의 [인메모리 테스트 방식](https://py.sdk.modelcontextprotocol.io/get-started/testing/)인 `Client(server)`를 사용했습니다. 실제 LLM, Claude Desktop이나 IDE의 승인 UI, HTTP 전송, OAuth는 연결하지 않았습니다. 외부 API 호출이나 과금도 없습니다.
+
+도구는 문자열 SQL을 받아 임시 DB에서 실행하도록 의도적으로 단순하게 만들었습니다. 각 케이스는 비어 있는 `notes` 테이블을 새로 만들고 시작했습니다. 결과 응답뿐 아니라 호출 이후의 실제 행 수도 별도 연결로 다시 조회했습니다.
+
+아래는 실행한 테스트의 도구 정의 부분입니다. `db`, `hint`, `mode`는 케이스마다 테스트 코드가 정한 값이며, Agent가 전달하는 인수가 아닙니다. **운영에 그대로 노출할 SQL 도구 예제가 아니라, 잘못된 annotation을 SDK가 강제하는지 확인하기 위한 발췌 코드**입니다.
+
+```python
+from mcp.server import MCPServer
+from mcp.types import ToolAnnotations
+
+server = MCPServer(name)
+entered = 0
+
+@server.tool(annotations=ToolAnnotations(read_only_hint=hint))
+def query(sql: str) -> list:
+    """Test fixture only: execute SQL on a disposable database."""
+    nonlocal entered
+    entered += 1
+    conn = sqlite3.connect(db.as_uri() + f"?mode={mode}", uri=True)
+    try:
+        rows = conn.execute(sql).fetchall()
+        conn.commit()
+        return rows
+    finally:
+        conn.close()
+```
+
+이 코드는 테스트의 바깥 함수 안에 있습니다. Python SDK 2.x에서는 `read_only_hint`라는 snake_case 이름을 쓰고, 도구 정의를 프로토콜 필드명으로 직렬화하면 `readOnlyHint`가 됩니다. 실제 `tools/list` 결과에서도 그 값이 전달된 것을 확인했습니다.
+
+쓰기 요청은 `INSERT INTO notes VALUES ('demo')`로 고정했습니다. 비교 결과는 다음과 같습니다.
+
+| 조건 | 보낸 입력 | 도구 함수 진입 | 결과의 `is_error` | 호출 후 행 수 |
+| --- | --- | --- | --- | --- |
+| 힌트 `true`, DB `mode=rw` | INSERT 문자열 | 진입 | `false` | 1 |
+| 힌트 `false`, DB `mode=rw` | 같은 INSERT 문자열 | 진입 | `false` | 1 |
+| 힌트 `true`, DB `mode=ro` | 같은 INSERT 문자열 | 진입 | `true` | 0 |
+| 힌트 `true`, DB `mode=ro` | `SELECT count(*) FROM notes` | 진입 | `false` | 0 |
+| 힌트 `true`, DB `mode=rw` | 문자열 대신 JSON 객체 | 진입하지 않음 | `true` | 0 |
+
+첫 번째 결과가 중요합니다. **읽기 전용이라고 표시했지만, 쓰기 가능한 연결에서는 실제로 행이 추가됐습니다.** 힌트를 `false`로 바꾼 두 번째 케이스도 결과는 같았습니다.
+
+반대로 SQLite 연결을 `mode=ro`로 열었을 때는 INSERT가 거부됐습니다. 서버 측 로그에는 실제 원인인 `attempt to write a readonly database`가 남았고, 클라이언트에 돌아온 도구 오류 메시지는 `Error executing tool query`였습니다. 이 둘을 같은 출력으로 섞어 보면 안 됩니다. 정상 SELECT는 성공했습니다.
+
+마지막 케이스에서는 입력 타입 검증이 함수 실행 전에 요청을 막았습니다. 즉, **문자열인지 검사하는 것, 그 문자열이 쓰기 작업인지 판단하는 것, 실제 DB가 쓰기를 허용하는 것은 서로 다른 단계**였습니다.
+
+다섯 케이스의 오류 여부·함수 진입 여부·행 수를 assertion으로 확인했습니다. 성능 측정이나 공격 성공률 실험은 아닙니다. 이 결과로 특정 AI 제품이 승인 없이 쓰기 도구를 실행한다고 주장할 수도 없습니다. 확인한 것은 공식 SDK의 이 테스트 경로에서 annotation 자체가 쓰기 차단 장치가 아니었다는 사실입니다.
+
+## 그럼 어디에서 막아야 할까요?
+
+실험에서 쓰기를 막은 것은 MCP annotation이 아니라 SQLite의 읽기 전용 연결이었습니다. [SQLite 공식 URI 문서](https://www.sqlite.org/uri.html)도 `mode=ro`를 읽기 전용으로 여는 옵션으로 설명합니다.
+
+하지만 이것도 **해당 연결의 제약**입니다. 같은 프로세스가 DB 파일에 쓰기 권한을 갖고 있다면 다른 쓰기 가능한 연결을 열 수 있습니다. 악의적인 서버 코드까지 방어해야 한다면 읽기 전용 마운트나 OS 권한, 별도 DB 계정처럼 프로세스가 임의로 넓힐 수 없는 제약이 필요합니다. 위 실험을 “SQLite 옵션 하나로 MCP 서버 전체가 샌드박스가 됐다”로 해석하면 안 됩니다.
+
+실제 운영에서는 다음 세 부분을 나눠 보는 편이 좋겠습니다.
+
+### 호스트는 무엇을 자동 승인할지 결정합니다
+
+호스트가 신뢰할 수 없는 서버의 `readOnlyHint`만 보고 승인 단계를 생략하지 않도록 해야 합니다. 서버를 누가 운영하는지, 어떤 도구를 노출하는지, 어떤 자격 증명으로 실행되는지를 함께 확인해야 합니다.
+
+조회 용도로 승인한 도구가 나중에 대상을 바꾸거나 전송 기능을 추가할 수도 있습니다. 서버나 도구 정의를 업데이트할 때 기존의 자동 승인 범위를 그대로 유지할지 다시 검토하는 것이 좋습니다. 이는 모든 호스트가 이미 그렇게 동작한다는 설명이 아니라 운영 시 확인할 항목입니다.
+
+### MCP 서버는 호출마다 작업과 대상 권한을 검사합니다
+
+로그인이 됐다는 것만으로 특정 프로젝트의 모든 자료를 다룰 수 있어서는 안 됩니다. 요청자의 권한으로 이 도구를 실행해도 되는지, 이 프로젝트나 레코드에 접근해도 되는지를 확인해야 합니다.
+
+HTTP 기반 MCP 인증을 사용한다면 공식 [Authorization 명세](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/)에 맞는 토큰 검증도 필요합니다. 토큰이 해당 서버를 대상으로 발급됐는지 검증하는 일과, 최소한의 scope를 요청하는 일은 annotation과 별개입니다. `readOnlyHint`를 설정한다고 OAuth scope가 만들어지는 것은 아닙니다.
+
+명세의 [Security Considerations](https://modelcontextprotocol.io/specification/2026-07-28/server/tools#security-considerations)도 서버에 입력 검증과 적절한 접근 제어를 요구합니다. “클라이언트가 알아서 안전하게 호출하겠지”는 서버의 권한 검사를 대신할 수 없습니다.
+
+### DB와 외부 API는 허용된 작업만 받아야 합니다
+
+조회만 필요하다면 읽기 전용 DB 계정이나 읽기 범위로 제한된 API 자격 증명을 사용하는 쪽이 더 분명한 제약입니다. 서버가 실수로 변경 요청을 보내더라도 최종 자원에서 거부할 수 있기 때문입니다.
+
+도구 인터페이스도 가능하면 줄이는 편이 좋습니다. 고객 조회가 목적이라면 범용 `execute_sql`보다 `get_customer_summary(customer_id)`처럼 목적이 좁은 도구를 검토할 수 있습니다. 물론 이름을 좁게 짓는 것만으로 안전해지지는 않습니다. 내부에서 허용된 필드만 조회하고 대상 접근 권한을 검사해야 의미가 있습니다.
+
+<Ads />
+
+## 읽기 전용이면 자동 실행해도 괜찮을까요?
+
+쓰기만 막아도 위험 하나는 줄어듭니다. 그런데 **읽기 전용은 데이터 유출 방지와 같은 말이 아닙니다.** 기밀 문서를 읽어서 Agent의 컨텍스트로 전달하는 것은 원본 데이터를 변경하지 않고도 일어날 수 있습니다.
+
+그래서 “삭제하지 않으니 안전하다” 대신, 어느 데이터를 누구에게 보여줄 수 있는지도 따로 봐야 합니다. 허용된 저장소만 조회하는지, 민감한 필드가 응답에 포함되는지, 결과나 로그가 외부로 전달되는지까지 확인할 필요가 있습니다.
+
+무조건 매번 승인받는 방식도 비용이 있습니다. 의미 없는 확인창이 반복되면 사용자가 내용을 읽지 않고 승인하게 될 수 있고, 배치 작업의 장점도 줄어듭니다. 자동 실행 범위를 줄여 시작하는 것이 현실적인 절충안입니다. 예를 들면 검토한 서버의 공개 문서 검색은 자동화하되, 사내 자료 조회는 대상과 데이터 범위를 제한하고, 외부 전송이나 변경 작업에는 별도 승인을 두는 식입니다.
+
+반대로 출처를 검토하지 않은 MCP 서버를 운영 DB의 관리자 자격 증명으로 실행하면서, 읽기 전용 힌트만 믿고 자동 승인하는 조합은 권하기 어렵습니다. 이런 상황에서는 annotation을 더 자세하게 쓰기보다 **연결 자체의 권한부터 줄이는 것**이 먼저입니다.
+
+## 연결 다음에는 권한을 확인해야 합니다
+
+기존 [MCP 알아보기](/blog/mcp-study)에서는 외부 기능을 Agent에 연결하는 구조를 살펴봤습니다. 연결이 쉬워질수록 다음 질문은 “호출할 수 있는가”에서 “잘못 호출해도 어디까지 영향을 줄 수 있는가”로 넘어갑니다.
+
+`readOnlyHint`는 잘못된 기능이 아닙니다. 도구의 행동을 정확하게 전달하는 데 필요한 메타데이터입니다. 다만 그것에 DB 계정이나 접근 제어의 역할까지 기대하면 빈틈이 생깁니다.
+
+새 MCP 서버를 붙인다면 도구 목록을 보는 데서 끝내지 말고, 테스트용 자원에서 금지한 쓰기가 실제로 거부되는지도 확인해보면 좋겠습니다. 이번처럼 성공 응답만 보는 대신 **실제 데이터가 바뀌었는지 다시 읽어보는 검사**가 판단에 더 도움이 됩니다.
+
+### 확인한 공식 자료
+
+- [MCP 2026-07-28 Tools](https://modelcontextprotocol.io/specification/2026-07-28/server/tools): annotation의 신뢰 조건, 입력 검증과 접근 제어
+- [MCP ToolAnnotations 스키마](https://modelcontextprotocol.io/specification/2026-07-28/schema#toolannotations): 각 힌트의 의미와 기본값
+- [MCP Python SDK — Tools](https://py.sdk.modelcontextprotocol.io/servers/tools/): SDK 2.x의 annotation 선언 방법
+- [MCP Python SDK — Testing](https://py.sdk.modelcontextprotocol.io/get-started/testing/): 인메모리 클라이언트와 오류 처리 범위
+- [MCP Authorization](https://modelcontextprotocol.io/specification/2026-07-28/basic/authorization/): HTTP 인증, 대상 서버와 scope 검증
+- [SQLite URI Filenames](https://www.sqlite.org/uri.html): `mode=ro`와 `mode=rw`의 연결 모드
