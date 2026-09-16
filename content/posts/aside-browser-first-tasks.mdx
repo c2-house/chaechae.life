@@ -11,7 +11,7 @@ thumbnail: /aside-browser-first-tasks/00.png
 
 **Aside는 여러 사이트와 파일을 오가며 결과물을 만드는 AI 브라우저**입니다. 페이지 요약을 넘어 어떤 일을 맡길 수 있는지, 처음에는 요청 범위를 어떻게 정하면 좋을지 살펴보겠습니다. 공개 요금제 비교부터 CI 댓글 초안, 청구서 수집까지 권한을 조금씩 넓혀가는 예시로 설명합니다.
 
-이 글은 **공식 자료를 바탕으로 한 제품 소개이며, 활용 요청은 실행 결과가 아닌 예시**입니다. 가격과 지원 환경, 개인정보·권한 조건은 2026년 9월 16일 기준입니다. Aside 앱을 설치하고 계정을 연결해 업무를 수행한 후기는 아니며, 아래에 소개하는 Hermes의 다운로드 경로·CLI 확인은 9월 15일 원문 조사 당시의 기록입니다.
+이 글은 **공식 자료를 바탕으로 한 제품 소개이며, 활용 요청은 실행 결과가 아닌 예시**입니다. 가격과 지원 환경, 개인정보·권한 조건은 2026년 9월 16일 기준입니다. 다운로드 경로 확인과 CLI 설치 스크립트 실행까지만 진행했으며, Aside 앱 설치·계정 연결·실제 업무 수행은 하지 않았습니다.
 
 ## Chromium 기반의 독립 브라우저
 
@@ -65,11 +65,11 @@ Aside Vault는 에이전트가 비밀번호 원문을 읽지 않고, 허용된 �
 
 2026년 9월 16일 다시 확인한 [브라우저 릴리스 노트](https://docs.aside.com/changelog/native)는 **v1.0.914.1에서 Windows 정식 제공**을 명시합니다. 공식 사이트에서도 Windows 다운로드 버튼을 확인했습니다.
 
-원문 작성 당시인 9월 15일 Hermes가 확인한 [공식 Windows 다운로드 경로](https://aside.com/api/download/windows)는 `AsideInstaller-1.0.914.1-win-x64.exe`로 연결됐습니다. 당시 확인 범위는 다운로드 경로 제공까지입니다.
+9월 15일 [공식 Windows 다운로드 경로](https://aside.com/api/download/windows)를 확인했을 때는 `AsideInstaller-1.0.914.1-win-x64.exe`로 연결됐습니다.
 
 한편 [시작 문서](https://docs.aside.com/help/get-started)는 아직 macOS 15.0 이상만 안내합니다. 그래서 이 문서 하나만 보고 ‘macOS 전용’이라고 정리하면 최신 릴리스와 맞지 않습니다.
 
-CLI의 설치 환경은 브라우저와 구분해야 합니다. 9월 15일 Hermes가 개발자 문서의 `install.sh`를 확인하고 Windows Git Bash에서 실행했을 때는 macOS·Linux만 지원한다는 플랫폼 검사에서 중단돼 CLI가 설치되지 않았습니다. **Windows 브라우저 지원을 CLI 셸 설치 스크립트의 Windows 지원으로 확대해 읽으면 안 됩니다.** 반대로 Linux CLI 지원이 Linux용 GUI 브라우저 제공을 뜻하지도 않습니다.
+CLI의 설치 환경은 브라우저와 구분해야 합니다. 9월 15일 개발자 문서의 `install.sh`를 검토한 뒤 Windows Git Bash에서 실행해봤습니다. macOS·Linux만 지원한다는 플랫폼 검사에서 중단돼 CLI는 설치되지 않았습니다. **Windows 브라우저 지원을 CLI 셸 설치 스크립트의 Windows 지원으로 확대해 읽으면 안 됩니다.** 반대로 Linux CLI 지원이 Linux용 GUI 브라우저 제공을 뜻하지도 않습니다.
 
 처음 사용하는 분이라면 [공식 다운로드 페이지](https://aside.com/download)에서 브라우저를 설치하는 경로부터 확인하면 됩니다. CLI·MCP 연결은 브라우저에서 작은 작업을 해본 뒤 필요한 경우에 추가해도 늦지 않습니다.
 
