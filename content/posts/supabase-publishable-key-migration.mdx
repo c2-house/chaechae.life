@@ -1,0 +1,183 @@
+---
+title: "Supabase anon key가 없어진다? publishable key로 바꾸는 방법"
+description: Supabase의 anon·service_role 키 전환 일정과 publishable key 적용 방법을 정리합니다. Random Life도 전환 대상인 이유부터 환경변수, 재배포, RLS, Edge Functions, 기존 키 비활성화 전 확인할 사항까지 살펴봅니다.
+author: mingke
+date: 2026/09/21
+tags: [Supabase, Nextjs, Tools]
+thumbnail: /supabase-publishable-key-migration/00.png
+---
+
+제가 운영하는 [랜덤 라이프(Random Life)](https://randomlife.chaechae.life)도 Supabase의 `anon` key를 사용하고 있습니다. 기존 예제를 따라 연결한 뒤 잘 동작하고 있으면 키 종류를 다시 확인할 일은 많지 않습니다. 그런데 Supabase가 새 API 키 체계로 전환하면서, **이 프로젝트도 publishable key로 바꿔야 하는 대상**이 됐습니다.
+
+먼저 결론부터 정리하면, **기존 `anon` key의 대체재는 `sb_publishable_...` 형식의 publishable key**입니다. 새 키를 만든다고 기존 키가 즉시 무효화되는 것은 아닙니다. 두 종류를 함께 사용할 수 있으므로 새 키를 적용하고 서비스를 확인한 다음 기존 키를 비활성화하는 순서로 진행하면 됩니다.
+
+다만 키 값 하나만 바꾸면 모든 작업이 끝나는 것은 아닙니다. 배포 환경변수와 빌드 결과물, 서버에서 사용하는 키, Edge Functions의 인증 방식도 확인해야 합니다. 2026년 9월 21일 공식 문서를 기준으로, 기존 프로젝트를 옮길 때 필요한 절차를 정리해보겠습니다.
+
+## anon key 전환 일정
+
+[Supabase API 키 문서](https://supabase.com/docs/guides/getting-started/api-keys)는 `anon`과 `service_role` 키를 **2026년 말까지 deprecated로 전환한다**고 안내합니다. 이 글의 일정과 Dashboard 절차는 Supabase 호스팅 프로젝트를 기준으로 합니다.
+
+여기서 ‘오늘부터 기존 키가 작동하지 않는다’고 받아들이면 안 됩니다. [공식 전환 공지](https://github.com/orgs/supabase/discussions/29260)는 기존 키 제거 시점을 `Late 2026, TBC`로 표기하고 있습니다. 2026년 후반을 목표로 하지만 정확한 시행일은 확정 표시가 아니므로, **특정 날짜와 시각에 모든 프로젝트가 일괄 중단된다고 단정할 수는 없습니다.**
+
+그렇다고 마지막 날까지 기다리는 것이 좋은 선택도 아닙니다. 기존 키를 사용하는 배포본과 자동화가 남아 있으면 비활성화 시점에 장애로 이어질 수 있습니다. 함께 사용할 수 있는 기간에 사용처를 찾아 순서대로 전환하는 편이 안전합니다.
+
+## 새 API 키와 그대로 남는 권한
+
+기존 키와 새 키의 대응은 다음과 같습니다.
+
+| 기존 키 | 새 키 | 용도 |
+| --- | --- | --- |
+| `anon` | `sb_publishable_...` | 브라우저와 배포 앱 등 공개되는 클라이언트 |
+| `service_role` | `sb_secret_...` | 관리 권한이 필요한 서버·워커 등의 내부 처리 |
+
+기존 `anon`·`service_role` 키는 프로젝트의 JWT secret으로 서명된 장기 JWT였습니다. 반면 새 키는 JWT가 아닙니다. [JWT signing keys 발표](https://supabase.com/blog/jwt-signing-keys)에서 설명하듯, 새 체계는 API 키 관리를 사용자 인증 토큰의 서명 키와 분리합니다. 특히 secret 키를 서비스별로 나누고 개별적으로 교체할 수 있다는 이점이 있습니다.
+
+**API 키 전환과 JWT 서명 키 회전은 별도 작업**입니다. publishable key로 바꾸기 위해 JWT secret부터 재생성하거나 폐기할 필요는 없습니다. 서명 키를 잘못 폐기하면 기존 사용자 토큰과 다른 호출까지 영향을 받을 수 있습니다.
+
+<Image src="/supabase-publishable-key-migration/00.png" alt="anon 키는 publishable 키로, service_role 키는 서버 전용 secret 키로 전환하며 DB 역할은 유지되는 구조" caption="공식 문서를 바탕으로 제작한 키 대응도입니다. 새 키 적용과 검증이 끝난 뒤 기존 키를 비활성화합니다." />
+
+이름 때문에 혼동하기 쉬운 부분도 있습니다. **`anon` API 키를 교체해도 PostgreSQL의 `anon` 역할이 사라지는 것은 아닙니다.** publishable key를 쓰는 클라이언트는 로그인 전에는 `anon`, Supabase Auth로 로그인한 뒤에는 사용자 JWT에 따라 `authenticated` 역할로 데이터에 접근합니다.
+
+따라서 RLS 정책의 `anon`을 `publishable`로 일괄 치환하면 안 됩니다. 키는 애플리케이션의 접근에 쓰이고, 사용자 인증과 RLS는 누가 어떤 데이터에 접근할 수 있는지를 다룹니다.
+
+<Ads />
+
+## 전환 전 사용처 점검
+
+키를 만들기 전에 기존 키가 어디에서 사용되는지부터 정리하는 것이 좋습니다. [공식 마이그레이션 가이드](https://supabase.com/docs/guides/getting-started/migrating-to-new-api-keys)도 클라이언트뿐 아니라 CI/CD, 예약 작업, 웹훅, 이미 배포된 앱을 확인하도록 안내합니다.
+
+- **클라이언트:** `createClient`, `createBrowserClient`에 전달하는 키와 공개 환경변수
+- **SSR·서버:** 사용자 세션을 처리하는 클라이언트, 별도 관리자 클라이언트
+- **배포 설정:** 개발·미리보기·운영 환경변수와 CI/CD secrets
+- **Supabase 내부 작업:** Edge Functions, Database Webhooks, Cron, `pg_net`
+- **기존 배포본:** 열린 브라우저 탭, 캐시된 페이지, 사용자가 업데이트하지 않은 모바일·데스크톱 앱
+
+코드 검색은 실제 키 값보다 `SUPABASE_ANON_KEY`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` 같은 **변수 이름과 참조 위치**를 중심으로 하는 편이 좋습니다. 검색 결과나 터미널 출력에 키 원문이 섞이면 공유 과정에서 노출될 수 있습니다.
+
+서버 코드라고 무조건 secret key로 바꾸는 것도 아닙니다. **사용자의 권한과 RLS를 따르는 SSR 클라이언트는 publishable key와 사용자 세션을 사용**할 수 있습니다. 기존에 `anon`을 쓰던 서버 코드를 새 키 전환이라는 이유로 관리자 권한으로 올려서는 안 됩니다.
+
+## Dashboard에서 publishable key 준비
+
+공식 가이드가 안내하는 경로는 Supabase Dashboard의 **Settings → API Keys → Publishable and secret API keys**입니다.
+
+1. 전환할 프로젝트가 맞는지 확인합니다. 개발용과 운영용 프로젝트의 URL·키를 섞지 않습니다.
+2. 새 키가 없다면 `Create new API keys`로 생성합니다. 기존 프로젝트에는 처음에 새 키가 없을 수 있습니다.
+3. 생성된 `default` publishable key를 클라이언트 설정에 사용할 값으로 준비합니다.
+4. 이 단계에서는 기존 `anon`·`service_role` 키를 비활성화하지 않습니다.
+
+새 키를 생성하는 것과 기존 키를 끄는 것은 별도 동작입니다. **새 키를 만든 것만으로 현재 배포가 새 키를 사용하게 되는 것도 아닙니다.** 실제 애플리케이션의 설정을 바꾸고 다시 배포해야 합니다.
+
+`sb_secret_...`는 publishable key와 용도가 다릅니다. secret 키는 RLS를 우회하는 높은 권한을 갖습니다. 브라우저, 공개 환경변수, 저장소, AI 대화에 넣지 마세요. 브라우저 요청을 차단하는 보호 장치가 있더라도 유출된 키를 다른 도구로 사용하는 것까지 막아주는 것은 아닙니다.
+
+<Ads />
+
+## 환경변수와 클라이언트 코드 교체
+
+환경변수 이름은 프레임워크와 프로젝트마다 다릅니다. 아래는 **Next.js에서 사용하는 예시**이며, 실제 프로젝트의 구조에 맞게 적용해야 합니다. 값은 자리표시자이므로 Dashboard에서 확인한 같은 프로젝트의 값으로 바꿉니다.
+
+```dotenv
+NEXT_PUBLIC_SUPABASE_URL=https://YOUR_PROJECT_REF.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_YOUR_PROJECT_KEY
+```
+
+기존에 `@supabase/supabase-js`의 일반 클라이언트를 사용했다면 두 번째 인자로 전달하는 키를 바꿉니다.
+
+```javascript
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
+
+if (!supabaseUrl || !publishableKey) {
+  throw new Error('Supabase URL 또는 publishable key 설정을 확인하세요.');
+}
+
+export const supabase = createClient(supabaseUrl, publishableKey);
+```
+
+`NEXT_PUBLIC_SUPABASE_ANON_KEY`라는 변수 이름을 잠시 유지한 채 **값만 publishable key로 교체**하는 것도 가능합니다. SDK는 환경변수 이름이 아니라 전달받은 값을 사용하기 때문입니다. 다만 이름과 실제 내용이 달라지므로, 코드 참조와 배포 설정을 함께 정리할 수 있다면 새 이름으로 맞추는 편이 읽기 쉽습니다.
+
+반대로 **변수 이름만 바꾸고 기존 JWT 값을 그대로 넣으면 전환된 것이 아닙니다.** 설정값과 실제 배포본이 모두 새 키를 사용해야 합니다.
+
+### SSR 클라이언트의 적용 위치
+
+이미 `@supabase/ssr`을 쓰고 있다면 앞의 일반 클라이언트 코드로 교체하지 않습니다. 쿠키 기반 세션 처리를 유지하고, 기존 `createBrowserClient`와 `createServerClient`에 전달하는 키를 바꿉니다. [공식 SSR 안내](https://supabase.com/docs/guides/auth/server-side/creating-a-client)의 브라우저 클라이언트 예시는 다음과 같습니다.
+
+```javascript
+import { createBrowserClient } from '@supabase/ssr';
+
+export function createClient() {
+  return createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+}
+```
+
+서버 클라이언트와 세션 갱신을 담당하는 코드에서도 같은 환경변수 참조를 확인해야 합니다. 키 전환과 관계없는 쿠키 처리, 사용자 검증, 미들웨어 구조까지 한꺼번에 바꾸면 문제가 생겼을 때 원인을 찾기 어려워집니다.
+
+이번에는 Windows·Node.js 22.23.2의 별도 환경에서 `@supabase/supabase-js` 2.116.0과 `@supabase/ssr` 0.12.7을 설치했습니다. 실제 키가 아닌 테스트용 문자열로 두 클라이언트를 만들고, 요청을 외부로 보내기 전에 가로채 **`apikey` 헤더에 전달한 값이 들어가는 것까지 확인**했습니다. 운영 Supabase 인증, RLS, 로그인 동작을 통과했다는 검증은 아닙니다.
+
+이 버전들은 이번 확인 환경이지 전환의 최소 요구 버전은 아닙니다. 기존 프로젝트에서는 사용 중인 SDK의 호환성과 런타임 요구사항을 확인해야 합니다. 예를 들어 이번에 설치한 `supabase-js` 버전은 Node.js 22 이상을 요구하므로, 오래된 서비스에서 패키지를 무조건 최신으로 올리는 작업과 키 전환을 섞지 않는 편이 좋습니다.
+
+### 재빌드와 재배포
+
+로컬 `.env.local`만 수정해도 운영 환경변수가 자동으로 바뀌지는 않습니다. 배포 플랫폼에서 실제 운영 환경에 적용되는 변수 값을 확인하고, 미리보기 환경도 별도로 확인합니다.
+
+특히 [Next.js의 `NEXT_PUBLIC_` 변수](https://nextjs.org/docs/app/guides/environment-variables)는 브라우저용 번들에 빌드 시점의 값으로 들어갑니다. **배포 설정만 수정하고 기존 빌드 결과물을 계속 제공하면 이전 키가 남을 수 있습니다.** 변경한 환경변수로 새로 빌드·배포하고, 새 배포를 열어 확인해야 합니다.
+
+<Ads />
+
+## Edge Functions와 직접 HTTP 요청
+
+일반 클라이언트는 키 전달 위치가 비교적 단순하지만, 직접 HTTP 헤더를 만들거나 Edge Functions를 호출하는 코드는 별도 점검이 필요합니다. 새 API 키는 JWT가 아니기 때문입니다.
+
+[Authorization headers 문서](https://supabase.com/docs/guides/functions/auth-headers)는 다음과 같이 구분합니다.
+
+| 헤더 | 전달하는 값 | 역할 |
+| --- | --- | --- |
+| `apikey` | publishable 또는 secret key | 애플리케이션·서비스의 API 키 |
+| `Authorization` | `Bearer <사용자의 access token>` | 로그인 사용자의 JWT |
+
+로그인 사용자의 JWT를 보내는 `Authorization` 헤더까지 제거하면 안 됩니다. 바꿔야 할 것은 **기존 API 키를 사용자 JWT처럼 취급하는 코드**입니다. 기존 `anon` 키를 직접 디코딩하거나, `Authorization: Bearer` 뒤의 값을 무조건 JWT라고 가정하는 처리도 확인합니다.
+
+Edge Functions의 `verify_jwt` 설정은 더 주의해야 합니다. 확인 시점에 마이그레이션 가이드의 일부 설명은 새 키를 Bearer로 보내면 거부된다고 안내하지만, 같은 가이드의 제한 사항과 최신 헤더 문서는 마이그레이션 호환 처리가 있다고 설명합니다. 따라서 ‘무조건 401이 난다’거나 ‘플랫폼 검사를 통과했으니 인증됐다’고 단정하지 않는 편이 맞습니다.
+
+실제 전환에서는 [Securing Edge Functions](https://supabase.com/docs/guides/functions/auth)의 호출 유형별 안내를 기준으로 확인합니다.
+
+- **로그인 사용자 호출:** 사용자 JWT 검증을 유지하고, 해당 사용자의 권한으로 처리합니다. 공식 인증 문서는 사용자 JWT 전용 함수에 `verify_jwt = true`를 유지하도록 안내합니다.
+- **서버 간 호출:** secret 키를 검증하는 핸들러 또는 공식 `@supabase/server`의 인증 방식을 적용합니다. 플랫폼 JWT 검사를 끄는 경우에도 이 검증이 대신 있어야 합니다.
+- **외부 웹훅:** Supabase 키 대신 제공업체의 서명 검증 등 호출자의 진위를 확인하는 장치가 필요합니다.
+
+**키를 바꾼 뒤 오류가 난다는 이유로 `verify_jwt = false`만 넣고 끝내면 안 됩니다.** publishable key는 누구나 얻을 수 있으므로, 그것을 알고 있다는 사실만으로 관리자 작업을 허용해서도 안 됩니다.
+
+Edge Functions가 자동 주입 환경변수를 읽고 있다면 이름과 자료형도 확인합니다. 공식 전환 가이드는 기존 문자열 변수와 달리 `SUPABASE_PUBLISHABLE_KEYS`, `SUPABASE_SECRET_KEYS`가 **키 이름을 속성으로 갖는 JSON 객체**라고 설명합니다. 실제 주입 여부와 키 이름을 확인한 뒤 읽어야 하며, 기존 코드를 변수명만 치환해서 사용할 수는 없습니다.
+
+Database Webhooks나 `pg_net`에서 `service_role`을 사용하는 경우도 브라우저 키 교체와 별개의 전환 대상입니다. 호출 헤더와 수신 함수의 인증 방식을 함께 바꾸고, secret 키를 SQL·로그에 평문으로 남기지 않도록 Vault 등 적절한 비밀 관리 수단을 사용해야 합니다.
+
+## 기존 키 비활성화 전 확인
+
+새 키 적용 후에는 ‘첫 페이지가 열린다’만 확인하면 부족합니다. 실제로 사용하는 기능에 맞춰 다음 항목을 점검합니다.
+
+- **비로그인 접근:** 공개 데이터는 정상 조회되고, 비공개 데이터는 보이지 않는지
+- **로그인과 세션:** 로그인·로그아웃·새로고침·세션 갱신이 정상인지
+- **사용자 간 권한:** 사용자 A가 사용자 B의 비공개 행이나 파일에 접근하지 못하는지
+- **실제 기능:** 데이터 저장·수정·삭제, Storage, Realtime, Edge Functions 중 사용 중인 기능이 정상인지
+- **백엔드 작업:** 예약 작업, CI/CD, 관리자 기능, 웹훅이 기존 키에 의존하지 않는지
+- **배포본:** 운영 환경과 미리보기 환경, 열린 탭이나 구버전 앱에 이전 키가 남아 있지 않은지
+
+허용되지 않은 데이터가 보인다면 키 이름의 문제가 아니라 권한·RLS 정책을 살펴봐야 합니다. 반대로 RLS에 의해 조회 결과가 비어 있는 상황과 키 자체가 거부되는 상황도 구분해야 합니다.
+
+점검을 마친 다음 Dashboard의 **Settings → API Keys에서 legacy 키를 비활성화**합니다. `anon`뿐 아니라 `service_role`의 남은 사용처도 확인한 뒤 진행합니다. 공식 가이드는 이 비활성화를 되돌릴 수 있다고 안내하지만, JWT 서명 키 폐기나 새 secret 키 삭제까지 같은 복구 절차로 생각하면 안 됩니다.
+
+문제가 생기면 누락된 클라이언트와 배포 설정을 먼저 찾습니다. 유출 사고가 아닌 일반 전환 작업에서는 기존 키 재활성화나 이전 배포로의 복귀를 복구 수단으로 검토할 수 있습니다. 키가 유출된 상황이라면 노출된 키를 다시 살리는 방식은 적절하지 않습니다.
+
+<Ads />
+
+## Random Life에 적용할 순서
+
+Random Life도 현재 사용하는 `anon` key를 publishable key로 옮겨야 합니다. 다만 이번 글을 작성하면서 **Random Life의 운영 키나 배포 설정을 실제로 바꾸지는 않았습니다.**
+
+적용할 때는 먼저 Supabase 클라이언트와 환경변수 참조를 확인하고, 개발·운영 프로젝트를 구분한 뒤 새 키를 반영하는 순서가 맞겠습니다. 새 배포에서 공개 데이터 조회와 실제 서비스 흐름을 확인하고, 별도 서버 작업이 있다면 그쪽도 점검해야 합니다. 그 후에 기존 키 비활성화를 진행하면 됩니다.
+
+이번 변경에서 중요한 것은 **‘anon이라는 이름을 전부 지우는 것’이 아니라, API 키의 사용처를 빠짐없이 새 체계로 옮기는 것**입니다. publishable key로 바꿔도 데이터 접근을 제한하는 RLS와 사용자 인증은 계속 필요합니다. 잘 동작하던 프로젝트일수록 사용처를 먼저 정리하고, 확인 가능한 범위부터 나눠서 전환하는 편이 좋겠습니다.
