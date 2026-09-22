@@ -10,7 +10,6 @@ export const authors = ['EKO', 'mingke'] as const;
 export const tags = [
   'AI',
   'AWS',
-  'Books',
   'Career',
   'Certification',
   'Django',
