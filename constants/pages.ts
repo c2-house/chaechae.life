@@ -35,6 +35,7 @@ export const tags = [
   'Railway',
   'React',
   'Redis',
+  'Review',
   'Rust',
   'SQLAlchemy',
   'Study',
