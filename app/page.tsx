@@ -6,6 +6,7 @@ import AboutUs from '@/components/Home/AboutUs';
 import RecentPosts from '@/components/Home/RecentPosts';
 import BlogHighlights from '@/components/Home/BlogHighlights';
 import FeaturedLinks from '@/components/Home/FeaturedLinks';
+import HomeAd from '@/components/Home/HomeAd';
 import styles from '@/components/Home/Home.module.css';
 
 const Home = async () => {
@@ -25,6 +26,7 @@ const Home = async () => {
         <FeaturedLinks />
         <BlogHighlights techPost={techPosts[0]} lifePost={lifePosts[0]} />
         <RecentPosts posts={latestPosts} />
+        <HomeAd />
         <AboutUs />
       </div>
     </main>

@@ -1,0 +1,32 @@
+.ad {
+  min-width: 0;
+  padding: 16px 0;
+  border-top: 1px solid #eeedf5;
+  border-bottom: 1px solid #eeedf5;
+}
+
+.ad:has(ins[data-ad-status='unfilled']) {
+  display: none;
+}
+
+.label {
+  margin: 0 0 10px;
+  color: #676a85;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+}
+
+.slot {
+  width: 100%;
+  max-width: 970px;
+  min-height: 90px;
+  margin: 0 auto;
+}
+
+@media (max-width: 760px) {
+  .slot {
+    min-height: 100px;
+  }
+}
