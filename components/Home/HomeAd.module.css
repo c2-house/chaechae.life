@@ -9,15 +9,6 @@
   display: none;
 }
 
-.label {
-  margin: 0 0 10px;
-  color: #676a85;
-  font-size: 11px;
-  font-weight: 500;
-  line-height: 1.4;
-  text-align: center;
-}
-
 .slot {
   width: 100%;
   max-width: 970px;
