@@ -19,6 +19,18 @@
 .brand {
   display: flex;
   width: fit-content;
+  align-items: center;
+  gap: 10px;
+}
+
+.brandMark {
+  width: 36px;
+  height: 42px;
+  flex-shrink: 0;
+}
+
+.brandText {
+  display: flex;
   flex-direction: column;
   gap: 1px;
 }
@@ -130,11 +142,20 @@
 }
 
 .footerBrand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
   color: #10102c;
   font-size: 30px;
   font-weight: 850;
   line-height: 1.15;
   letter-spacing: -1.4px;
+}
+
+.footerMark {
+  width: 29px;
+  height: 34px;
+  flex-shrink: 0;
 }
 
 .footerIdentity p {
@@ -229,9 +250,18 @@
 }
 
 .drawerTitle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
   font-size: 23px;
   font-weight: 900;
   letter-spacing: -1px;
+}
+
+.drawerMark {
+  width: 25px;
+  height: 29px;
+  flex-shrink: 0;
 }
 
 .drawerNav {
@@ -331,6 +361,15 @@
 
   .brandName {
     font-size: 25px;
+  }
+
+  .brandMark {
+    width: 30px;
+    height: 35px;
+  }
+
+  .brand {
+    gap: 8px;
   }
 
   .brandDomain {

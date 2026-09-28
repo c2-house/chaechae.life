@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
 
 import { navLinks } from '@/constants/pages';
-import { CloseIcon } from '@/public/icons';
+import { CloseIcon, LogoIcon } from '@/public/icons';
 import styles from './SiteChrome.module.css';
 
 interface Props {
@@ -92,6 +92,7 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
       >
         <div className={styles.drawerHeading}>
           <span id="mobile-navigation-title" className={styles.drawerTitle}>
+            <LogoIcon className={styles.drawerMark} aria-hidden="true" focusable="false" />
             채채라이프
           </span>
           <button

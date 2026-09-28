@@ -4,6 +4,7 @@ import InarticleAds from '@/components/AdSense/InarticleAds';
 import EvCharge from '@/components/Projects/EvCharge';
 import MessageBot from '@/components/Projects/MessageBot';
 import WeddingCard from '@/components/Projects/WeddingCard';
+import styles from './Projects.module.css';
 
 interface Props {
   project: Project;
@@ -22,7 +23,7 @@ const ProjectDescription = ({ project, name }: Props) => {
   const onGoing = project.name === 'wedding-card';
 
   return (
-    <article className="prose prose-slate py-6 lg:prose-lg md:py-10">
+    <article className={`prose prose-slate py-6 lg:prose-lg md:py-10 ${styles.description}`}>
       <header>
         <div className="flex items-center">
           <h1 className="!mb-0">{project.title}</h1>

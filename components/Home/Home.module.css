@@ -72,8 +72,7 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 18px rgb(100 72 246 / 20%);
 }
-.primaryButton:focus-visible,
-.spinButton:focus-visible {
+.primaryButton:focus-visible {
   outline: 3px solid #4430c5;
   outline-offset: 4px;
 }
@@ -110,8 +109,6 @@
 .heroBubble,
 .ekoLabel,
 .mingkeLabel,
-.foodBubble,
-.rouletteTitle,
 .gameNote {
   font-family: 'Nanum Pen Script', 'Comic Sans MS', 'Apple SD Gothic Neo', cursive;
   font-weight: 650;
@@ -150,8 +147,7 @@
   font-size: 18px;
   transform: rotate(-10deg);
 }
-.heroBubble::after,
-.foodBubble::after {
+.heroBubble::after {
   position: absolute;
   bottom: -10px;
   left: 23px;
@@ -298,8 +294,8 @@
   box-shadow: inset 0 2px 5px rgb(255 255 255 / 36%);
   color: #fff;
 }
-.foodIcon {
-  background: linear-gradient(130deg, #f84486, #ff77ad);
+.evIcon {
+  background: linear-gradient(135deg, #62d795, #32b97c);
 }
 .gameIcon {
   background: linear-gradient(135deg, #00c8bf, #009ba5);
@@ -309,119 +305,54 @@
   margin-top: 21px;
 }
 
-.rouletteCard {
+/* The actual app preview shares the service panel without covering its content. */
+.projectService {
+  padding-right: 43%;
+}
+.projectService .serviceHeading p {
+  max-width: 160px;
+  word-break: keep-all;
+}
+.evPreview {
   position: absolute;
   z-index: 1;
-  right: 8%;
-  bottom: 22px;
-  width: 39%;
-  padding: 10px 6px 6px;
-  border: 1px solid #f0edff;
-  border-radius: 17px;
-  background: #fff;
-  box-shadow: 0 2px 10px rgb(103 81 202 / 14%);
+  right: 28px;
+  bottom: 20px;
+  width: clamp(108px, 12.8vw, 154px);
+  transform: rotate(6deg);
 }
-.rouletteCard::after {
+.evPreview::before {
   position: absolute;
-  top: 53px;
-  right: -13px;
-  width: 5px;
-  height: 17px;
-  border-radius: 4px;
-  background: #ff76ab;
-  box-shadow: 13px 10px 0 -0.5px #ff76ab;
+  z-index: -1;
+  inset: 20% -25% 5%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #d0f4e4 0%, rgb(208 244 228 / 0%) 70%);
   content: '';
-  transform: rotate(35deg);
 }
-.rouletteTitle {
-  margin-bottom: 5px;
-  color: #394465;
-  font-size: 19px;
-  text-align: center;
-  transform: rotate(-5deg);
+.evPreview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 10px rgb(72 60 124 / 18%));
 }
-.foodBubble {
+.evBadge {
   position: absolute;
   z-index: 1;
-  top: -55px;
-  right: -31px;
-  display: grid;
-  align-content: center;
-  width: 103px;
-  height: 77px;
-  border: 2px solid #f6f4ff;
-  border-radius: 50%;
-  background: #fff;
-  color: #35426b;
-  font-size: 17px;
-  text-align: center;
-  transform: rotate(-9deg);
-}
-.foodBubble::after {
-  border-color: #f6f4ff;
-  left: 20px;
-  width: 14px;
-  height: 16px;
-}
-.roulette {
-  position: relative;
-  aspect-ratio: 1;
-  border: 5px solid white;
-  border-radius: 50%;
-  box-shadow: 0 2px 9px rgb(92 69 151 / 13%);
-}
-.wheel {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: conic-gradient(
-    from -30deg,
-    #fff 0deg 1deg,
-    #ffe2b5 1deg 59deg,
-    #fff 59deg 61deg,
-    #dff0d4 61deg 119deg,
-    #fff 119deg 121deg,
-    #ffe0c2 121deg 179deg,
-    #fff 179deg 181deg,
-    #ffcddd 181deg 239deg,
-    #fff 239deg 241deg,
-    #daf0fb 241deg 299deg,
-    #fff 299deg 301deg,
-    #fff0b7 301deg 359deg,
-    #fff 359deg 360deg
-  );
-  transition: transform 1.5s cubic-bezier(0.13, 0.65, 0.15, 1);
-}
-.foodEmoji {
-  position: absolute;
-  font-size: clamp(25px, 3.2vw, 41px);
-  line-height: 1;
-  transform: translate(-50%, -50%);
-}
-.spinButton {
-  position: absolute;
-  inset: 50% auto auto 50%;
-  display: grid;
-  place-items: center;
-  width: 35%;
-  aspect-ratio: 1;
-  border: 4px solid white;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff8caf, #fa5993);
-  color: #fff;
-  font-size: 16px;
+  top: 14%;
+  left: -25px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 7px 10px;
+  border: 1px solid #c0ecd4;
+  border-radius: 20px;
+  background: #f6fff9;
+  box-shadow: 0 3px 8px rgb(28 115 79 / 8%);
+  color: #278b5c;
+  font-size: 11px;
   font-weight: 750;
-  min-width: 42px;
   white-space: nowrap;
-  transform: translate(-50%, -50%);
-  transition: filter 160ms ease;
-}
-.spinButton:hover {
-  filter: brightness(1.06);
-}
-.spinButton:disabled {
-  font-size: 12px;
-  cursor: wait;
+  transform: rotate(-6deg);
 }
 
 .gameService {
@@ -590,9 +521,6 @@
   .gameRobots img:last-child {
     margin-left: -62px;
   }
-  .rouletteCard {
-    bottom: 24px;
-  }
 }
 
 @media (max-width: 1000px) and (min-width: 761px) {
@@ -643,11 +571,21 @@
     max-width: 142px;
     font-size: 11px;
   }
-  .projectService .serviceHeading p {
-    max-width: 112px;
+  .projectService {
+    padding-right: 40%;
   }
-  .projectService .serviceHeading p span {
-    display: block;
+  .projectService .serviceHeading p {
+    max-width: 106px;
+  }
+  .evPreview {
+    right: 22px;
+    width: 108px;
+    bottom: 25px;
+  }
+  .evBadge {
+    left: -13px;
+    padding: 6px 8px;
+    font-size: 10px;
   }
   .serviceIcon {
     flex-basis: 43px;
@@ -658,14 +596,6 @@
     gap: 6px;
     padding: 10px 13px;
     font-size: 14px;
-  }
-  .rouletteCard {
-    right: 5%;
-    width: 40%;
-    bottom: 27px;
-  }
-  .foodBubble {
-    right: -7px;
   }
   .gameNote {
     right: 0;
@@ -695,9 +625,6 @@
   .gameRobots img {
     width: 170px;
     height: 170px;
-  }
-  .spinButton {
-    font-size: 13px;
   }
 }
 
@@ -765,13 +692,11 @@
   .projectService {
     bottom: 35px;
   }
-  .rouletteCard {
-    width: 38%;
-    max-width: 226px;
-    right: 7%;
+  .evPreview {
+    width: 130px;
   }
-  .foodEmoji {
-    font-size: clamp(28px, 6vw, 40px);
+  .evBadge {
+    top: 26%;
   }
   .gameService {
     width: 66%;
@@ -857,7 +782,7 @@
     left: 20px;
     width: calc(100% - 40px);
     min-height: 140px;
-    padding: 14px;
+    padding: 14px 42% 14px 14px;
   }
   .serviceHeading {
     gap: 9px;
@@ -879,13 +804,25 @@
   }
   .projectService .serviceHeading p {
     position: absolute;
-    left: 16px;
-    top: 63px;
-    max-width: 100px;
+    left: 14px;
+    top: 66px;
+    max-width: 150px;
     font-size: 10px;
   }
-  .projectService .serviceHeading p span {
-    display: block;
+  .evPreview {
+    right: 22px;
+    bottom: 28px;
+    width: 108px;
+  }
+  .evBadge {
+    top: 14%;
+    left: -11px;
+    padding: 6px 7px;
+    font-size: 9px;
+  }
+  .evBadge svg {
+    width: 13px;
+    height: 13px;
   }
   .projectService .primaryButton {
     z-index: 2;
@@ -894,36 +831,6 @@
     padding: 10px 12px;
     min-height: 39px;
     border-radius: 12px;
-  }
-  .rouletteCard {
-    right: 5%;
-    bottom: 34px;
-    width: 43%;
-    padding: 8px 3px 3px;
-    border-radius: 14px;
-  }
-  .rouletteTitle {
-    font-size: 12px;
-  }
-  .roulette {
-    border-width: 3px;
-  }
-  .foodBubble {
-    top: -52px;
-    right: -6px;
-    width: 90px;
-    height: 66px;
-    font-size: 11px;
-  }
-  .foodEmoji {
-    font-size: 25px;
-  }
-  .spinButton {
-    border-width: 3px;
-    font-size: 11px;
-  }
-  .spinButton:disabled {
-    font-size: 9px;
   }
   .gameService {
     left: 20px;
@@ -998,6 +905,19 @@
     width: 100%;
     min-height: 0;
     margin-top: 22px;
+    padding: 14px;
+  }
+  .evPreview {
+    position: relative;
+    inset: auto;
+    width: 150px;
+    margin: 25px auto 4px;
+    transform: rotate(4deg);
+  }
+  .evBadge {
+    top: 17%;
+    left: -19px;
+    font-size: 11px;
   }
   .projectService .serviceHeading {
     align-items: center;
@@ -1010,16 +930,6 @@
     width: 100%;
     margin-top: 15px;
   }
-  .rouletteCard {
-    position: relative;
-    inset: auto;
-    width: 180px;
-    margin: 45px auto 0;
-  }
-  .foodBubble {
-    top: -38px;
-    right: -16px;
-  }
   .gameService .serviceHeading p {
     max-width: 69px;
   }
@@ -1030,9 +940,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .primaryButton,
-  .spinButton,
-  .wheel {
+  .primaryButton {
     transition: none;
   }
   .primaryButton:hover {

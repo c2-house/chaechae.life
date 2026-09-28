@@ -5,6 +5,7 @@ import BlogInfeedAds from '../AdSense/BlogInfeedAds';
 import Pagination from './Pagination';
 import TagModalButton from './TagModalButton';
 import MobileSearchButton from './MobileSearchButton';
+import styles from './PostList.module.css';
 
 interface Props {
   posts: BlogPost[];
@@ -31,22 +32,17 @@ const PostList = ({
   const endIndex = startIndex + postsPerPage;
   const currentPosts = posts.slice(startIndex, endIndex);
 
-  if (posts.length === 0)
-    return (
-      <div className="flex h-[50dvh] items-center justify-center text-slate-500">
-        글이 없습니다.
-      </div>
-    );
+  if (posts.length === 0) return <div className={styles.empty}>글이 없습니다.</div>;
 
   return (
     <>
       {showHeader && (
-        <div className="mb-5 flex h-8 items-center justify-between gap-3 md:mb-7 md:text-xl">
-          <div className="flex shrink-0 items-center gap-2 font-semibold">
+        <div className={styles.listHeader}>
+          <div className={styles.listLabel}>
             {countLabel}
-            <span className="text-sm font-medium text-gray-500">({posts.length})</span>
+            <span className={styles.count}>({posts.length})</span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center gap-2">
             <MobileSearchButton />
             <TagModalButton currentTab={currentTab} />
           </div>

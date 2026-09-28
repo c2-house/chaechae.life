@@ -2,6 +2,8 @@ import { allPosts } from 'contentlayer/generated';
 import PostList from '@/components/Blog/PostList';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 import Sidebar from '@/components/Layout/Sidebar';
+import CollectionHeading from '@/components/Layout/CollectionHeading';
+import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
   searchParams: {
@@ -10,19 +12,26 @@ interface Props {
 }
 
 const BlogPage = ({ searchParams: { page } }: Props) => {
-  const posts = allPosts.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  const posts = [...allPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
   const defaultTag = '전체글';
 
   return (
-    <div className="container-lg block lg:flex lg:gap-6">
-      <Sidebar currentTab={defaultTag} />
-      <main className="min-h-screen flex-1">
-        <section className="py-5">
+    <main className={styles.page}>
+      <CollectionHeading
+        label="TECH"
+        title="기술 노트"
+        description="개발하며 배우고, 정리한 것을 나눕니다."
+      />
+      <div className={styles.blogLayout}>
+        <Sidebar currentTab={defaultTag} />
+        <section className={styles.posts}>
           <PostList posts={posts} page={page} countLabel={defaultTag} currentTab={defaultTag} />
+          <ResponsiveAds />
         </section>
-        <ResponsiveAds />
-      </main>
-    </div>
+      </div>
+    </main>
   );
 };
 

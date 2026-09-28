@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowUpRight, Gamepad2, Utensils } from 'lucide-react';
-import FoodRoulette from './FoodRoulette';
+import { ArrowUpRight, CarFront, Gamepad2, Zap } from 'lucide-react';
 import styles from './Home.module.css';
 
 const blocks = [
@@ -25,27 +24,37 @@ const FeaturedLinks = () => (
       <p className={styles.sectionLabel}>PROJECTS</p>
       <h2>일상을 조금 더 편리하게</h2>
       <p className={styles.featureDescription}>
-        작지만 유용한 서비스로
+        내 주변 충전소를 쉽고 빠르게.
         <br />
-        오늘도 더 나은 일상을 만들어가요.
+        충전 현황까지 한눈에 확인해요.
       </p>
       <div className={styles.projectService}>
         <div className={styles.serviceHeading}>
-          <span className={`${styles.serviceIcon} ${styles.foodIcon}`}>
-            <Utensils size={31} strokeWidth={2.4} aria-hidden="true" />
+          <span className={`${styles.serviceIcon} ${styles.evIcon}`}>
+            <CarFront size={32} strokeWidth={2.3} aria-hidden="true" />
           </span>
           <div>
-            <h3>고푸다</h3>
-            <p>
-              <span>오늘 뭐 먹지?</span> <span>고민될 땐 돌려보세요.</span>
-            </p>
+            <h3>전기차G</h3>
+            <p>전기차 충전소 찾기 서비스</p>
           </div>
         </div>
-        <Link href="/projects/gofooda" className={styles.primaryButton}>
-          만든 서비스 보기 <ArrowUpRight size={18} aria-hidden="true" />
+        <Link href="/projects/ev-charge" className={styles.primaryButton}>
+          서비스 둘러보기 <ArrowUpRight size={18} aria-hidden="true" />
         </Link>
       </div>
-      <FoodRoulette />
+      <div className={styles.evPreview}>
+        <div className={styles.evBadge} aria-hidden="true">
+          <Zap size={16} fill="currentColor" />
+          가까운 충전소 찾기
+        </div>
+        <Image
+          src="/images/projects/ev-charge/mockup.png"
+          alt="지도에서 주변 전기차 충전소와 가까운 충전소 목록을 보여주는 전기차G 화면"
+          width={512}
+          height={1038}
+          sizes="(max-width: 360px) 150px, (max-width: 480px) 108px, (max-width: 760px) 130px, (max-width: 1000px) 108px, (max-width: 1203px) 12.8vw, 154px"
+        />
+      </div>
     </article>
     <article className={`${styles.featureCard} ${styles.gameCard}`}>
       <p className={styles.sectionLabel}>GAMES</p>

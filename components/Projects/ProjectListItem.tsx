@@ -1,15 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Project } from 'contentlayer/generated';
+import styles from './Projects.module.css';
 
 const ProjectListItem = ({ project }: { project: Project }) => {
   return (
-    <li className="group mx-auto aspect-square w-full max-w-[470px] overflow-hidden rounded-xl bg-gray-100">
-      <Link href={`/projects/${project.name}`}>
+    <li className={`group ${styles.card}`}>
+      <Link href={`/projects/${project.name}`} className="block h-full">
         <article className="flex h-full flex-col p-5 lg:p-8">
           <header>
-            <h2 className="text-2xl font-semibold lg:text-3xl">{project.title}</h2>
-            <p className="my-1 text-slate-500 lg:my-2 lg:text-lg">{project.description}</p>
+            <h2 className={styles.cardTitle}>{project.title}</h2>
+            <p className={styles.cardDescription}>{project.description}</p>
             <hr className="my-3 lg:my-4" />
           </header>
           {project.mockupType === 'mobile' && (
@@ -18,7 +19,7 @@ const ProjectListItem = ({ project }: { project: Project }) => {
               alt={project.title}
               width={200}
               height={405}
-              className="mx-auto origin-top transition-transform duration-300 group-hover:scale-[0.8]"
+              className="mx-auto w-[47%] max-w-[260px] origin-top transition-transform duration-300 group-hover:scale-[0.8]"
             />
           )}
           {project.mockupType === 'desktop' && (
