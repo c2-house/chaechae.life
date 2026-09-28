@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { Mail } from 'lucide-react';
 
 import { navLinks } from '@/constants/pages';
-import { GithubIcon, LogoIcon } from '@/public/icons';
+import { GithubIcon } from '@/public/icons';
+import Brand from './Brand';
 import styles from './SiteChrome.module.css';
 
 const navigationLabels: Record<string, string> = {
@@ -16,10 +17,7 @@ const Footer = () => (
   <footer className={styles.footer}>
     <div className={styles.footerInner}>
       <div className={styles.footerIdentity}>
-        <Link href="/" className={styles.footerBrand}>
-          <LogoIcon className={styles.footerMark} aria-hidden="true" focusable="false" />
-          <span>chaechae.life</span>
-        </Link>
+        <Brand />
         <p>작은 호기심이 모여, 우리의 일상이 됩니다.</p>
       </div>
 
@@ -37,7 +35,7 @@ const Footer = () => (
                 </li>
               ))}
               <li>
-                <Link href="/#about-us">우리 소개</Link>
+                <Link href="/#about-us">소개</Link>
               </li>
             </ul>
           </nav>

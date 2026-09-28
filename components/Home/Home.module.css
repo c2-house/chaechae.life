@@ -318,7 +318,7 @@
   z-index: 1;
   right: 28px;
   bottom: 20px;
-  width: clamp(108px, 12.8vw, 154px);
+  width: clamp(108px, 11.2vw, 136px);
   transform: rotate(6deg);
 }
 .evPreview::before {
@@ -523,6 +523,18 @@
   }
 }
 
+@media (min-width: 1001px) and (max-width: 1199px) {
+  .projectCard .featureDescription {
+    font-size: 16px;
+  }
+  .evPreview {
+    width: clamp(100px, 9.35vw, 112px);
+  }
+  .evBadge {
+    top: 18%;
+  }
+}
+
 @media (max-width: 1000px) and (min-width: 761px) {
   .hero {
     gap: 12px;
@@ -572,18 +584,22 @@
     font-size: 11px;
   }
   .projectService {
-    padding-right: 40%;
+    width: calc(100% - 40px);
+    padding-right: 112px;
+  }
+  .projectService .serviceHeading h3 {
+    white-space: nowrap;
   }
   .projectService .serviceHeading p {
     max-width: 106px;
   }
   .evPreview {
-    right: 22px;
-    width: 108px;
+    right: 17px;
+    width: clamp(86px, 10vw, 100px);
     bottom: 25px;
   }
   .evBadge {
-    left: -13px;
+    left: -25px;
     padding: 6px 8px;
     font-size: 10px;
   }
@@ -596,6 +612,10 @@
     gap: 6px;
     padding: 10px 13px;
     font-size: 14px;
+  }
+  .projectService .primaryButton {
+    font-size: 13px;
+    padding-inline: 12px;
   }
   .gameNote {
     right: 0;

@@ -126,11 +126,6 @@ const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
                 )}
               </li>
             ))}
-            <li className={styles.drawerAbout}>
-              <Link href="/#about-us" onClick={() => setIsOpen(false)}>
-                우리 소개
-              </Link>
-            </li>
           </ul>
         </nav>
         <p className={styles.drawerNote}>만들고, 놀고, 기록하는 채채라이프.</p>

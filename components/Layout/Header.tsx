@@ -6,7 +6,8 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 
 import { navLinks } from '@/constants/pages';
-import { LogoIcon, MenuIcon } from '@/public/icons';
+import { MenuIcon } from '@/public/icons';
+import Brand from './Brand';
 import Drawer from './Drawer';
 import styles from './SiteChrome.module.css';
 
@@ -25,13 +26,7 @@ const Header = () => {
     <>
       <header className={styles.header}>
         <div className={styles.headerInner}>
-          <Link href="/" className={styles.brand} aria-label="채채라이프 홈">
-            <LogoIcon className={styles.brandMark} aria-hidden="true" focusable="false" />
-            <span className={styles.brandText}>
-              <span className={styles.brandName}>채채라이프</span>
-              <span className={styles.brandDomain}>chaechae.life</span>
-            </span>
-          </Link>
+          <Brand />
 
           <nav className={styles.desktopNav} aria-label="주 메뉴">
             <ul className={styles.navList}>
@@ -54,10 +49,6 @@ const Header = () => {
               ))}
             </ul>
           </nav>
-
-          <Link href="/#about-us" className={styles.aboutLink}>
-            우리 소개
-          </Link>
 
           <button
             type="button"

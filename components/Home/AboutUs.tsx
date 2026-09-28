@@ -63,7 +63,7 @@ const AboutUs = () => {
           aria-controls="about-us-details"
           onClick={() => setExpanded((previous) => !previous)}
         >
-          {expanded ? '소개 접기' : '우리 소개'}
+          {expanded ? '소개 접기' : '소개 보기'}
           {expanded ? (
             <ChevronUp size={18} aria-hidden="true" />
           ) : (

@@ -71,7 +71,7 @@
 
 .posts {
   display: grid;
-  gap: 8px;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
