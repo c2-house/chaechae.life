@@ -13,8 +13,16 @@
   background: rgba(255, 255, 255, 0.72);
 }
 
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
 .category {
-  margin: 0 0 4px;
+  margin: 0;
   font-size: 16px;
   font-weight: 750;
   line-height: 1.5;
@@ -28,6 +36,21 @@
   color: #fb5796;
 }
 
+.allPosts {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #6651ff;
+  font-size: 13px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.allPosts:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .title {
   margin: 0;
   font-size: clamp(25px, 2.6vw, 30px);
@@ -38,7 +61,7 @@
 
 .description {
   margin: 1px 0 15px;
-  color: #777b98;
+  color: #676a85;
   font-size: 17px;
   font-weight: 500;
   letter-spacing: -0.035em;
@@ -46,12 +69,20 @@
   word-break: keep-all;
 }
 
+.posts {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .post {
   display: flex;
-  min-height: 74px;
+  min-height: 90px;
   align-items: center;
-  gap: 20px;
-  padding: 4px 14px 4px 4px;
+  gap: 14px;
+  padding: 8px 12px 8px 8px;
   border: 1px solid #e3e3f1;
   border-radius: 11px;
   color: #11112c;
@@ -66,14 +97,15 @@
   box-shadow: 0 3px 12px #6651ff0a;
 }
 
-.post:focus-visible {
+.post:focus-visible,
+.allPosts:focus-visible {
   outline: 3px solid #b9b0ff;
   outline-offset: 3px;
 }
 
 .thumbnail {
   display: flex;
-  width: 68px;
+  width: 64px;
   height: 64px;
   flex-shrink: 0;
   align-items: center;
@@ -85,7 +117,7 @@
 }
 
 .life .thumbnail {
-  width: 90px;
+  width: 80px;
   color: #ee8bb2;
   background: #fff0f5;
 }
@@ -96,9 +128,13 @@
   object-fit: cover;
 }
 
+.postText {
+  min-width: 0;
+  flex: 1;
+}
+
 .postTitle {
   display: -webkit-box;
-  flex: 1;
   overflow: hidden;
   font-size: 17px;
   font-weight: 650;
@@ -106,6 +142,21 @@
   line-height: 1.5;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.date {
+  display: block;
+  margin-top: 4px;
+  color: #676a85;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.empty {
+  padding: 20px 0;
+  color: #676a85;
+  font-size: 15px;
 }
 
 .arrow {
@@ -149,5 +200,30 @@
 
   .postTitle {
     font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .post {
+    gap: 10px;
+  }
+
+  .thumbnail,
+  .life .thumbnail {
+    width: 48px;
+    height: 48px;
+  }
+
+  .postTitle {
+    font-size: 14px;
+  }
+
+  .date {
+    font-size: 11px;
+  }
+
+  .arrow {
+    width: 18px;
+    height: 18px;
   }
 }
