@@ -1,8 +1,12 @@
+'use client';
+
 import clsx from 'clsx';
 import Link from 'next/link';
-import { Dispatch, MouseEvent, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef } from 'react';
+
 import { navLinks } from '@/constants/pages';
 import { CloseIcon } from '@/public/icons';
+import styles from './SiteChrome.module.css';
 
 interface Props {
   currentPath: string;
@@ -10,67 +14,125 @@ interface Props {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }
 
-const handleClickOutside = (e: MouseEvent, setIsOpen: Dispatch<SetStateAction<boolean>>) => {
-  if (e.target === e.currentTarget) {
-    setIsOpen(false);
-  }
+const navigationLabels: Record<string, string> = {
+  Projects: '프로젝트',
+  Games: '게임',
+  Tech: '기술',
+  Life: '일상',
 };
 
 const Drawer = ({ currentPath, isOpen, setIsOpen }: Props) => {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    closeRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setIsOpen(false);
+      }
+
+      if (event.key !== 'Tab') return;
+
+      const focusableElements = panelRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled])',
+      );
+      if (!focusableElements?.length) return;
+
+      const firstElement = focusableElements[0];
+      const lastElement = focusableElements[focusableElements.length - 1];
+      if (event.shiftKey && document.activeElement === firstElement) {
+        event.preventDefault();
+        lastElement.focus();
+      } else if (!event.shiftKey && document.activeElement === lastElement) {
+        event.preventDefault();
+        firstElement.focus();
+      }
+    };
+
+    const desktopQuery = window.matchMedia('(min-width: 768px)');
+    const closeOnDesktop = () => {
+      if (desktopQuery.matches) setIsOpen(false);
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    desktopQuery.addEventListener('change', closeOnDesktop);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener('keydown', handleKeyDown);
+      desktopQuery.removeEventListener('change', closeOnDesktop);
+      previousFocus?.focus();
+    };
+  }, [isOpen, setIsOpen]);
+
+  if (!isOpen) return null;
+
   return (
     <div
-      className={clsx(
-        'fixed inset-0 cursor-default transition-all duration-300',
-        isOpen
-          ? 'pointer-events-auto z-50 bg-slate-900/80 backdrop-blur'
-          : 'pointer-events-none z-[-1] bg-transparent',
-      )}
-      onClick={(e) => handleClickOutside(e, setIsOpen)}
+      className={styles.drawerBackdrop}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) setIsOpen(false);
+      }}
     >
       <div
-        className={clsx(
-          'fixed right-0 top-0 z-[51] flex h-full w-64 transform flex-col bg-slate-100 p-4 text-slate-700 shadow-lg transition-transform duration-300',
-          isOpen ? 'translate-x-0' : 'translate-x-full',
-        )}
+        ref={panelRef}
+        id="mobile-navigation"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mobile-navigation-title"
+        className={styles.drawer}
       >
-        <div className="flex justify-end">
+        <div className={styles.drawerHeading}>
+          <span id="mobile-navigation-title" className={styles.drawerTitle}>
+            채채라이프
+          </span>
           <button
-            aria-label="close sidebar"
-            className="cursor-pointer p-1"
+            ref={closeRef}
+            type="button"
+            aria-label="메뉴 닫기"
+            className={styles.closeButton}
             onClick={() => setIsOpen(false)}
           >
-            <CloseIcon className="fill-current" />
+            <CloseIcon aria-hidden="true" />
           </button>
         </div>
 
-        <nav>
-          <ul className="flex flex-col items-center gap-2">
+        <nav aria-label="모바일 주 메뉴">
+          <ul className={styles.drawerNav}>
             {navLinks.map((link) => (
-              <li key={link.name} className="w-full">
+              <li key={link.path}>
                 {link.path.startsWith('http') ? (
-                  <a
-                    href={link.path}
-                    className="inline-block w-full p-2 text-center font-semibold hover:text-slate-500"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {link.name}
+                  <a href={link.path} onClick={() => setIsOpen(false)}>
+                    {navigationLabels[link.name] ?? link.name}
                   </a>
                 ) : (
                   <Link
                     href={link.path}
-                    className={clsx(
-                      'inline-block w-full p-2 text-center font-semibold transition-colors',
-                      currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
-                    )}
+                    className={clsx(currentPath === link.path && styles.active)}
+                    aria-current={currentPath === link.path ? 'page' : undefined}
                     onClick={() => setIsOpen(false)}
                   >
-                    {link.name}
+                    {navigationLabels[link.name] ?? link.name}
                   </Link>
                 )}
               </li>
             ))}
+            <li className={styles.drawerAbout}>
+              <Link href="/#about-us" onClick={() => setIsOpen(false)}>
+                우리 소개
+              </Link>
+            </li>
           </ul>
         </nav>
+        <p className={styles.drawerNote}>만들고, 놀고, 기록하는 채채라이프.</p>
       </div>
     </div>
   );

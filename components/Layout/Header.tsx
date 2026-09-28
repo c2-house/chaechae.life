@@ -3,81 +3,69 @@
 import clsx from 'clsx';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { navLinks } from '@/constants/pages';
-import { LogoIcon, MenuIcon } from '@/public/icons';
+import { MenuIcon } from '@/public/icons';
 import Drawer from './Drawer';
+import styles from './SiteChrome.module.css';
+
+const navigationLabels: Record<string, string> = {
+  Projects: '프로젝트',
+  Games: '게임',
+  Tech: '기술',
+  Life: '일상',
+};
 
 const Header = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
   const currentPath = `/${usePathname().split('/')[1]}`;
-
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY);
-
-    handleScroll();
-    window.addEventListener('scroll', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
 
   return (
     <>
-      <header
-        className={clsx(
-          'inset-x-0 top-0 z-10 w-full transition-colors duration-300',
-          currentPath === '/' ? 'fixed' : 'sticky',
-          scrollY <= 0 ? 'bg-transparent' : 'border-b border-gray-100 bg-white/70 backdrop-blur-lg',
-        )}
-      >
-        <div className="container-lg py-3 md:py-5">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <LogoIcon className="h-6 w-6" />
-              <span className="text-lg font-semibold lg:text-xl">chaechae.life</span>
-            </Link>
+      <header className={styles.header}>
+        <div className={styles.headerInner}>
+          <Link href="/" className={styles.brand} aria-label="채채라이프 홈">
+            <span className={styles.brandName}>채채라이프</span>
+            <span className={styles.brandDomain}>chaechae.life</span>
+          </Link>
 
-            <nav className="hidden md:block">
-              <ul className="flex items-center">
-                {navLinks.map((link) => (
-                  <li key={link.name}>
-                    {link.path.startsWith('http') ? (
-                      <a
-                        href={link.path}
-                        className="block px-4 py-1 font-semibold transition-colors hover:text-slate-500"
-                      >
-                        {link.name}
-                      </a>
-                    ) : (
-                      <Link
-                        href={link.path}
-                        className={clsx(
-                          'block px-4 py-1 font-semibold transition-colors',
-                          currentPath === link.path ? 'text-indigo-600' : 'hover:text-slate-500',
-                        )}
-                      >
-                        {link.name}
-                      </Link>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </nav>
+          <nav className={styles.desktopNav} aria-label="주 메뉴">
+            <ul className={styles.navList}>
+              {navLinks.map((link) => (
+                <li key={link.path}>
+                  {link.path.startsWith('http') ? (
+                    <a href={link.path} className={styles.navLink}>
+                      {navigationLabels[link.name] ?? link.name}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.path}
+                      className={clsx(styles.navLink, currentPath === link.path && styles.active)}
+                      aria-current={currentPath === link.path ? 'page' : undefined}
+                    >
+                      {navigationLabels[link.name] ?? link.name}
+                    </Link>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-            <div className="flex items-center md:hidden">
-              <button
-                aria-label="open sidebar"
-                className="p-1"
-                onClick={() => setIsDrawerOpen(true)}
-              >
-                <MenuIcon className="fill-current" />
-              </button>
-            </div>
-          </div>
+          <Link href="/#about-us" className={styles.aboutLink}>
+            우리 소개
+          </Link>
+
+          <button
+            type="button"
+            aria-label="메뉴 열기"
+            aria-expanded={isDrawerOpen}
+            aria-controls="mobile-navigation"
+            className={styles.menuButton}
+            onClick={() => setIsDrawerOpen(true)}
+          >
+            <MenuIcon aria-hidden="true" />
+          </button>
         </div>
       </header>
 

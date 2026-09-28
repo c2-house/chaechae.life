@@ -1,0 +1,1041 @@
+.home {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 40px 24px;
+  color: #11112c;
+}
+
+.sections {
+  display: grid;
+  gap: 16px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1.06fr 1fr;
+  align-items: center;
+  gap: 30px;
+  padding: 4px 14px 12px;
+}
+.heroCopy {
+  padding: 14px 0;
+}
+.eyebrow {
+  margin: 0 0 13px;
+  color: #6b51ff;
+  font-size: clamp(16px, 1.8vw, 21px);
+  font-weight: 650;
+  letter-spacing: -0.6px;
+}
+.heroCopy h1 {
+  margin: 0;
+  font-size: clamp(36px, 4.6vw, 60px);
+  font-weight: 850;
+  line-height: 1.15;
+  letter-spacing: -2.3px;
+}
+.heroCopy h1 span {
+  display: block;
+  white-space: nowrap;
+}
+.heroDescription {
+  margin: 18px 0 20px;
+  color: #676a85;
+  font-size: clamp(16px, 1.8vw, 21px);
+  font-weight: 550;
+  letter-spacing: -0.6px;
+  line-height: 1.55;
+}
+
+.primaryButton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 45px;
+  padding: 11px 19px;
+  border: 1px solid rgb(112 87 255 / 30%);
+  border-radius: 14px;
+  background: linear-gradient(115deg, #714bff 0%, #5e44f5 70%, #7351ff 100%);
+  box-shadow: inset 0 1px 2px rgb(255 255 255 / 25%);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+.primaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgb(100 72 246 / 20%);
+}
+.primaryButton:focus-visible,
+.spinButton:focus-visible {
+  outline: 3px solid #4430c5;
+  outline-offset: 4px;
+}
+.heroCopy .primaryButton {
+  min-height: 56px;
+  padding: 14px 29px;
+  font-size: 19px;
+}
+
+.heroArt {
+  position: relative;
+  aspect-ratio: 1.53;
+  border-radius: 48px;
+  background: radial-gradient(ellipse at 50% 62%, #fbfbff 10%, #f4f4ff 100%);
+  isolation: isolate;
+}
+.heroEko,
+.heroMingke {
+  position: absolute;
+  bottom: -5%;
+  width: 62%;
+  height: auto;
+  filter: drop-shadow(0 7px 0 rgb(126 115 196 / 7%));
+}
+.heroEko {
+  left: -2%;
+  transform: rotate(-10deg);
+}
+.heroMingke {
+  right: 4%;
+  transform: rotate(9deg);
+}
+.heroNote,
+.heroBubble,
+.ekoLabel,
+.mingkeLabel,
+.foodBubble,
+.rouletteTitle,
+.gameNote {
+  font-family: 'Nanum Pen Script', 'Comic Sans MS', 'Apple SD Gothic Neo', cursive;
+  font-weight: 650;
+  letter-spacing: 0.5px;
+  line-height: 1.5;
+}
+.heroNote {
+  position: absolute;
+  top: 7%;
+  left: 34%;
+  color: #35486b;
+  font-size: 21px;
+  text-align: center;
+  transform: rotate(-8deg);
+}
+.heroNote svg {
+  display: inline-block;
+  margin-left: 2px;
+  color: #fc78a4;
+  vertical-align: middle;
+  transform: rotate(8deg);
+}
+.heroBubble {
+  position: absolute;
+  z-index: 1;
+  top: 13%;
+  right: -3%;
+  display: grid;
+  place-content: center;
+  width: 116px;
+  height: 99px;
+  border: 2px solid #e5e1ff;
+  border-radius: 52% 49% 49% 42%;
+  background: rgb(255 255 255 / 85%);
+  color: #656fc0;
+  font-size: 18px;
+  transform: rotate(-10deg);
+}
+.heroBubble::after,
+.foodBubble::after {
+  position: absolute;
+  bottom: -10px;
+  left: 23px;
+  width: 19px;
+  height: 19px;
+  border-bottom: 2px solid #e5e1ff;
+  border-left: 2px solid #e5e1ff;
+  background: #fff;
+  content: '';
+  transform: skewY(-33deg) rotate(-13deg);
+}
+.ekoLabel,
+.mingkeLabel {
+  position: absolute;
+  bottom: 5%;
+  font-size: 17px;
+  transform: rotate(-12deg);
+}
+.ekoLabel strong,
+.mingkeLabel strong {
+  display: block;
+  font-size: 27px;
+  font-weight: 700;
+}
+.ekoLabel {
+  left: 5%;
+  color: #f15e93;
+}
+.mingkeLabel {
+  right: 3%;
+  color: #00a8ac;
+}
+.confetti {
+  position: absolute;
+  top: 52%;
+  width: 6px;
+  height: 17px;
+  border-radius: 5px;
+}
+.confetti::after {
+  position: absolute;
+  left: -13px;
+  top: 10px;
+  width: 5px;
+  height: 14px;
+  border-radius: 5px;
+  background: inherit;
+  content: '';
+  transform: rotate(-35deg);
+}
+.pinkConfetti {
+  left: 5%;
+  background: #ff6596;
+  transform: rotate(-25deg);
+}
+.tealConfetti {
+  right: 9%;
+  background: #00b7ba;
+  transform: rotate(45deg);
+}
+
+.featured {
+  display: grid;
+  grid-template-columns: 1.29fr 1fr;
+  gap: 16px;
+}
+.featureCard {
+  position: relative;
+  min-width: 0;
+  min-height: clamp(372px, 34vw, 408px);
+  padding: 24px;
+  overflow: hidden;
+  border: 1px solid;
+  border-radius: 19px;
+  isolation: isolate;
+}
+.projectCard {
+  border-color: #d7d0ff;
+  background: radial-gradient(ellipse at 77% 38%, #f3efff, #eeebff 70%);
+}
+.gameCard {
+  border-color: #bef2e8;
+  background: radial-gradient(ellipse at 75% 40%, #f1fff9, #e2faf3 75%);
+}
+.sectionLabel {
+  color: #6a4fff;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.25;
+}
+.gameCard .sectionLabel {
+  color: #00a5a6;
+}
+.featureCard h2 {
+  margin: 8px 0 10px;
+  font-size: clamp(26px, 2.8vw, 34px);
+  font-weight: 800;
+  letter-spacing: -1.1px;
+  line-height: 1.25;
+}
+.featureDescription {
+  color: #747994;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.4px;
+}
+.projectService,
+.gameService {
+  position: absolute;
+  bottom: 39px;
+  left: 24px;
+  width: calc(100% - 48px);
+  padding: 17px;
+  border-radius: 17px;
+  background: rgb(255 255 255 / 90%);
+}
+.serviceHeading {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+.serviceHeading h3 {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.3;
+}
+.serviceHeading p {
+  margin-top: 3px;
+  color: #7a7d95;
+  font-size: 12px;
+  font-weight: 550;
+  line-height: 1.5;
+  letter-spacing: -0.5px;
+}
+.serviceIcon {
+  display: grid;
+  flex: 0 0 53px;
+  place-items: center;
+  width: 53px;
+  height: 55px;
+  border-radius: 15px;
+  box-shadow: inset 0 2px 5px rgb(255 255 255 / 36%);
+  color: #fff;
+}
+.foodIcon {
+  background: linear-gradient(130deg, #f84486, #ff77ad);
+}
+.gameIcon {
+  background: linear-gradient(135deg, #00c8bf, #009ba5);
+}
+.projectService .primaryButton,
+.gameService .primaryButton {
+  margin-top: 21px;
+}
+
+.rouletteCard {
+  position: absolute;
+  z-index: 1;
+  right: 8%;
+  bottom: 22px;
+  width: 39%;
+  padding: 10px 6px 6px;
+  border: 1px solid #f0edff;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 2px 10px rgb(103 81 202 / 14%);
+}
+.rouletteCard::after {
+  position: absolute;
+  top: 53px;
+  right: -13px;
+  width: 5px;
+  height: 17px;
+  border-radius: 4px;
+  background: #ff76ab;
+  box-shadow: 13px 10px 0 -0.5px #ff76ab;
+  content: '';
+  transform: rotate(35deg);
+}
+.rouletteTitle {
+  margin-bottom: 5px;
+  color: #394465;
+  font-size: 19px;
+  text-align: center;
+  transform: rotate(-5deg);
+}
+.foodBubble {
+  position: absolute;
+  z-index: 1;
+  top: -55px;
+  right: -31px;
+  display: grid;
+  align-content: center;
+  width: 103px;
+  height: 77px;
+  border: 2px solid #f6f4ff;
+  border-radius: 50%;
+  background: #fff;
+  color: #35426b;
+  font-size: 17px;
+  text-align: center;
+  transform: rotate(-9deg);
+}
+.foodBubble::after {
+  border-color: #f6f4ff;
+  left: 20px;
+  width: 14px;
+  height: 16px;
+}
+.roulette {
+  position: relative;
+  aspect-ratio: 1;
+  border: 5px solid white;
+  border-radius: 50%;
+  box-shadow: 0 2px 9px rgb(92 69 151 / 13%);
+}
+.wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from -30deg,
+    #fff 0deg 1deg,
+    #ffe2b5 1deg 59deg,
+    #fff 59deg 61deg,
+    #dff0d4 61deg 119deg,
+    #fff 119deg 121deg,
+    #ffe0c2 121deg 179deg,
+    #fff 179deg 181deg,
+    #ffcddd 181deg 239deg,
+    #fff 239deg 241deg,
+    #daf0fb 241deg 299deg,
+    #fff 299deg 301deg,
+    #fff0b7 301deg 359deg,
+    #fff 359deg 360deg
+  );
+  transition: transform 1.5s cubic-bezier(0.13, 0.65, 0.15, 1);
+}
+.foodEmoji {
+  position: absolute;
+  font-size: clamp(25px, 3.2vw, 41px);
+  line-height: 1;
+  transform: translate(-50%, -50%);
+}
+.spinButton {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  place-items: center;
+  width: 35%;
+  aspect-ratio: 1;
+  border: 4px solid white;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff8caf, #fa5993);
+  color: #fff;
+  font-size: 16px;
+  font-weight: 750;
+  min-width: 42px;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+  transition: filter 160ms ease;
+}
+.spinButton:hover {
+  filter: brightness(1.06);
+}
+.spinButton:disabled {
+  font-size: 12px;
+  cursor: wait;
+}
+
+.gameService {
+  bottom: 82px;
+  width: 66%;
+  padding: 16px;
+  border-radius: 16px 0 0 16px;
+}
+.gameService .serviceHeading {
+  gap: 10px;
+}
+.gameService .serviceIcon {
+  flex-basis: 49px;
+  width: 49px;
+  height: 50px;
+}
+.gameService .serviceHeading p {
+  white-space: nowrap;
+}
+.gameService .primaryButton {
+  min-height: 39px;
+  margin-top: 15px;
+  padding: 9px 16px;
+}
+.gameDecoration {
+  position: absolute;
+  right: 22px;
+  bottom: 32px;
+  width: 31%;
+}
+.gameNote {
+  position: absolute;
+  top: -83px;
+  right: 11px;
+  color: #376074;
+  font-size: 20px;
+  white-space: nowrap;
+  transform: rotate(-13deg);
+}
+.gameNote::after,
+.gameNote::before {
+  position: absolute;
+  bottom: -13px;
+  width: 5px;
+  height: 18px;
+  border-radius: 3px;
+  background: #ffac9b;
+  content: '';
+}
+.gameNote::before {
+  left: -17px;
+  transform: rotate(-38deg);
+}
+.gameNote::after {
+  right: -20px;
+  transform: rotate(44deg);
+}
+.gameWindow {
+  position: relative;
+  padding: 11px;
+  border: 1px solid #efecff;
+  border-radius: 17px;
+  background: #fcfbff;
+  box-shadow: 0 2px 12px rgb(90 77 161 / 15%);
+  transform: rotate(1deg);
+}
+.windowDots {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.windowDots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #c7cbe5;
+}
+.blockBoard {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(6, 1fr);
+  gap: 3px;
+  aspect-ratio: 0.79;
+  padding: 6px;
+  border-radius: 9px;
+  background: linear-gradient(145deg, #f4f1ff, #eceaff);
+}
+.block {
+  border-radius: 3px;
+  box-shadow: inset 1px 1px 3px rgb(255 255 255 / 25%);
+}
+.orange {
+  background: linear-gradient(145deg, #ffd074, #ff8b49);
+}
+.blue {
+  background: linear-gradient(145deg, #00d4f4, #2fa2ff);
+}
+.pink {
+  background: linear-gradient(145deg, #ff83b4, #f94d94);
+}
+.purple {
+  background: linear-gradient(145deg, #66a6ff, #5471ff);
+}
+.teal {
+  background: linear-gradient(145deg, #00d9ae, #00bda6);
+}
+.gameRobots {
+  position: absolute;
+  bottom: -61px;
+  left: 18px;
+  display: flex;
+  pointer-events: none;
+}
+.gameRobots img:first-child {
+  transform: rotate(-10deg);
+}
+.gameRobots img:last-child {
+  margin-left: -57px;
+  transform: rotate(10deg);
+}
+
+@media (min-width: 1200px) {
+  .hero {
+    padding-bottom: 18px;
+  }
+  .heroArt {
+    border-radius: 56px;
+  }
+  .heroEko,
+  .heroMingke {
+    bottom: -3%;
+  }
+  .heroNote {
+    font-size: 24px;
+  }
+  .heroBubble {
+    width: 130px;
+    height: 111px;
+    font-size: 20px;
+  }
+  .featureCard {
+    padding: 28px;
+  }
+  .projectService,
+  .gameService {
+    left: 28px;
+  }
+  .projectService {
+    bottom: 42px;
+  }
+  .gameService {
+    bottom: 96px;
+  }
+  .gameDecoration {
+    bottom: 35px;
+    right: 26px;
+  }
+  .gameRobots {
+    left: 30px;
+    bottom: -62px;
+  }
+  .gameRobots img {
+    width: 205px;
+    height: 205px;
+  }
+  .gameRobots img:last-child {
+    margin-left: -62px;
+  }
+  .rouletteCard {
+    bottom: 24px;
+  }
+}
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .hero {
+    gap: 12px;
+    padding-inline: 6px;
+  }
+  .heroCopy h1 {
+    font-size: 4.5vw;
+  }
+  .heroDescription {
+    font-size: 15px;
+  }
+  .heroBubble {
+    width: 90px;
+    height: 80px;
+    font-size: 12px;
+  }
+  .heroNote {
+    font-size: 13px;
+  }
+  .heroCopy .primaryButton {
+    min-height: 49px;
+    font-size: 16px;
+  }
+  .featureCard {
+    padding: 21px;
+    min-height: 390px;
+  }
+  .featureCard h2 {
+    font-size: 25px;
+  }
+  .featureDescription {
+    font-size: 16px;
+  }
+  .projectService,
+  .gameService {
+    left: 20px;
+    padding: 12px;
+  }
+  .serviceHeading {
+    gap: 8px;
+  }
+  .serviceHeading h3 {
+    font-size: 21px;
+  }
+  .serviceHeading p {
+    max-width: 142px;
+    font-size: 11px;
+  }
+  .projectService .serviceHeading p {
+    max-width: 112px;
+  }
+  .projectService .serviceHeading p span {
+    display: block;
+  }
+  .serviceIcon {
+    flex-basis: 43px;
+    width: 43px;
+    height: 48px;
+  }
+  .primaryButton {
+    gap: 6px;
+    padding: 10px 13px;
+    font-size: 14px;
+  }
+  .rouletteCard {
+    right: 5%;
+    width: 40%;
+    bottom: 27px;
+  }
+  .foodBubble {
+    right: -7px;
+  }
+  .gameNote {
+    right: 0;
+    font-size: 14px;
+  }
+  .gameDecoration {
+    right: 17px;
+    bottom: 43px;
+  }
+  .gameService {
+    width: 67%;
+    bottom: 87px;
+  }
+  .gameService .serviceHeading p {
+    white-space: normal;
+    max-width: 85px;
+    word-break: keep-all;
+  }
+  .gameService .serviceIcon {
+    flex-basis: 40px;
+    width: 40px;
+    height: 45px;
+  }
+  .gameRobots {
+    left: 2px;
+  }
+  .gameRobots img {
+    width: 170px;
+    height: 170px;
+  }
+  .spinButton {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 800px) {
+  .home {
+    padding-inline: 24px;
+  }
+}
+
+@media (max-width: 760px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 10px 0 24px;
+  }
+  .heroCopy {
+    padding: 8px 2px;
+  }
+  .heroCopy h1 {
+    font-size: clamp(34px, 7.3vw, 54px);
+    letter-spacing: -1.5px;
+  }
+  .eyebrow {
+    margin-bottom: 12px;
+    font-size: 17px;
+  }
+  .heroDescription {
+    margin: 15px 0 20px;
+    font-size: 17px;
+  }
+  .heroCopy .primaryButton {
+    min-height: 49px;
+    padding: 12px 22px;
+    font-size: 17px;
+  }
+  .heroArt {
+    width: 100%;
+    max-width: 540px;
+    justify-self: center;
+    border-radius: 35px;
+  }
+  .heroBubble {
+    right: 1%;
+  }
+  .heroEko,
+  .heroMingke {
+    width: 60%;
+  }
+  .heroNote {
+    font-size: 17px;
+  }
+  .featured {
+    grid-template-columns: 1fr;
+  }
+  .featureCard {
+    min-height: 390px;
+    padding: 24px;
+  }
+  .featureCard h2 {
+    font-size: 29px;
+  }
+  .featureDescription {
+    font-size: 17px;
+  }
+  .projectService {
+    bottom: 35px;
+  }
+  .rouletteCard {
+    width: 38%;
+    max-width: 226px;
+    right: 7%;
+  }
+  .foodEmoji {
+    font-size: clamp(28px, 6vw, 40px);
+  }
+  .gameService {
+    width: 66%;
+    bottom: 82px;
+  }
+  .gameDecoration {
+    width: 29%;
+    max-width: 153px;
+  }
+  .gameRobots {
+    bottom: -63px;
+  }
+  .gameRobots img {
+    width: 190px;
+    height: 190px;
+  }
+  .gameRobots img:last-child {
+    margin-left: -59px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home {
+    padding: 0 20px 24px;
+  }
+  .sections {
+    gap: 14px;
+  }
+  .hero {
+    padding-top: 6px;
+  }
+  .heroCopy h1 {
+    font-size: clamp(30px, 8.3vw, 39px);
+    letter-spacing: -1.6px;
+  }
+  .heroDescription {
+    font-size: 15px;
+    letter-spacing: -0.5px;
+  }
+  .eyebrow {
+    font-size: 15px;
+  }
+  .heroNote {
+    top: 5%;
+    left: 31%;
+    font-size: 13px;
+  }
+  .heroBubble {
+    top: 10%;
+    right: -1%;
+    width: 88px;
+    height: 77px;
+    font-size: 11px;
+  }
+  .ekoLabel,
+  .mingkeLabel {
+    font-size: 10px;
+  }
+  .ekoLabel strong,
+  .mingkeLabel strong {
+    font-size: 16px;
+  }
+  .heroArt {
+    aspect-ratio: 1.5;
+    border-radius: 30px;
+  }
+  .featureCard {
+    min-height: 390px;
+    padding: 21px;
+  }
+  .featureCard h2 {
+    font-size: 26px;
+    letter-spacing: -1px;
+  }
+  .sectionLabel {
+    font-size: 14px;
+  }
+  .featureDescription {
+    font-size: 16px;
+  }
+  .projectService {
+    bottom: 27px;
+    left: 20px;
+    width: calc(100% - 40px);
+    min-height: 140px;
+    padding: 14px;
+  }
+  .serviceHeading {
+    gap: 9px;
+  }
+  .serviceHeading h3 {
+    font-size: 22px;
+  }
+  .serviceHeading p {
+    max-width: 136px;
+    font-size: 11px;
+  }
+  .serviceIcon {
+    flex-basis: 43px;
+    width: 43px;
+    height: 49px;
+  }
+  .projectService .serviceHeading {
+    align-items: flex-start;
+  }
+  .projectService .serviceHeading p {
+    position: absolute;
+    left: 16px;
+    top: 63px;
+    max-width: 100px;
+    font-size: 10px;
+  }
+  .projectService .serviceHeading p span {
+    display: block;
+  }
+  .projectService .primaryButton {
+    z-index: 2;
+    margin-top: 26px;
+    font-size: 13px;
+    padding: 10px 12px;
+    min-height: 39px;
+    border-radius: 12px;
+  }
+  .rouletteCard {
+    right: 5%;
+    bottom: 34px;
+    width: 43%;
+    padding: 8px 3px 3px;
+    border-radius: 14px;
+  }
+  .rouletteTitle {
+    font-size: 12px;
+  }
+  .roulette {
+    border-width: 3px;
+  }
+  .foodBubble {
+    top: -52px;
+    right: -6px;
+    width: 90px;
+    height: 66px;
+    font-size: 11px;
+  }
+  .foodEmoji {
+    font-size: 25px;
+  }
+  .spinButton {
+    border-width: 3px;
+    font-size: 11px;
+  }
+  .spinButton:disabled {
+    font-size: 9px;
+  }
+  .gameService {
+    left: 20px;
+    bottom: 78px;
+    width: 68%;
+    padding: 14px;
+  }
+  .gameService .serviceHeading {
+    gap: 8px;
+  }
+  .gameService .serviceHeading p {
+    font-size: 10px;
+    max-width: 92px;
+    white-space: normal;
+    word-break: keep-all;
+  }
+  .gameService .serviceIcon {
+    flex-basis: 43px;
+    width: 43px;
+    height: 46px;
+  }
+  .gameService .primaryButton {
+    font-size: 14px;
+  }
+  .gameDecoration {
+    right: 18px;
+    bottom: 35px;
+    width: 31%;
+  }
+  .gameNote {
+    top: -86px;
+    right: 0;
+    font-size: 13px;
+  }
+  .gameWindow {
+    padding: 8px;
+    border-radius: 12px;
+  }
+  .windowDots {
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+  .windowDots i {
+    width: 7px;
+    height: 7px;
+  }
+  .blockBoard {
+    gap: 2px;
+    padding: 3px;
+  }
+  .gameRobots {
+    left: 3px;
+    bottom: -59px;
+  }
+  .gameRobots img {
+    width: 174px;
+    height: 174px;
+  }
+  .gameRobots img:last-child {
+    margin-left: -62px;
+  }
+}
+
+@media (max-width: 360px) {
+  .projectCard {
+    min-height: 0;
+    padding-bottom: 20px;
+  }
+  .projectService {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    min-height: 0;
+    margin-top: 22px;
+  }
+  .projectService .serviceHeading {
+    align-items: center;
+  }
+  .projectService .serviceHeading p {
+    position: static;
+    max-width: none;
+  }
+  .projectService .primaryButton {
+    width: 100%;
+    margin-top: 15px;
+  }
+  .rouletteCard {
+    position: relative;
+    inset: auto;
+    width: 180px;
+    margin: 45px auto 0;
+  }
+  .foodBubble {
+    top: -38px;
+    right: -16px;
+  }
+  .gameService .serviceHeading p {
+    max-width: 69px;
+  }
+  .gameService .serviceHeading h3 {
+    font-size: 20px;
+    white-space: nowrap;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .primaryButton,
+  .spinButton,
+  .wheel {
+    transition: none;
+  }
+  .primaryButton:hover {
+    transform: none;
+  }
+}

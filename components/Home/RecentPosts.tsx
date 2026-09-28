@@ -1,64 +1,64 @@
 import Link from 'next/link';
+import dayjs from 'dayjs';
+import { ArrowRight } from 'lucide-react';
 import type { BlogPost } from '@/lib/lifePosts';
-import PostList from '@/components/Blog/PostList';
-import { ChevronRightIcon } from '@/public/icons';
-
-interface BlogLinkProps extends React.PropsWithChildren {
-  type: BlogPost['type'];
-  className?: string;
-}
-
-const BlogLink = ({ type, className, children }: BlogLinkProps) => {
-  return type === 'Post' ? (
-    <Link href="/blog" className={className}>
-      {children}
-    </Link>
-  ) : (
-    <a href="https://life.chaechae.life" className={className}>
-      {children}
-    </a>
-  );
-};
-
-const TITLE: Record<BlogPost['type'], { en: string; ko: string }> = {
-  Post: {
-    en: 'Tech',
-    ko: '기술 블로그',
-  },
-  LifePost: {
-    en: 'Life',
-    ko: '일상 블로그',
-  },
-};
+import styles from './RecentPosts.module.css';
 
 const RecentPosts = ({ posts }: { posts: BlogPost[] }) => {
-  const postType = posts[0].type;
-
   return (
-    <section className="py-20">
-      <div className="mb-5 flex items-center justify-between md:mb-7">
-        <h2 className="text-xl font-semibold md:text-2xl lg:text-3xl">
-          {TITLE[postType].en}
-          <span className="left-pipe ml-2 pl-2 text-xl text-slate-500">{TITLE[postType].ko}</span>
+    <section className={styles.section} aria-labelledby="recent-posts-title">
+      <div className={styles.header}>
+        <h2 id="recent-posts-title" className={styles.title}>
+          새로 쓴 글
         </h2>
-        <BlogLink
-          type={postType}
-          className="flex items-center text-sm text-indigo-600 hover:underline"
-        >
-          전체보기
-          <ChevronRightIcon className="h-5 w-5 fill-current" />
-        </BlogLink>
+        <p className={styles.description}>최근에 작성한 글을 만나보세요.</p>
+        <Link href="/blog" className={styles.allPosts}>
+          모든 글 보기 <ArrowRight size={17} aria-hidden="true" />
+        </Link>
       </div>
-      <PostList posts={posts} showHeader={false} showAds={false} />
-      <div className="mt-8 flex justify-center">
-        <BlogLink
-          type={postType}
-          className="bg-gradient-dark inline-flex items-center justify-center rounded-lg bg-opacity-100 px-4 py-3 font-semibold text-white hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
-        >
-          <span className="pl-2">{TITLE[postType].ko} 보기</span>
-          <ChevronRightIcon className="h-6 w-6 fill-current" />
-        </BlogLink>
-      </div>
+      {posts.length > 0 ? (
+        <ul className={styles.posts}>
+          {posts.map((post) => {
+            const content = (
+              <>
+                <span
+                  className={`${styles.category} ${
+                    post.type === 'Post' ? styles.tech : styles.life
+                  }`}
+                >
+                  {post.type === 'Post' ? 'TECH' : 'LIFE'}
+                </span>
+                <span className={styles.postTitle}>{post.title}</span>
+                <time className={styles.date} dateTime={dayjs(post.date).format('YYYY-MM-DD')}>
+                  {dayjs(post.date).format('YYYY. MM. DD')}
+                </time>
+                <ArrowRight
+                  className={styles.arrow}
+                  size={21}
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              </>
+            );
+
+            return (
+              <li key={`${post.type}-${post.slug}`}>
+                {post.type === 'Post' ? (
+                  <Link href={`/blog/${post.slug}`} className={styles.post}>
+                    {content}
+                  </Link>
+                ) : (
+                  <a href={`https://life.chaechae.life/${post.slug}`} className={styles.post}>
+                    {content}
+                  </a>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className={styles.empty}>새로운 이야기를 준비하고 있어요.</p>
+      )}
     </section>
   );
 };

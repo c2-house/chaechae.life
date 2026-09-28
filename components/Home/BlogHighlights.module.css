@@ -1,0 +1,153 @@
+.highlights {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  min-width: 0;
+  padding: 23px 24px 18px;
+  border: 1px solid #dcddea;
+  border-radius: 18px;
+  color: #11112c;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.category {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1.5;
+}
+
+.tech .category {
+  color: #6651ff;
+}
+
+.life .category {
+  color: #fb5796;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(25px, 2.6vw, 30px);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.35;
+}
+
+.description {
+  margin: 1px 0 15px;
+  color: #777b98;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+.post {
+  display: flex;
+  min-height: 74px;
+  align-items: center;
+  gap: 20px;
+  padding: 4px 14px 4px 4px;
+  border: 1px solid #e3e3f1;
+  border-radius: 11px;
+  color: #11112c;
+  background: #fff;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.post:hover {
+  border-color: #b9b0ff;
+  box-shadow: 0 3px 12px #6651ff0a;
+}
+
+.post:focus-visible {
+  outline: 3px solid #b9b0ff;
+  outline-offset: 3px;
+}
+
+.thumbnail {
+  display: flex;
+  width: 68px;
+  height: 64px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 8px;
+  color: #ad9fff;
+  background: #eeebff;
+}
+
+.life .thumbnail {
+  width: 90px;
+  color: #ee8bb2;
+  background: #fff0f5;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.postTitle {
+  display: -webkit-box;
+  flex: 1;
+  overflow: hidden;
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.045em;
+  line-height: 1.5;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.arrow {
+  flex-shrink: 0;
+}
+
+@media (min-width: 761px) {
+  .card {
+    padding-top: 20px;
+  }
+
+  .category {
+    line-height: 1.35;
+  }
+
+  .title {
+    line-height: 1.25;
+  }
+
+  .description {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 760px) {
+  .highlights {
+    grid-template-columns: 1fr;
+  }
+
+  .card {
+    padding: 21px 20px 18px;
+  }
+
+  .description {
+    font-size: 15px;
+  }
+
+  .post {
+    gap: 14px;
+  }
+
+  .postTitle {
+    font-size: 15px;
+  }
+}
