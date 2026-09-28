@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import styles from './AboutUs.module.css';
 
 const profiles = [
@@ -67,7 +67,7 @@ const AboutUs = () => {
           {expanded ? (
             <ChevronUp size={18} aria-hidden="true" />
           ) : (
-            <ArrowUpRight size={18} aria-hidden="true" />
+            <ChevronDown size={18} aria-hidden="true" />
           )}
         </button>
       </div>
