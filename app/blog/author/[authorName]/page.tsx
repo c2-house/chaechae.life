@@ -3,6 +3,8 @@ import { allPosts } from 'contentlayer/generated';
 import { authors } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
+import CollectionHeading from '@/components/Layout/CollectionHeading';
+import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
   params: {
@@ -25,21 +27,23 @@ const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) =
   const currentAuthor = authors.find((author) => slugify(author) === authorName);
 
   return (
-    <main>
-      <div className="lg:container-lg">
-        <div className="bg-gradient-light flex flex-col items-center py-5 md:py-8 lg:py-10">
-          <Image
-            src={`/images/avatar/${authorName}-1.png`}
-            alt="프로필 사진"
-            width={100}
-            height={100}
-            className="animate-bounce rounded-full"
-            unoptimized
-          />
-          <h1 className="text-xl font-bold md:text-2xl lg:text-3xl">{currentAuthor}</h1>
-        </div>
+    <main className={styles.page}>
+      <div className={styles.authorHeader}>
+        <Image
+          src={`/images/avatar/${authorName}-1.png`}
+          alt="프로필 사진"
+          width={100}
+          height={100}
+          className="rounded-full"
+          unoptimized
+        />
+        <CollectionHeading
+          label="TECH"
+          title={`${currentAuthor || authorName}의 기술 노트`}
+          description="개발하며 배우고, 정리한 것을 나눕니다."
+        />
       </div>
-      <section className="container-lg pt-6 md:pt-8">
+      <section>
         <PostList posts={posts} page={page} countLabel="글 목록" />
       </section>
     </main>

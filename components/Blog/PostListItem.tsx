@@ -3,6 +3,7 @@ import Image from 'next/image';
 import dayjs from 'dayjs';
 import type { BlogPost } from '@/lib/lifePosts';
 import { Tags } from './Tags';
+import styles from './PostList.module.css';
 
 interface PostLinkProps extends React.PropsWithChildren {
   post: BlogPost;
@@ -23,7 +24,7 @@ const PostLink = ({ post, className, children }: PostLinkProps) => {
 
 const PostListItem = ({ post }: { post: BlogPost }) => {
   return (
-    <article className="flex items-center">
+    <article className={styles.item}>
       <PostLink
         post={post}
         className="h-[80px] w-[80px] flex-shrink-0 overflow-hidden rounded-lg sm:h-[100px] sm:w-[100px] md:h-[160px] md:w-[160px]"
@@ -36,13 +37,13 @@ const PostListItem = ({ post }: { post: BlogPost }) => {
           className="h-full w-full object-cover"
         />
       </PostLink>
-      <div className="ml-4 flex-1 md:ml-6">
+      <div className="ml-4 min-w-0 flex-1 md:ml-6">
         <PostLink post={post} className="my-1 block">
-          <h2 className="line-clamp-2 font-bold sm:text-lg md:text-xl">{post.title}</h2>
-          <p className="mt-2 hidden text-slate-700 md:line-clamp-2">{post.description}</p>
+          <h2 className={`line-clamp-2 ${styles.title}`}>{post.title}</h2>
+          <p className={`mt-2 hidden md:line-clamp-2 ${styles.description}`}>{post.description}</p>
         </PostLink>
         <time
-          className="mb-2 mt-1 block text-sm text-slate-500 md:mt-2"
+          className={`mb-2 mt-1 block text-sm md:mt-2 ${styles.date}`}
           dateTime={dayjs(post.date).format('YYYY-MM-DD')}
         >
           {dayjs(post.date).format('YYYY년 M월 D일')}

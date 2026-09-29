@@ -4,6 +4,8 @@ import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
 import Sidebar from '@/components/Layout/Sidebar';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
+import CollectionHeading from '@/components/Layout/CollectionHeading';
+import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
   params: {
@@ -28,15 +30,20 @@ const TagPage = ({ params: { tagName }, searchParams: { page } }: Props) => {
   const currentTag = tags.find((tag) => slugify(tag) === slugify(decodeURIComponent(tagName)));
 
   return (
-    <div className="container-lg block lg:flex lg:gap-6">
-      <Sidebar currentTab={tagName} />
-      <main className="min-h-screen flex-1">
-        <section className="py-5">
+    <main className={styles.page}>
+      <CollectionHeading
+        label="TECH"
+        title="기술 노트"
+        description="개발하며 배우고, 정리한 것을 나눕니다."
+      />
+      <div className={styles.blogLayout}>
+        <Sidebar currentTab={tagName} />
+        <section className={styles.posts}>
           <PostList posts={posts} page={page} countLabel={currentTag} currentTab={tagName} />
+          <ResponsiveAds />
         </section>
-        <ResponsiveAds />
-      </main>
-    </div>
+      </div>
+    </main>
   );
 };
 

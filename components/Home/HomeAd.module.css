@@ -1,0 +1,14 @@
+.ad {
+  min-width: 0;
+  padding: 16px 0;
+}
+
+.ad:has(ins[data-ad-status='unfilled']) {
+  display: none;
+}
+
+.slot {
+  width: 100%;
+  min-height: 100px;
+  margin: 0 auto;
+}

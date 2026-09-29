@@ -1,0 +1,272 @@
+.section {
+  scroll-margin-top: 100px;
+  overflow: hidden;
+  border-radius: 18px;
+  color: #11112c;
+  background: #f3f1ff;
+}
+
+.band {
+  display: grid;
+  min-height: 125px;
+  grid-template-columns: 1.35fr 1fr 1fr auto;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 22px 8px 24px;
+}
+
+.introduction h2 {
+  margin: 0 0 3px;
+  font-size: clamp(21px, 2.3vw, 26px);
+  font-weight: 800;
+  letter-spacing: -0.055em;
+  line-height: 1.4;
+}
+
+.introduction p {
+  margin: 0;
+  color: #777b98;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 1.6;
+  word-break: keep-all;
+}
+
+.profile {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 1px;
+}
+
+.mingke {
+  position: relative;
+  padding-left: 12px;
+}
+
+.mingke::before {
+  position: absolute;
+  top: 18px;
+  bottom: 18px;
+  left: 0;
+  width: 1px;
+  background: #d9d4f4;
+  content: '';
+}
+
+.avatar {
+  width: 116px;
+  height: 116px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.profileText {
+  min-width: 0;
+}
+
+.profileText h3 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+}
+
+.eko h3 {
+  color: #fb5796;
+}
+
+.mingke h3 {
+  color: #00a7a4;
+}
+
+.role {
+  margin: 0;
+  color: #9695b2;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.shortDescription {
+  margin: 4px 0 0;
+  color: #8686a1;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.aboutButton {
+  display: inline-flex;
+  min-height: 47px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border: 1px solid #b2a3ff;
+  border-radius: 12px;
+  color: #6651ff;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease;
+}
+
+.aboutButton:hover {
+  border-color: #6651ff;
+  background: #fff;
+}
+
+.aboutButton:focus-visible {
+  outline: 3px solid #b9b0ff;
+  outline-offset: 3px;
+}
+
+.details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin: 0 24px;
+  padding: 24px 0;
+  border-top: 1px solid #ded9f4;
+}
+
+.details[hidden] {
+  display: none;
+}
+
+.biography h3 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 750;
+}
+
+.biography h3 span {
+  margin-left: 8px;
+  color: #777b98;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.biography ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding-left: 18px;
+  color: #777b98;
+  font-size: 14px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+@media (min-width: 1081px) {
+  .avatar {
+    height: 108px;
+  }
+}
+
+@media (max-width: 1080px) {
+  .band {
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    gap: 8px;
+    padding-right: 18px;
+    padding-left: 20px;
+  }
+
+  .avatar {
+    width: 96px;
+    height: 112px;
+  }
+
+  .mingke {
+    padding-left: 4px;
+  }
+
+  .aboutButton {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .shortDescription {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 900px) {
+  .band {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 18px;
+    padding: 22px;
+  }
+
+  .introduction {
+    grid-column: 1 / -1;
+  }
+
+  .profile {
+    justify-content: center;
+  }
+
+  .avatar {
+    width: 116px;
+    height: 116px;
+  }
+
+  .aboutButton {
+    grid-column: 1 / -1;
+    justify-self: start;
+  }
+
+  .shortDescription {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 540px) {
+  .band {
+    gap: 10px 4px;
+    padding: 20px 18px;
+  }
+
+  .profile {
+    flex-direction: column;
+    gap: 0;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 126px;
+    height: 126px;
+  }
+
+  .mingke {
+    padding-left: 0;
+  }
+
+  .mingke::before {
+    top: 22px;
+    bottom: 8px;
+  }
+
+  .profileText h3 {
+    font-size: 22px;
+  }
+
+  .aboutButton {
+    width: 100%;
+    margin-top: 8px;
+  }
+
+  .details {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    margin: 0 20px;
+  }
+}

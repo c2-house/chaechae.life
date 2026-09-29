@@ -1,50 +1,67 @@
 import Image from 'next/image';
+import Link from 'next/link';
+import { ArrowUpRight, Heart } from 'lucide-react';
+import styles from './Home.module.css';
 
 const Hero = () => {
   return (
-    <section className="bg-gradient-light relative bg-gradient-to-b">
-      <div className="flex h-[90svh] items-center justify-center">
-        <div className="px-6 text-center">
-          <div className="mx-auto mb-4 flex w-fit flex-col lg:mb-5">
-            <span
-              className="bg-gradient-dark animate-fade-in rounded-full text-xl tracking-wider text-white md:py-1 md:text-2xl lg:text-3xl"
-              style={{ animationDelay: '0.1s' }}
-            >
-              개발자 부부 채채의
-            </span>
-            <h1
-              className="bg-gradient-text my-3 animate-fade-in text-5xl font-semibold tracking-tight md:my-4 md:text-7xl lg:my-5 lg:text-8xl"
-              style={{ animationDelay: '0.3s' }}
-            >
-              채채라이프
-            </h1>
-          </div>
-          <p
-            className="animate-fade-in text-lg text-slate-700 md:text-xl md:!leading-relaxed lg:text-2xl"
-            style={{ animationDelay: '0.5s' }}
-          >
-            세상에 필요한 서비스를 만듭니다.
-            <br />
-            사용하기 쉽고 편리한 서비스를 개발합니다.
-          </p>
-        </div>
+    <section className={styles.hero} aria-labelledby="home-title">
+      <div className={styles.heroCopy}>
+        <p className={styles.eyebrow}>
+          CHAECHAE <span>/</span> EKO & mingke
+        </p>
+        <h1 id="home-title">
+          <span>만들고, 놀고,</span>
+          <span>기록하는 채채라이프</span>
+        </h1>
+        <p className={styles.heroDescription}>
+          개발자 부부 채채가 만드는 서비스, 게임, 그리고 기록
+        </p>
+        <Link href="/projects" className={styles.primaryButton}>
+          프로젝트 둘러보기 <ArrowUpRight size={21} aria-hidden="true" />
+        </Link>
       </div>
-      <Image
-        src="/images/avatar/eko-1.png"
-        alt="eko"
-        width={100}
-        height={100}
-        className="absolute bottom-0 left-0 animate-move-right"
-        unoptimized
-      />
-      <Image
-        src="/images/avatar/mingke-1.png"
-        alt="mingke"
-        width={100}
-        height={100}
-        className="absolute bottom-0 right-0 animate-move-left"
-        unoptimized
-      />
+      <div className={styles.heroArt} aria-label="분홍색 로봇 EKO와 민트색 로봇 mingke">
+        <p className={styles.heroNote}>
+          좋은 걸<br />
+          같이 만들어가요! <Heart size={17} fill="currentColor" aria-hidden="true" />
+        </p>
+        <div className={styles.heroBubble}>
+          코드도,
+          <br />
+          일상도,
+          <br />
+          언제나 함께!
+        </div>
+        <span className={`${styles.confetti} ${styles.pinkConfetti}`} aria-hidden="true" />
+        <span className={`${styles.confetti} ${styles.tealConfetti}`} aria-hidden="true" />
+        <Image
+          src="/images/avatar/eko-1.png"
+          alt=""
+          width={512}
+          height={512}
+          sizes="(max-width: 760px) 60vw, 330px"
+          className={styles.heroEko}
+          priority
+        />
+        <Image
+          src="/images/avatar/mingke-1.png"
+          alt=""
+          width={512}
+          height={512}
+          sizes="(max-width: 760px) 60vw, 330px"
+          className={styles.heroMingke}
+          priority
+        />
+        <p className={styles.ekoLabel}>
+          <strong>EKO</strong>
+          <span>Frontend</span>
+        </p>
+        <p className={styles.mingkeLabel}>
+          <strong>mingke</strong>
+          <span>Backend</span>
+        </p>
+      </div>
     </section>
   );
 };
