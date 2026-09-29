@@ -1,0 +1,7 @@
+obsidian-agent-client
+Copyright 2025-2026 RAIT-09
+
+Agent Client 0.13.0: https://github.com/RAIT-09/obsidian-agent-client/tree/0.13.0
+License: LICENSE-agent-client.txt (Apache-2.0)
+
+Screenshots: mingke, 2026-09-29. Actual Obsidian 1.13.7 Windows desktop with a newly authored fictional sample vault and Agent Client 0.13.0. No credentials or private vault content. No generated UI or AI responses. Obsidian UI and marks belong to Dynalist Inc. These limited screenshots identify controls discussed in the accompanying independent tutorial; no endorsement is implied.
