@@ -24,13 +24,17 @@
   margin: 0 0 13px;
   color: #6b51ff;
   font-size: clamp(16px, 1.8vw, 21px);
-  font-weight: 650;
-  letter-spacing: -0.6px;
+  font-weight: 550;
+  text-transform: uppercase;
+}
+.eyebrow span {
+  display: inline-block;
+  margin: 0 4px;
 }
 .heroCopy h1 {
   margin: 0;
   font-size: clamp(36px, 4.6vw, 60px);
-  font-weight: 850;
+  font-weight: 800;
   line-height: 1.15;
   letter-spacing: -2.3px;
 }
@@ -302,13 +306,10 @@
 }
 .projectService .primaryButton,
 .gameService .primaryButton {
-  margin-top: 21px;
+  margin-top: 20px;
 }
 
 /* The actual app preview shares the service panel without covering its content. */
-.projectService {
-  padding-right: 43%;
-}
 .projectService .serviceHeading p {
   max-width: 160px;
   word-break: keep-all;
@@ -356,10 +357,9 @@
 }
 
 .gameService {
-  bottom: 82px;
+  bottom: 66px;
   width: 66%;
   padding: 16px;
-  border-radius: 16px 0 0 16px;
 }
 .gameService .serviceHeading {
   gap: 10px;
@@ -372,11 +372,6 @@
 .gameService .serviceHeading p {
   white-space: nowrap;
 }
-.gameService .primaryButton {
-  min-height: 39px;
-  margin-top: 15px;
-  padding: 9px 16px;
-}
 .gameDecoration {
   position: absolute;
   right: 22px;
@@ -385,17 +380,19 @@
 }
 .gameNote {
   position: absolute;
-  top: -83px;
-  right: 11px;
+  top: -80px;
+  right: 40px;
   color: #376074;
   font-size: 20px;
+  line-height: 1.2;
+  text-align: center;
   white-space: nowrap;
-  transform: rotate(-13deg);
+  transform: rotate(-8deg);
 }
 .gameNote::after,
 .gameNote::before {
   position: absolute;
-  bottom: -13px;
+  bottom: -14px;
   width: 5px;
   height: 18px;
   border-radius: 3px;
@@ -403,11 +400,11 @@
   content: '';
 }
 .gameNote::before {
-  left: -17px;
+  left: -18px;
   transform: rotate(-38deg);
 }
 .gameNote::after {
-  right: -20px;
+  right: -12px;
   transform: rotate(44deg);
 }
 .gameWindow {
@@ -462,9 +459,14 @@
 .gameRobots {
   position: absolute;
   bottom: -61px;
-  left: 18px;
+  left: 200px;
   display: flex;
   pointer-events: none;
+  z-index: 3;
+}
+.gameRobots img {
+  width: 190px;
+  height: 190px;
 }
 .gameRobots img:first-child {
   transform: rotate(-10deg);
@@ -503,28 +505,14 @@
   .projectService {
     bottom: 42px;
   }
-  .gameService {
-    bottom: 96px;
-  }
   .gameDecoration {
     bottom: 35px;
     right: 26px;
   }
-  .gameRobots {
-    left: 30px;
-    bottom: -62px;
-  }
-  .gameRobots img {
-    width: 205px;
-    height: 205px;
-  }
-  .gameRobots img:last-child {
-    margin-left: -62px;
-  }
 }
 
 @media (min-width: 1001px) and (max-width: 1199px) {
-  .projectCard .featureDescription {
+  .featureDescription {
     font-size: 16px;
   }
   .evPreview {
@@ -610,16 +598,13 @@
   }
   .primaryButton {
     gap: 6px;
-    padding: 10px 13px;
+    padding: 10px 16px;
     font-size: 14px;
-  }
-  .projectService .primaryButton {
-    font-size: 13px;
-    padding-inline: 12px;
   }
   .gameNote {
-    right: 0;
-    font-size: 14px;
+    right: 40px;
+    top: -70px;
+    font-size: 16px;
   }
   .gameDecoration {
     right: 17px;
@@ -627,10 +612,9 @@
   }
   .gameService {
     width: 67%;
-    bottom: 87px;
+    bottom: 70px;
   }
   .gameService .serviceHeading p {
-    white-space: normal;
     max-width: 85px;
     word-break: keep-all;
   }
@@ -640,7 +624,8 @@
     height: 45px;
   }
   .gameRobots {
-    left: 2px;
+    left: 140px;
+    bottom: -50px;
   }
   .gameRobots img {
     width: 170px;
@@ -719,19 +704,19 @@
     top: 26%;
   }
   .gameService {
-    width: 66%;
-    bottom: 82px;
+    width: 80%;
   }
   .gameDecoration {
     width: 29%;
     max-width: 153px;
   }
   .gameRobots {
-    bottom: -63px;
+    bottom: -50px;
+    left: 200px;
   }
   .gameRobots img {
-    width: 190px;
-    height: 190px;
+    width: 170px;
+    height: 170px;
   }
   .gameRobots img:last-child {
     margin-left: -59px;
@@ -802,13 +787,16 @@
     left: 20px;
     width: calc(100% - 40px);
     min-height: 140px;
-    padding: 14px 42% 14px 14px;
+    padding: 14px 34% 14px 14px;
   }
   .serviceHeading {
     gap: 9px;
   }
   .serviceHeading h3 {
     font-size: 22px;
+  }
+  .gameService .serviceHeading h3 {
+    white-space: nowrap;
   }
   .serviceHeading p {
     max-width: 136px;
@@ -821,13 +809,6 @@
   }
   .projectService .serviceHeading {
     align-items: flex-start;
-  }
-  .projectService .serviceHeading p {
-    position: absolute;
-    left: 14px;
-    top: 66px;
-    max-width: 150px;
-    font-size: 10px;
   }
   .evPreview {
     right: 22px;
@@ -844,36 +825,30 @@
     width: 13px;
     height: 13px;
   }
-  .projectService .primaryButton {
+  .projectService .primaryButton,
+  .gameService .primaryButton {
     z-index: 2;
     margin-top: 26px;
     font-size: 13px;
-    padding: 10px 12px;
     min-height: 39px;
     border-radius: 12px;
   }
   .gameService {
+    width: calc(100% - 40px);
     left: 20px;
     bottom: 78px;
-    width: 68%;
-    padding: 14px;
+    padding: 14px 36% 14px 14px;
   }
   .gameService .serviceHeading {
     gap: 8px;
   }
   .gameService .serviceHeading p {
-    font-size: 10px;
-    max-width: 92px;
-    white-space: normal;
-    word-break: keep-all;
+    white-space: wrap;
   }
   .gameService .serviceIcon {
     flex-basis: 43px;
     width: 43px;
     height: 46px;
-  }
-  .gameService .primaryButton {
-    font-size: 14px;
   }
   .gameDecoration {
     right: 18px;
@@ -881,9 +856,9 @@
     width: 31%;
   }
   .gameNote {
-    top: -86px;
-    right: 0;
-    font-size: 13px;
+    top: -70px;
+    right: 30px;
+    font-size: 14px;
   }
   .gameWindow {
     padding: 8px;
@@ -902,12 +877,12 @@
     padding: 3px;
   }
   .gameRobots {
-    left: 3px;
-    bottom: -59px;
+    left: 90px;
+    bottom: -55px;
   }
   .gameRobots img {
-    width: 174px;
-    height: 174px;
+    width: 150px;
+    height: 150px;
   }
   .gameRobots img:last-child {
     margin-left: -62px;
@@ -919,7 +894,8 @@
     min-height: 0;
     padding-bottom: 20px;
   }
-  .projectService {
+  .projectService,
+  .gameService {
     position: relative;
     inset: auto;
     width: 100%;
@@ -930,7 +906,7 @@
   .evPreview {
     position: relative;
     inset: auto;
-    width: 150px;
+    width: 130px;
     margin: 25px auto 4px;
     transform: rotate(4deg);
   }
@@ -946,16 +922,33 @@
     position: static;
     max-width: none;
   }
-  .projectService .primaryButton {
+  .projectService .primaryButton,
+  .gameService .primaryButton {
     width: 100%;
     margin-top: 15px;
-  }
-  .gameService .serviceHeading p {
-    max-width: 69px;
+    text-align: center;
   }
   .gameService .serviceHeading h3 {
     font-size: 20px;
     white-space: nowrap;
+  }
+  .gameDecoration {
+    position: relative;
+    inset: auto;
+    margin: 50px auto 10px;
+    width: 120px;
+  }
+  .gameNote {
+    top: -50px;
+    right: 30px;
+  }
+  .gameRobots {
+    left: 30px;
+    bottom: -50px;
+  }
+  .gameRobots img {
+    width: 140px;
+    height: 140px;
   }
 }
 

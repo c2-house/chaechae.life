@@ -1,8 +1,6 @@
 .ad {
   min-width: 0;
   padding: 16px 0;
-  border-top: 1px solid #eeedf5;
-  border-bottom: 1px solid #eeedf5;
 }
 
 .ad:has(ins[data-ad-status='unfilled']) {
@@ -11,13 +9,6 @@
 
 .slot {
   width: 100%;
-  max-width: 970px;
-  min-height: 90px;
+  min-height: 100px;
   margin: 0 auto;
-}
-
-@media (max-width: 760px) {
-  .slot {
-    min-height: 100px;
-  }
 }

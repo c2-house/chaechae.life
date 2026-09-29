@@ -7,12 +7,16 @@ const Hero = () => {
   return (
     <section className={styles.hero} aria-labelledby="home-title">
       <div className={styles.heroCopy}>
-        <p className={styles.eyebrow}>EKO + mingke / 개발자 부부</p>
+        <p className={styles.eyebrow}>
+          CHAECHAE <span>/</span> EKO & mingke
+        </p>
         <h1 id="home-title">
           <span>만들고, 놀고,</span>
-          <span>기록하는 채채라이프.</span>
+          <span>기록하는 채채라이프</span>
         </h1>
-        <p className={styles.heroDescription}>우리의 작은 프로젝트와 유용한 기록을 한곳에.</p>
+        <p className={styles.heroDescription}>
+          개발자 부부 채채가 만드는 서비스, 게임, 그리고 기록
+        </p>
         <Link href="/projects" className={styles.primaryButton}>
           프로젝트 둘러보기 <ArrowUpRight size={21} aria-hidden="true" />
         </Link>

@@ -33,8 +33,8 @@ const FeaturedLinks = () => (
             <Gamepad2 size={32} strokeWidth={2.5} aria-hidden="true" />
           </span>
           <div>
-            <h3>채채 게임</h3>
-            <p>설치 없이 가볍게 즐기는 웹 게임.</p>
+            <h3>채채 게임즈</h3>
+            <p>설치 없이 가볍게 즐기는 웹 게임</p>
           </div>
         </div>
         <a href="https://games.chaechae.life" className={styles.primaryButton}>
@@ -65,8 +65,8 @@ const FeaturedLinks = () => (
         </div>
       </div>
       <div className={styles.gameRobots} aria-hidden="true">
-        <Image src="/images/avatar/eko-1.png" alt="" width={180} height={180} sizes="180px" />
-        <Image src="/images/avatar/mingke-1.png" alt="" width={180} height={180} sizes="180px" />
+        <Image src="/images/avatar/eko-1.png" alt="" width={200} height={200} />
+        <Image src="/images/avatar/mingke-1.png" alt="" width={200} height={200} />
       </div>
     </article>
     <article className={`${styles.featureCard} ${styles.projectCard}`}>

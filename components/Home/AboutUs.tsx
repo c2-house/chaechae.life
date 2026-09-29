@@ -40,7 +40,7 @@ const AboutUs = () => {
       <div className={styles.band}>
         <div className={styles.introduction}>
           <h2 id="about-us-title">함께 만드는 두 사람</h2>
-          <p>코드도, 아이디어도, 그리고 일상도. 언제나 함께해요.</p>
+          <p>코드도, 아이디어도, 일상도 언제나 함께해요.</p>
         </div>
         {profiles.map((profile) => (
           <div key={profile.name} className={`${styles.profile} ${profile.className}`}>
