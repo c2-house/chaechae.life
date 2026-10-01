@@ -1,0 +1,14 @@
+Screenshots captured on 2026-10-01 by mingke's delegated editorial workflow.
+Source: an isolated Obsidian 1.13.7 instance on Windows 11, Smart Connections Core 4.7.2 / Smart Environment 3.1.1. All sample notes were written for this tutorial. No private vault, account, API key or paid API was used.
+00.webp and 04-results.webp: related-note list and authored sample text.
+01-install.webp: installed plugin and activation state.
+02-model-settings.webp: local embedding model selector.
+03-index.webp: actual indexing statistics.
+Images are direct application screenshots (some cropped); no generated images or fabricated results.
+
+Obsidian: https://obsidian.md/terms and https://obsidian.md/license
+Obsidian retains rights in its application UI. These limited screenshots identify and explain the actual controls for independent instructional commentary. They are not an Obsidian endorsement or a grant of general reuse rights. No standalone brand assets are reproduced. Brand guidance reviewed: https://obsidian.md/brand
+
+Smart Connections: https://github.com/brianpetro/obsidian-smart-connections
+Copyright (c) 2025, Jobsi, Inc.
+The current Smart Plugins License Agreement is preserved in LICENSE-smart-connections.txt in this directory. It is not the unmodified MIT license. Screenshots illustrate use, not a competing general-purpose product.
