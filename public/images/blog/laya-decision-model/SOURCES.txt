@@ -1,0 +1,17 @@
+Laya documentation screenshots — captured 2026-10-07 (Asia/Seoul).
+
+00.png: Crop of a real browser screenshot of https://nandhakishorm.github.io/laya/
+01-questions.png: Real browser screenshot of https://nandhakishorm.github.io/laya/questions-and-answers/
+02-model-card.png: Real browser screenshot of https://huggingface.co/convaiinnovations/laya
+03-benchmarks.png: Real browser screenshot of https://nandhakishorm.github.io/laya/benchmarks/
+
+Documentation and example code: Laya contributors / Convai Innovations.
+Upstream repository: https://github.com/NandhaKishorM/laya
+Repository revision inspected: a4a8921afebfd852bba0000475cfb6ab737a124c
+Repository LICENSE: Apache License 2.0; full text preserved in LICENSE.txt.
+The documentation footer states: Apache 2.0. Developed by Convai Innovations.
+The model card declares license: apache-2.0.
+No applicable separate NOTICE was found in the inspected upstream tree.
+
+Images quote only the relevant visible portions of public documentation for explanation and criticism, not entire pages. These are documentation captures, not screenshots of our own model inference. Example output values belong to the documentation. No generated images or fabricated UI were used. Only the thumbnail was cropped; body screenshots are unaltered captures. No private account or customer information is shown.
+Hugging Face interface and marks belong to their respective owners; Apache 2.0 is not asserted to license the hosting site's interface or trademarks. No affiliation or endorsement is implied.
