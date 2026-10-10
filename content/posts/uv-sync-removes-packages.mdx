@@ -1,0 +1,178 @@
+---
+title: "uv sync 후 설치한 패키지가 사라지는 이유"
+description: "uv pip install로 설치한 패키지가 uv sync 뒤에 사라진다면 의존성 선언과 실행 환경을 나눠 확인해야 합니다. 실제 재현 결과로 uv add, uv run --with, --inexact의 용도와 복구 확인 방법을 설명합니다."
+author: mingke
+date: 2026/10/10
+tags: [Python, Tools]
+thumbnail: /uv-sync-removes-packages/00.png
+---
+
+`uv pip install`로 패키지를 설치했고 `import`도 됐는데, `uv sync`를 한 번 실행한 뒤 `ModuleNotFoundError`가 발생할 때가 있습니다. AI가 만들어준 Python 프로젝트에서 빠진 패키지만 추가 설치했다면, 환경에는 있지만 프로젝트 의존성에는 등록되지 않았을 수 있습니다.
+
+**`uv sync`는 빠진 패키지만 설치하는 명령이 아닙니다. 기본 동작은 프로젝트에서 선택한 의존성에 맞춰 환경을 정리하는 것이어서, 따로 설치해둔 패키지를 제거할 수 있습니다.** 계속 필요한 라이브러리라면 `uv add`로 등록하고, 한 번 실행할 때만 필요하다면 `uv run --with`를 쓰는 편이 목적에 맞습니다.
+
+다만 모든 import 오류가 이 원인은 아닙니다. 다른 Python에 설치했거나, 필요한 선택 의존성 묶음인 extra를 선택하지 않은 경우도 있습니다. 2026년 10월 10일 기준 공식 문서를 확인하고 Windows 빌드 26200, uv `0.12.12`, 프로젝트 Python `3.12.10`의 별도 테스트 폴더에서 삭제와 복구를 재현해봤습니다. 본문의 명령은 Python `3.11.16` 환경에서도 다시 실행해 확인했습니다.
+
+## 설치 상태와 의존성 선언의 차이
+
+uv 프로젝트에서는 다음 세 가지를 구분하면 이해하기 편합니다.
+
+- `pyproject.toml`: 이 프로젝트에 필요한 패키지와 버전 조건을 선언합니다.
+- `uv.lock`: 그 조건을 해결한 구체적인 버전과 의존성 정보를 기록합니다.
+- `.venv`: 지금 실행할 Python과 실제 설치된 패키지가 들어 있는 환경입니다.
+
+`uv pip install`은 지정한 환경에 패키지를 설치하지만, 프로젝트의 `pyproject.toml`과 `uv.lock`에 의존성을 등록하지 않습니다. 그래서 **지금 import가 된다는 사실과, 다른 사람이 프로젝트를 받아서 같은 패키지를 설치할 수 있다는 사실은 다릅니다.**
+
+<Image
+  src="/uv-sync-removes-packages/00.png"
+  alt="pyproject.toml과 uv.lock의 선언을 기준으로 uv sync가 .venv를 맞추고, uv pip install은 환경에만 패키지를 추가하는 관계"
+  caption="공식 동작과 이번 재현을 바탕으로 직접 그린 개념도입니다. 실제 터미널 화면은 아닙니다."
+/>
+
+[공식 동기화 문서](https://docs.astral.sh/uv/concepts/projects/sync/#handling-of-extraneous-packages)는 `uv sync`의 기본 동작을 exact syncing이라고 설명합니다. 필요한 패키지를 설치하는 동시에 불필요한 패키지도 제거한다는 뜻입니다. lockfile에 들어 있는 패키지라도 이번에 선택하지 않은 extra나 그룹에만 속한다면 설치 대상에서 빠질 수 있습니다.
+
+## 먼저 확인할 실행 환경
+
+기존 프로젝트를 고칠 때는 `.venv`부터 지우지 말고, 오류가 난 환경과 선언 상태를 먼저 확인하는 편이 좋습니다. 아래 명령은 `.venv`가 이미 있는 프로젝트의 루트, 즉 `pyproject.toml`이 있는 폴더에서 실행합니다. `httpx`는 여기서 사용하는 예제 패키지이므로 실제 오류에 나온 패키지로 바꾸면 됩니다.
+
+```bash
+uv --version
+python -c "import sys; print(sys.executable)"
+uv run --no-sync python -c "import sys; print(sys.executable)"
+uv pip show --python .venv httpx
+```
+
+첫 번째 Python 경로는 현재 터미널이 실행하는 Python이고, 두 번째는 uv 프로젝트에서 실행하는 Python입니다. 경로가 다르다는 것 자체가 오류는 아니지만, **설치한 환경과 프로그램을 실행하는 환경이 같은지** 판단하는 단서가 됩니다. 에디터나 노트북에서만 실패한다면 해당 인터프리터나 커널도 맞춰봐야 합니다.
+
+여기서 `--no-sync`는 진단하면서 환경이 먼저 바뀌지 않도록 붙였습니다. 빠진 패키지를 설치하거나 프로젝트를 복구하는 옵션은 아닙니다. `uv pip show --python .venv` 역시 확인할 대상을 프로젝트 환경으로 명시한 것입니다.
+
+확인한 결과에 따라 다음으로 넘어가면 됩니다.
+
+1. **`.venv`에 없고 `pyproject.toml`에도 없다면** 프로젝트 의존성으로 등록하지 않은 상태인지 확인합니다.
+2. **`pyproject.toml`에는 있지만 `.venv`에 없다면** extra·그룹 선택, Python 버전·OS 조건을 확인합니다.
+3. **패키지가 설치됐다고 나오는데 import는 실패한다면** 배포 패키지 이름과 import 이름이 같은지, 실제 프로그램의 Python 경로가 맞는지 확인합니다. 파일 충돌이나 설치 손상도 별도 원인일 수 있습니다.
+
+`uv sync` 출력에 `Uninstalled`가 아니라 `Removed virtual environment`가 보인다면 개별 패키지 정리가 아니라 환경 재생성도 있었던 것입니다. Python 버전 선택과 환경 경로부터 다시 살펴봐야 합니다.
+
+<Ads />
+
+## 별도 폴더에서 삭제 재현하기
+
+아래는 원리를 확인하기 위한 재현 절차입니다. **기존 프로젝트가 아닌 새 폴더에서만 실행하세요.** uv가 설치되어 있고 사용할 Python이 준비돼 있다는 전제입니다. `uv init --bare`를 사용해 최소 프로젝트를 만들었습니다.
+
+```bash
+mkdir uv-sync-demo
+cd uv-sync-demo
+uv init --bare
+uv sync
+uv pip install --python .venv httpx==0.28.1
+uv run --no-sync python -c "import httpx; print(httpx.__version__)"
+```
+
+이때 버전 출력은 `0.28.1`이었습니다. `.venv`를 명시한 이유는 이미 활성화된 다른 가상환경에 설치되는 혼동을 피하기 위해서입니다. 버전 고정은 재현용이며, 이 버전이 최신이거나 모든 프로젝트에 적합하다는 뜻은 아닙니다.
+
+이제 같은 폴더에서 다음 명령을 실행합니다.
+
+```bash
+uv sync
+uv run --no-sync python -c "import httpx; print(httpx.__version__)"
+```
+
+이번 실행에서는 `uv sync`가 `httpx`와 함께 설치된 의존성을 제거했습니다. 아래는 삭제 로그와 다음 import 오류에서 관련 부분을 발췌한 것입니다.
+
+```text
+ - httpx==0.28.1
+ModuleNotFoundError: No module named 'httpx'
+```
+
+`uv pip install` 전후와 삭제 후에 `pyproject.toml`, `uv.lock`의 파일 해시도 비교했습니다. 두 파일은 그대로였습니다. **프로젝트 선언이 지워진 것이 아니라, 선언에 없던 설치 상태가 정리된 것**입니다.
+
+## 계속 쓸 패키지와 한 번만 쓸 패키지
+
+### 프로젝트에 필요한 라이브러리
+
+앱에서 계속 import할 라이브러리라면 `uv add`로 등록합니다. 앞의 재현 폴더에서는 다음과 같이 복구했습니다.
+
+```bash
+uv add httpx==0.28.1
+uv sync --locked
+uv run --no-sync python -c "import httpx; print(httpx.__version__)"
+```
+
+이번에는 `pyproject.toml`과 `uv.lock`이 바뀌었고, 다시 동기화한 뒤에도 `0.28.1`이 출력됐습니다. 설치 직후 한 번 실행되는 것보다 **다시 sync해도 필요한 패키지가 남는지**까지 확인하는 것이 중요합니다.
+
+실제 프로젝트에서는 필요한 호환 버전 범위를 골라 등록하세요. 테스트에만 쓰는 패키지는 `uv add --dev`로, 특정 개발 작업용 묶음은 `uv add --group`으로 구분할 수 있습니다. 런타임에서 필요한 라이브러리를 개발용으로만 넣어두면 개발 의존성을 제외한 배포 환경에서는 실행되지 않을 수 있습니다.
+
+변경한 `pyproject.toml`과 `uv.lock`은 diff를 확인하고 함께 버전 관리합니다. `.venv` 자체를 공유하는 것으로 대신하지 않습니다.
+
+### 이번 실행에만 필요한 라이브러리
+
+잠깐 데이터를 살펴보거나 라이브러리 동작을 확인하려는 목적이라면 [호출별 의존성 옵션](https://docs.astral.sh/uv/concepts/projects/run/#requesting-additional-dependencies)을 사용할 수 있습니다.
+
+```bash
+uv run --with httpx==0.28.1 python -c "import httpx; print(httpx.__version__)"
+```
+
+`httpx`가 프로젝트에 등록되지 않은 테스트 상태에서도 이 명령은 `0.28.1`을 출력했습니다. 반면 그다음에 `--with` 없이 기존 `.venv`에서 import했을 때는 실패했고, 프로젝트 선언 파일도 바뀌지 않았습니다. `--with`는 **이번 호출에서 사용할 의존성**이지 영구 등록이 아닙니다.
+
+또한 `--with`로 요청한 버전은 프로젝트의 버전 요구와 달라도 해당 호출에서 사용될 수 있습니다. 임시 실험이 잘됐다는 이유만으로 앱의 정상 의존성 조합까지 검증했다고 보지는 않는 편이 좋습니다.
+
+<Ads />
+
+## sync와 run의 동기화 옵션
+
+같은 빈 프로젝트 환경에 `httpx==0.28.1`을 수동 설치한 뒤 명령별로 비교했습니다. 각 삭제 실험 전에는 패키지를 다시 설치했습니다.
+
+| 실행한 명령 | 수동 설치한 httpx | 확인할 의미 |
+| --- | --- | --- |
+| `uv sync` | 제거 | 기본 exact 동기화 |
+| `uv sync --inexact` | 유지 | 필요 없는 추가 패키지를 정리하지 않음 |
+| `uv sync --locked` | 제거 | lockfile 변경을 막아도 환경은 동기화 |
+| `uv sync --frozen` | 제거 | 기존 lockfile을 사용해도 환경은 동기화 |
+| `uv run python ...` | 유지 | run의 기본 동기화는 inexact |
+| `uv run --exact python ...` | 제거 후 import 실패 | run에서도 exact를 선택하면 제거 가능 |
+
+**`--locked`나 `--frozen`은 가상환경을 얼려두는 옵션이 아닙니다.** `--locked`는 프로젝트 선언에 맞춰 lockfile을 바꿔야 한다면 오류로 중단합니다. `--frozen`은 lockfile이 현재 선언과 맞는지 검사하지 않고 기존 lockfile을 사용합니다. 둘 다 환경 동기화 자체를 끄지는 않습니다.
+
+`--inexact`도 빠진 의존성 선언을 고쳐주지는 않습니다. 내 환경에서는 남아 있던 패키지 덕분에 실행돼도, 새 환경에서는 그 패키지가 설치되지 않을 수 있습니다. 또한 추가 패키지를 보존한다는 것이 이미 설치된 모든 버전을 고정한다는 뜻은 아닙니다. 선택한 프로젝트 요구사항을 맞추는 동기화는 계속 일어납니다.
+
+따라서 `--inexact`를 모든 명령에 붙이는 것보다, 계속 필요한 패키지는 등록하고 임시 의존성은 `--with`로 분리하는 편이 이후 재현에 유리합니다.
+
+## extra와 그룹의 설치 조건
+
+`uv.lock`에서 이름을 찾았다고 설치까지 보장되지는 않습니다. lockfile은 여러 선택지를 담을 수 있고, 동기화는 그중 이번 환경에 필요한 부분을 설치하기 때문입니다.
+
+예를 들어 다음은 `network`라는 extra에 `httpx`를 넣은 **별도 테스트 프로젝트**입니다. 앞에서 일반 의존성으로 등록한 재현 폴더와는 다른 조건입니다.
+
+```toml
+[project.optional-dependencies]
+network = ["httpx==0.28.1"]
+```
+
+이 프로젝트에서는 `uv sync --extra network` 후 import가 됐지만, 다시 일반 `uv sync`를 실행하자 패키지가 제거됐습니다. 두 실행 사이에 `uv.lock`은 바뀌지 않았습니다. extra는 기본 설치 대상이 아니기 때문입니다.
+
+이런 경우에는 기존 프로젝트에 선언된 extra 이름을 확인하고 선택합니다.
+
+```bash
+uv sync --extra network --locked
+uv run --no-sync python -c "import httpx; print(httpx.__version__)"
+```
+
+개발용 그룹도 선택 조건을 확인해야 합니다. 기본 설정에서는 `dev` 그룹이 포함되지만 `--no-dev`로 제외할 수 있고, 기본 그룹 목록은 프로젝트 설정으로 바꿀 수 있습니다. 그룹에 들어 있다는 이유만으로 항상 설치되는 것은 아닙니다.
+
+선택이 맞는데도 실패한다면 Python·OS에 따른 의존성 조건을 확인하세요. 설치 목록에는 있는데 모듈 파일이 없는 경우까지 `uv add`를 반복하며 해결하려고 하지는 않는 것이 좋습니다. 오류 로그와 최소 재현 환경을 남겨 별도 설치 문제인지 구분해야 합니다.
+
+<Ads />
+
+## 복구 완료 확인
+
+필요한 의존성을 선언했다면 의도한 extra·그룹으로 다시 동기화해보세요. **앱이 실제로 사용하는 Python에서 import나 테스트가 성공해야 복구가 끝난 것입니다.** 에디터와 터미널의 환경이 다르다면 그 연결도 맞춰야 합니다.
+
+AI에게 프로젝트를 수정하도록 맡길 때도 “패키지를 설치해줘”에서 끝내지 말고, 프로젝트 의존성 등록과 동기화 후 테스트까지 완료 조건에 넣으면 좋습니다. 설치 로그만 확인하는 것과 다시 만들 수 있는 환경을 남기는 것은 다른 작업입니다.
+
+기본 명령 흐름이 낯설다면 [uv 프로젝트 시작 글](/blog/python-uv)을 함께 참고할 수 있습니다. 이번 글에서 확인한 공식 자료는 다음과 같습니다.
+
+- [uv의 locking과 syncing](https://docs.astral.sh/uv/concepts/projects/sync/)
+- [프로젝트 의존성 관리](https://docs.astral.sh/uv/concepts/projects/dependencies/)
+- [uv run과 호출별 의존성](https://docs.astral.sh/uv/concepts/projects/run/)
+- [가상환경 선택과 Python 경로](https://docs.astral.sh/uv/pip/environments/)
