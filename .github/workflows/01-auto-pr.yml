@@ -41,7 +41,7 @@ jobs:
         if: startsWith(github.ref_name, 'mingke/hermes-')
         shell: bash
         run: |
-          FILES=$(git diff --name-only origin/main...HEAD | \
+          FILES=$(git diff --name-only --diff-filter=d origin/main...HEAD | \
             grep '^content/posts/.*\.mdx$' || true)
 
           for FILE in $FILES; do
