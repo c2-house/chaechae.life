@@ -7,6 +7,10 @@ tags: [Supabase, Nextjs, Tools]
 thumbnail: /supabase-publishable-key-migration/00.png
 ---
 
+### 목차
+
+## 들어가며
+
 제가 운영하는 [랜덤 라이프(Random Life)](https://randomlife.chaechae.life)도 Supabase의 `anon` key를 사용하고 있습니다. 기존 예제를 따라 연결한 뒤 잘 동작하고 있으면 키 종류를 다시 확인할 일은 많지 않습니다. 그런데 Supabase가 새 API 키 체계로 전환하면서, **이 프로젝트도 publishable key로 바꿔야 하는 대상**이 됐습니다.
 
 먼저 결론부터 정리하면, **기존 `anon` key의 대체재는 `sb_publishable_...` 형식의 publishable key**입니다. 새 키를 만든다고 기존 키가 즉시 무효화되는 것은 아닙니다. 두 종류를 함께 사용할 수 있으므로 새 키를 적용하고 서비스를 확인한 다음 기존 키를 비활성화하는 순서로 진행하면 됩니다.

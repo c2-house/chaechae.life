@@ -7,6 +7,10 @@ tags: [Nodejs, Tools, Github Actions]
 thumbnail: /npm-ci-lock-out-of-sync/00.png
 ---
 
+### 목차
+
+## 들어가며
+
 AI에게 기능을 추가하도록 맡긴 뒤 로컬 개발 서버는 실행되는데, GitHub Actions나 배포 서비스에서 설치가 멈출 때가 있습니다. 로그에 `npm ci`와 함께 `package.json and package-lock.json ... are in sync`라는 문구가 보인다면 캐시부터 지울 일은 아닙니다.
 
 **먼저 `package.json`의 의존성 변경이 의도한 것인지 확인하고, 그 조건에 맞는 lockfile이 수정 커밋에 포함돼 있는지 봐야 합니다.** `npm ci`는 어긋난 lockfile을 고쳐주는 명령이 아니라, 이미 정해진 의존성을 새로 설치하는 명령입니다. 로컬에서 `npm install`이 성공했다는 것과 CI가 같은 파일·옵션으로 설치할 수 있다는 것은 별개입니다.

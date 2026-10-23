@@ -7,6 +7,10 @@ tags: [Vercel, Nextjs, Tools]
 thumbnail: /vercel-env-not-updating/00.png
 ---
 
+### 목차
+
+## 들어가며
+
 Vercel에서 API 주소를 바꾸고 저장했는데 앱은 여전히 이전 서버로 요청을 보낼 때가 있습니다. 재배포까지 했는데 그대로라면 캐시부터 지워야 할까요? 먼저 **수정한 프로젝트와 환경, 새로 만들어진 배포, 지금 접속한 주소가 서로 맞는지** 확인하는 편이 좋습니다.
 
 [Vercel 공식 문서](https://vercel.com/docs/environment-variables/managing-environment-variables)에 따르면 환경변수 변경은 기존 배포를 수정하는 것이 아니라 **새 배포에 적용**됩니다. 여기에 Next.js의 `NEXT_PUBLIC_` 변수는 빌드할 때 브라우저용 코드에 값이 들어간다는 조건이 더해집니다. 설정 저장과 실행 중인 앱의 값 변경을 같은 일로 생각하면 헷갈리기 쉽습니다.
