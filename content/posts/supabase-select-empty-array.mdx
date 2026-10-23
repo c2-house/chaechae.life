@@ -7,6 +7,10 @@ tags: [Supabase, Tools]
 thumbnail: /supabase-select-empty-array/00.png
 ---
 
+### 목차
+
+## 들어가며
+
 Supabase Dashboard에서는 데이터가 보이는데 앱에서는 목록이 비어 있습니다. AI에게 수정해달라고 했더니 RLS를 끄거나 관리자 키로 바꿔보라는 제안을 받았다면, 그 변경부터 적용하지 않는 편이 좋습니다. **빈 배열은 데이터가 없다는 뜻일 수도 있지만, 지금 요청한 사용자에게 보이는 행이 없다는 뜻일 수도 있기 때문입니다.**
 
 [Supabase 공식 지원 문서](https://supabase.com/docs/guides/troubleshooting/why-is-my-select-returning-an-empty-data-array-and-i-have-data-in-the-table-xvOPgx)도 RLS 정책 누락·조건 불일치와 조회 필터를 주요 원인으로 설명합니다. 다만 처음부터 권한을 풀면 정상 조회와 데이터 노출을 구분하기 어렵습니다. **오류 여부 → 연결 대상과 필터 → 요청 사용자의 로그인 → 테이블 권한과 RLS** 순서로 범위를 좁혀보겠습니다.

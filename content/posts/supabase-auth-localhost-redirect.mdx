@@ -7,6 +7,10 @@ tags: [Supabase, Nextjs, Vercel]
 thumbnail: /supabase-auth-localhost-redirect/00.png
 ---
 
+### 목차
+
+## 들어가며
+
 배포한 웹사이트에서 Google 로그인까지 진행했는데 마지막에 `localhost:3000`으로 이동한다면, 로그인 버튼이나 DB 연결부터 다시 만들 필요는 없습니다. 먼저 **어느 단계에서 localhost 주소가 선택됐는지** 확인하는 편이 빠릅니다. Supabase의 기본 복귀 주소, 앱이 요청하는 복귀 주소, 로그인 처리 뒤 앱이 보내는 주소가 서로 다를 수 있기 때문입니다.
 
 우선 Supabase의 **Site URL과 Redirect URLs**, 그리고 앱의 `redirectTo`를 함께 확인해야 합니다. Site URL만 운영 주소로 바꿔도 끝나는 경우가 있지만, 앱 코드가 계속 localhost를 요청하거나 콜백 처리 뒤 다시 localhost로 보내면 문제가 남습니다. Google에 등록하는 OAuth 콜백 주소도 앱의 복귀 주소와는 별개입니다.
