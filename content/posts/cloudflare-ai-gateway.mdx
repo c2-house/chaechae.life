@@ -1,0 +1,99 @@
+---
+title: "Cloudflare AI Gateway는 언제 사용하면 좋을까?"
+description: "AI API를 직접 호출하는 방식과 Cloudflare AI Gateway를 비교하고, 게이트웨이 생성부터 요청과 로그 확인까지의 경로와 비용·보안 조건을 살펴봅니다."
+author: mingke
+date: 2026/11/04
+tags: [AI, Tools]
+thumbnail: /cloudflare-ai-gateway/00.png
+---
+
+### 목차
+
+## 들어가며
+
+서비스에서 AI API를 호출하기 시작하면 답변만큼이나 궁금한 것이 생깁니다. 어떤 요청이 실패했는지, 토큰을 얼마나 썼는지, 반복 요청을 줄일 수 있는지 말이죠. 모델 제공사마다 대시보드가 다르면 이 정보를 한곳에서 살펴보기도 쉽지 않습니다.
+
+**Cloudflare AI Gateway는 애플리케이션과 AI 모델 제공사 사이에서 요청을 중계하고 관찰·제어하는 서비스**입니다. 여러 모델의 호출을 한곳에서 관리하고 싶다면 유용하지만, AI 모델 자체를 대신하거나 모든 비용을 없애는 도구는 아닙니다.
+
+이 글은 2026년 11월 4일 공식 문서를 기준으로 정리했습니다. 대시보드 생성과 API 호출은 실제 계정에서 실행하지 않은 안내 예시입니다. 계정 권한, 모델 제공 지역과 요금은 사용 전에 각각 확인해 주세요.
+
+<Image src="/cloudflare-ai-gateway/00.png" alt="Cloudflare AI Gateway 공식 제품 소개 화면" caption="Cloudflare AI Gateway 공식 제품 소개 화면. 실제 대시보드 조작 결과는 아닙니다." />
+
+## 모델과 애플리케이션 사이의 위치
+
+직접 호출할 때의 흐름은 `내 서버 → OpenAI 같은 모델 제공사 → 내 서버`입니다. 게이트웨이를 거치면 `내 서버 → Cloudflare AI Gateway → 모델 제공사 → AI Gateway → 내 서버`가 됩니다. 게이트웨이는 이 경로에서 요청과 응답을 전달하면서 설정된 로그, 캐시, 호출 제한 등을 적용합니다. 답변은 여전히 선택한 모델이 생성합니다.
+
+예를 들어 고객 지원 기능에서 두 제공사의 모델을 쓴다고 가정해 보겠습니다. 요청이 실패한 시점과 모델, 토큰 사용량을 각 서비스에서 따로 확인하는 대신 게이트웨이의 기록에서 함께 살펴볼 수 있습니다. 요청 본문이나 응답을 기록할지도 따로 정해야 합니다. 게이트웨이를 통과하지 않는 다른 호출까지 자동으로 모이는 것은 아닙니다.
+
+OpenAI처럼 제공사 고유 API 형식을 유지하는 [provider-native 엔드포인트](https://developers.cloudflare.com/ai-gateway/usage/providers/openai/)와 Cloudflare의 [공통 REST API](https://developers.cloudflare.com/ai-gateway/usage/rest-api/)가 있습니다. 공통 주소를 쓴다고 모든 모델의 입력 형식과 기능이 완전히 같아지는 것은 아닙니다. 아래에서는 기존 OpenAI API 키를 직접 전달하는 경로 하나만 살펴보겠습니다.
+
+## 도입 판단
+
+호출하는 앱이나 모델이 여럿이고 요청별 오류·사용량을 한곳에서 보고 싶거나, 반복되는 동일 요청에 캐시를 적용하고 호출량을 제한하려면 도입을 검토할 만합니다. 제공사 전환이나 장애 대응을 설계할 때도 라우팅 기능을 살펴볼 수 있습니다.
+
+반대로 단일 모델을 소규모로 실험하고 제공사 대시보드만으로 충분하다면 직접 호출하는 편이 더 단순합니다. 게이트웨이는 추가 설정과 네트워크 경로, 접근 권한과 로그 관리 책임을 만듭니다. 제공사에서 지원하는 모든 기능이 같은 방식으로 동작하는지 확인도 필요합니다.
+
+<Ads />
+
+## 첫 요청 준비
+
+아래 단계는 [공식 시작 안내](https://developers.cloudflare.com/ai-gateway/get-started/)와 [OpenAI 연동 문서](https://developers.cloudflare.com/ai-gateway/usage/providers/openai/)를 바탕으로 한 예시입니다. Cloudflare 계정과 게이트웨이 생성 권한, API 토큰, OpenAI API 키와 해당 모델의 사용 권한이 필요합니다. OpenAI의 API 사용 요금은 별도입니다. 결제 가능 여부와 각 서비스의 지역·계정 제한도 먼저 확인하세요.
+
+### 게이트웨이 생성과 인증
+
+1. Cloudflare 대시보드에서 계정을 선택하고 **AI → AI Gateway → Create Gateway**로 이동합니다.
+2. 이름을 입력하고 **Workers AI Billing**을 선택한 뒤 **Create**를 누릅니다. 이 선택은 Workers AI 요청의 청구 방식입니다. 아래의 직접 OpenAI 키 요청이 OpenAI에서 과금되는 것과 구분하세요.
+3. 생성한 게이트웨이의 **Settings**에서 인증 설정을 확인합니다. 공식 문서는 새 게이트웨이에 인증이 필요하다고 설명하며, 기존 게이트웨이는 인증이 꺼져 있다면 켜도록 안내합니다. **Create authentication token**을 이용하면 필요한 실행 권한의 토큰을 만들 수 있습니다. 토큰은 다시 표시되지 않으므로 안전하게 보관하세요.
+4. 대시보드에서 Cloudflare **Account ID**와 방금 만든 **Gateway 이름**을 확인합니다. 게이트웨이 이름은 요청 주소의 gateway ID로 사용합니다.
+
+Cloudflare 토큰의 AI Gateway Run 권한은 단일 게이트웨이에만 묶이지 않고 계정 범위에 적용됩니다. 저장된 제공사 키를 사용하는 다른 게이트웨이에도 요청할 수 있으므로 토큰을 최소한으로 배포하고, 격리가 중요하면 별도 계정 등의 방안을 검토해야 합니다. 자세한 내용은 [인증 문서](https://developers.cloudflare.com/ai-gateway/configuration/authentication/)를 참고하세요.
+
+### 서버 측 요청
+
+아래는 macOS·Linux 또는 Git Bash의 서버 측 셸에서 실행하는 예시입니다. 환경변수는 안전한 비밀 관리 방식으로 주입하고, `CF_ACCOUNT_ID`, `CF_GATEWAY_ID`, `CF_AIG_TOKEN`, `OPENAI_API_KEY`에 각자의 값을 넣어야 합니다. 토큰과 API 키를 브라우저 코드, 공개 저장소, 스크린샷에 넣지 마세요. 터미널 공유나 셸 기록에도 주의해야 합니다.
+
+```bash
+curl -i "https://gateway.ai.cloudflare.com/v1/${CF_ACCOUNT_ID}/${CF_GATEWAY_ID}/openai/chat/completions" \
+  -H "Authorization: Bearer ${OPENAI_API_KEY}" \
+  -H "cf-aig-authorization: Bearer ${CF_AIG_TOKEN}" \
+  -H "Content-Type: application/json" \
+  -H "cf-aig-collect-log-payload: false" \
+  --data '{
+    "model": "gpt-4o-mini",
+    "messages": [{"role": "user", "content": "AI 게이트웨이를 한 문장으로 설명해 주세요."}]
+  }'
+```
+
+`Authorization`은 OpenAI에 전달할 키이고 `cf-aig-authorization`은 게이트웨이 접근용 Cloudflare 토큰입니다. 서로 바꿔 쓸 수 없습니다. 예시는 로그에 요청·응답 본문을 저장하지 않도록 별도 헤더를 넣었습니다. 이 설정이 제공사의 데이터 처리나 별도 Logpush 내보내기까지 끄는 것은 아닙니다.
+
+실제 모델 호출을 하지 않았으므로 출력 예시는 생략합니다. 실행한다면 HTTP 상태와 JSON의 응답 내용을 확인하세요. 모델 접근 권한이 없거나 키가 틀리면 성공 응답 대신 오류가 돌아올 수 있습니다. `curl -i`의 출력에는 응답 헤더가 포함되므로 공유하기 전 민감한 정보가 없는지도 확인해야 합니다.
+
+### 결과와 오류 확인
+
+대시보드의 **AI → AI Gateway**에서 해당 게이트웨이를 선택해 요청 분석과 로그를 확인합니다. 로그에는 설정과 제공 정보에 따라 시간, 상태, 모델, 토큰, 비용과 소요 시간 등이 표시될 수 있습니다. 기록이 보이지 않으면 올바른 계정과 게이트웨이, 시간 범위, **Settings → Logs**의 수집 설정을 먼저 살펴보세요. 위 예시는 본문 저장을 껐으므로 로그에서 프롬프트와 답변을 확인하는 경로가 아닙니다.
+
+인증 오류라면 Cloudflare 토큰과 OpenAI 키가 각각 올바른 헤더에 들어갔는지, 계정·게이트웨이 ID와 모델 접근 권한이 맞는지 확인합니다. `429`라면 게이트웨이의 제한뿐 아니라 제공사의 제한도 살펴봐야 합니다. 구체적인 오류는 [Cloudflare 문제 해결 문서](https://developers.cloudflare.com/ai-gateway/reference/troubleshooting/)와 제공사의 응답을 함께 확인하세요.
+
+<Ads />
+
+## 캐시와 호출 제한
+
+[캐시](https://developers.cloudflare.com/ai-gateway/features/caching/)를 활성화하면 동일한 요청의 응답을 재사용할 수 있습니다. 기본 캐시 키는 제공사, 엔드포인트, 모델, 제공사 인증 헤더와 요청 본문 전체를 기준으로 만들어집니다. 메시지나 모델 설정이 달라지면 다른 요청입니다. 캐시 적중 여부는 응답의 `cf-aig-cache-status`에서 `HIT` 또는 `MISS`로 확인할 수 있습니다.
+
+이것은 모델 제공사의 프롬프트 캐싱과 구분해야 합니다. 게이트웨이 캐시는 **이전 응답 전체**의 재사용이므로 매번 새로운 답변이 필요한 작업이나 개인별 답변에는 적합하지 않을 수 있습니다. 사용자 정의 캐시 키를 쓴다면 서로 다른 사용자의 응답이 섞이지 않도록 주의하고, 최신성에 맞게 만료 시간과 캐시 생략 여부를 정하세요.
+
+[Rate limiting](https://developers.cloudflare.com/ai-gateway/features/rate-limiting/)은 정해진 시간 동안 허용할 요청 수를 제한합니다. 초과 요청에는 `429`가 반환됩니다. 요청 수 제한은 토큰 수나 금액의 정확한 상한과 같지 않으므로 제공사 예산과 사용량도 따로 관리해야 합니다.
+
+대체 모델 호출도 저절로 보장되지 않습니다. [Dynamic routing](https://developers.cloudflare.com/ai-gateway/features/dynamic-routing/)은 베타 기능으로 조건·제한·대체 경로를 설정하고 배포하는 방식입니다. 문서의 설정 경로에는 인증된 게이트웨이와 저장된 제공사 키가 필요하며, 현재 지원하는 요청 형식은 OpenAI chat completions입니다. 대체 모델의 권한과 비용, 응답 품질도 별도로 확인해야 합니다.
+
+## 비용과 개인정보
+
+[가격 문서](https://developers.cloudflare.com/ai-gateway/reference/pricing/)에 따르면 대시보드 분석, 캐싱, 호출 제한 등 기본 기능은 무료로 제공됩니다. **모델 추론과 로그 보관·내보내기까지 모두 무료라는 뜻은 아닙니다.** 직접 OpenAI 키를 쓴다면 모델 사용은 OpenAI의 API 요금과 계정 조건을 따릅니다. Guardrails 평가나 Logpush에는 별도 비용이 생길 수 있습니다.
+
+대안인 [Unified Billing](https://developers.cloudflare.com/ai-gateway/features/unified-billing/)은 지원 모델 사용을 Cloudflare의 선불 크레딧으로 결제합니다. 확인 시점 기준 크레딧 구매에 5% 수수료가 붙습니다. [BYOK](https://developers.cloudflare.com/ai-gateway/configuration/bring-your-own-keys/)는 제공사 키를 Cloudflare에 저장하는 베타 기능으로, 위 예시처럼 매번 제공사 키를 직접 헤더로 전달하는 방식과 다릅니다. 공통 REST 경로에서는 저장 키의 `default` 별칭만 조회하며, 해당 키가 없을 때 Unified Billing으로 이어질 수 있습니다. 원치 않는 대체 청구를 막으려면 제3자 제공사에 대한 **Require provider credentials** 설정을 확인하세요.
+
+로그에는 프롬프트와 응답을 포함한 민감한 내용이 들어갈 수 있습니다. 공식 문서에 따르면 로그 수집은 기본 활성화되어 있으며, 설정 또는 요청별 헤더로 범위를 조정할 수 있습니다. 본문만 저장하지 않는 것과 로그 전체를 끄는 것은 다릅니다. 또한 제공사의 데이터 처리 정책과 Logpush 설정은 별도로 확인해야 합니다.
+
+로그 보관 방식은 첫 게이트웨이를 만든 시점에 따라 다릅니다. 2026년 9월 24일 이후 처음 생성한 계정은 Workers Logs의 요금·보관 정책을 따릅니다. 11월 4일 기준 Workers Free의 보관 기간은 3일, Paid는 7일이며, 문서는 12월 1일 가격 변경을 예고합니다. 이전 계정의 Legacy Logs는 별도 저장 한도와 삭제 정책을 사용합니다. 최신 [로그 정책](https://developers.cloudflare.com/ai-gateway/observability/logging/)과 [Workers Logs 가격](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#pricing)을 확인하세요.
+
+AI 호출을 여러 곳에서 관찰하고 제어해야 하는 시점이라면 게이트웨이는 유용한 선택지입니다. 시작 전에는 어떤 요청이 이 경로를 지나는지, 어떤 키와 비용이 적용되는지, 로그에 무엇을 남길지부터 정하는 것이 좋겠습니다.
