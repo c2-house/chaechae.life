@@ -1,164 +1,52 @@
 ---
-title: "Codex CLI로 발행 전 깨진 이미지와 내부 링크 고치기"
-description: "작은 Git 예제에서 이미지 경로와 내부 링크 오류를 검사하고 codex exec로 수정한 뒤 브라우저에서 확인합니다."
+title: "Codex CLI로 MDX 썸네일과 내부 링크 고치기"
+description: "채채 테크의 실제 MDX 원고로 썸네일과 내부 링크 오류를 찾고, Codex CLI로 경로를 고친 뒤 재검사하는 방법입니다."
 author: mingke
 date: 2026/11/06
 tags: [AI, Tools, Git]
-thumbnail: /codex-exec-powershell/rewrite-00-thumbnail.png
+thumbnail: /codex-exec-powershell/mdx-repair-cover.png
 ---
 
 ### 목차
 
-## 들어가며
+발행할 MDX 원고 한 편을 지정하면 **깨진 썸네일과 내부 링크를 찾고, 실제 파일에 맞춰 경로를 고칠 수 있습니다.** 채채 테크에 올라온 글을 로컬에 복제해 썸네일과 링크에 오타를 넣고, 아래 명령으로 두 경로를 복구했습니다.
 
-글을 발행하기 전에 이미지 파일 이름이나 내부 글 주소가 바뀌었는데 원고에 예전 경로가 남아 있다면 어떻게 확인할 수 있을까요? 먼저 검사기로 빠진 경로를 찾고, `codex exec`에 실제 파일과 대조해 수정하도록 요청한 다음 같은 검사와 브라우저 화면을 다시 확인할 수 있습니다.
+## 원고 한 편을 검사하고 고치기
 
-Windows 11의 Codex CLI `0.166.0`에서 별도 Git 저장소를 만들어 확인했습니다. 아래 예제는 정해진 형태의 원고 한 파일에서 썸네일, 마크다운 이미지 하나, 내부 링크 하나를 검사합니다. 사이트마다 경로와 렌더링 방식이 다르므로 실제 블로그에 적용하려면 해당 사이트의 규칙에 맞게 검사와 미리보기를 바꿔야 합니다.
-
-## 실습 준비
-
-Git, Python 3.9 이상, Pillow, 로그인된 Codex CLI가 필요합니다. 예제는 Python 3.11에서 확인했습니다. Windows PowerShell에서 `git --version`, `python --version`, `codex --version`, `codex login status`로 확인합니다. Pillow가 없는 별도 Python 환경이라면 `python -m pip install Pillow`로 설치합니다. Codex 설치와 로그인은 [공식 안내](https://developers.openai.com/codex/cli)를 참고하세요. ChatGPT 계정의 사용 한도나 API 이용에 따른 비용이 적용될 수 있습니다.
-
-새 빈 작업 폴더에서만 진행합니다. 예제는 그 안에 `link-demo`라는 Git 저장소를 새로 만들고 로컬 Git 작성자 설정을 지정합니다. 이미 같은 이름의 폴더가 있으면 중단하므로 다른 빈 폴더를 사용하세요. 개인 정보나 비밀키는 예제에 넣지 마세요. Codex가 작업에 필요한 파일 내용을 모델 서비스에 전송할 수 있습니다.
-
-다음 코드를 빈 작업 폴더의 `setup.py`로 저장하고 실행합니다.
-
-```python
-from pathlib import Path
-import subprocess
-from PIL import Image, ImageDraw
-root = Path.cwd() / 'link-demo'
-root.mkdir(exist_ok=False)
-(root / 'posts').mkdir(); (root / 'images').mkdir()
-(root / 'posts/draft.md').write_text('---\ntitle: 정원 사진 기록\nthumbnail: /images/garden-phot.png\n---\n\n# 정원 사진 기록\n\n![정원 사진](/images/garden-phot.png)\n\n[정원 관리 안내](/blog/garden-guid-old)\n', encoding='utf-8')
-(root / 'posts/garden-guide.md').write_text('# 정원 관리 안내\n\n물주기와 햇빛을 확인합니다.\n', encoding='utf-8')
-im = Image.new('RGB', (700, 220), '#c9e9fa'); d = ImageDraw.Draw(im)
-d.rectangle((0, 135, 700, 220), fill='#6eaa65'); d.ellipse((535, 20, 605, 90), fill='#ffe083')
-for x in (95, 210, 330, 450, 570):
-    d.line((x, 190, x, 95), fill='#357d4a', width=8)
-    for dx, dy in ((-18, 0), (18, 0), (0, -18), (0, 18)):
-        d.ellipse((x+dx-15, 90+dy-15, x+dx+15, 90+dy+15), fill='#f4a3ac')
-    d.ellipse((x-10, 80, x+10, 100), fill='#f5d865')
-im.save(root / 'images/garden-photo.png')
-for command in (['git', 'init', '-q'], ['git', 'config', '--local', 'user.name', 'Demo'], ['git', 'config', '--local', 'user.email', 'demo@example.invalid']):
-    subprocess.run(command, cwd=root, check=True)
-print('준비 완료:', root)
-```
+<a href="/downloads/codex-exec-powershell/check-post.mjs" download="check-post.mjs">check-post.mjs 다운로드</a>에서 받은 파일을 `package.json`이 있는 저장소 루트에 넣으세요. 이 도구는 [채채 테크 저장소](https://github.com/c2-house/chaechae.life)의 MDX와 이미지 경로 규칙에 맞춰 만들었습니다. Node.js 22 환경에서 저장소 의존성을 `npm ci`로 설치하고, Codex CLI에 로그인한 뒤 PowerShell에서 실행하면 됩니다.
 
 ```powershell
-python ./setup.py
-Set-Location ./link-demo
+node ./check-post.mjs content/posts/chatgpt-project-memory.mdx --fix
 ```
 
-생성된 구조에서 `garden-phot.png`와 `garden-guid-old`는 원고의 잘못된 경로입니다. 실제 파일은 각각 `images`와 `posts`에 있습니다.
+**`content/posts/chatgpt-project-memory.mdx`를 발행할 원고 경로로 바꾸세요.** 오류 목록만 보고 싶다면 `--fix`를 빼면 됩니다. 원고에 깨진 경로가 있으면 `MISSING`을 출력하고 종료 코드 `1`을 반환합니다.
+
+## 썸네일과 링크 오타는 어떻게 잡혔을까?
+
+실습에 쓴 글은 `ChatGPT 프로젝트 전용 메모리와 기본 메모리의 차이`입니다. 원고의 `thumbnail` 경로에서 `00.png`를 `000.png`로 바꾸고, 본문 링크 주소에는 `memory` 대신 `memroy`를 넣었습니다. 실제 사이트 미리보기에서 대표 이미지가 비었고, 본문 링크를 열면 404가 반환됐습니다.
+
+<Image src="/codex-exec-powershell/mdx-repair-01-before.png" alt="테크 블로그 로컬 미리보기에서 대표 이미지가 비어 있는 ChatGPT 프로젝트 메모리 글" caption="썸네일 경로에 숫자 하나를 더하자 제목 아래 대표 이미지가 비었습니다." />
+
+검사기는 글 상단의 `thumbnail`, 본문에 `<Image src="…">`로 적은 이미지 경로, 마크다운 형식의 `/blog/` 링크를 실제 파일 이름과 대조합니다. 이 사이트에서는 `/chatgpt-project-memory/00.png`가 `public/images/blog/chatgpt-project-memory/00.png`를 가리키고, `/blog/chatgpt-delete-memory`는 `content/posts/chatgpt-delete-memory.mdx`에 대응합니다.
+
+## Codex에 맡길 부분과 직접 볼 부분
+
+**깨진 경로는 스크립트가 찾고, 대체 후보는 `codex exec`가 고릅니다.** `--fix`를 실행하면 Codex는 누락된 경로, 링크 문구, 후보 파일명과 글 제목을 받아 수정안을 반환합니다. 스크립트는 그중 실제로 존재하는 경로만 원고에 반영한 뒤 같은 검사를 다시 돌립니다. [OpenAI 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)
 
 ```text
-link-demo/
-  images/garden-photo.png
-  posts/draft.md
-  posts/garden-guide.md
+MISSING [thumbnail] /chatgpt-project-memory/000.png
+MISSING [post] /blog/chatgpt-delete-memroy
+FIX /chatgpt-project-memory/000.png → /chatgpt-project-memory/00.png
+FIX /blog/chatgpt-delete-memroy → /blog/chatgpt-delete-memory
+PASS 같은 검사에서 누락 경로가 0개입니다.
 ```
 
-## 검사기와 미리보기
+`PASS`를 받으면 `git diff -- content/posts/chatgpt-project-memory.mdx`로 경로 변경을 확인하세요. `REVIEW`가 남았다면 출력된 경로를 직접 확인해 수정한 뒤 다시 검사하세요. 같은 주제의 글이나 비슷한 사진이 여럿 있을 때는 파일 이름이 맞아도 의도한 대상인지 확인하는 게 좋습니다.
 
-`link-demo` 안에 다음 내용을 `check.py`로 저장합니다. 이 코드는 예제의 정해진 경로 패턴과 파일 존재 여부만 확인합니다. 이미지 파일이 실제로 디코딩되는지 또는 대상 글이 의도에 맞는지는 브라우저와 원고에서 별도로 확인해야 합니다.
+## 발행 전 미리보기에서 확인하기
 
-```python
-from pathlib import Path
-import re, sys
-root = Path(__file__).resolve().parent
-text = (root / "posts/draft.md").read_text(encoding="utf-8")
-images = re.findall(r"(?m)^thumbnail: (/images/[^\s]+)$", text)
-images += re.findall(r"!\[[^\]]*\]\((/images/[^)]+)\)", text)
-links = re.findall(r"(?<!!)\[[^\]]+\]\(/blog/([a-z0-9-]+)\)", text)
-if len(images) != 2 or len(links) != 1:
-    print("ERROR: expected one thumbnail, one image and one internal link")
-    sys.exit(2)
-errors = []
-for path in sorted(set(images)):
-    if not (root / path.lstrip("/")).is_file(): errors.append("MISSING IMAGE: " + path)
-for slug in links:
-    if not (root / "posts" / (slug + ".md")).is_file(): errors.append("MISSING POST: /blog/" + slug)
-if errors:
-    print("\n".join(errors)); sys.exit(1)
-print("PASS: image paths and internal link exist"); sys.exit(0)
-```
+평소 쓰는 블로그 미리보기에서 해당 원고를 열고, 대표 이미지가 뜨는지 확인한 뒤 수정한 링크를 직접 눌러보세요. 이번 실습에서는 제목 아래 이미지가 다시 보였고, 링크는 `ChatGPT 대화를 삭제해도 기억이 남는 이유` 글로 연결됐습니다.
 
-같은 폴더에 다음 `preview.py`를 저장하면 예제 원고를 읽어 로컬 브라우저에서 보여줍니다. 이 서버는 예제 형식에 맞춘 간단한 미리보기이며 실제 블로그 엔진의 MDX 렌더러는 아닙니다.
+<Image src="/codex-exec-powershell/mdx-repair-02-after.png" alt="수정 뒤 채채 테크 미리보기에서 제목 아래 대표 이미지가 표시된 화면" caption="썸네일 경로를 고치자 제목 아래 대표 이미지가 다시 표시됐습니다." />
 
-```python
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
-import html, re
-
-root = Path(__file__).resolve().parent
-class Handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        path = self.path.split('?', 1)[0]
-        if path == '/':
-            text = (root / 'posts/draft.md').read_text(encoding='utf-8')
-            img = re.search(r'!\[[^\]]*\]\((/images/[^)]+)\)', text).group(1)
-            link = re.search(r'(?<!!)\[([^\]]+)\]\((/blog/[^)]+)\)', text)
-            page = f'<meta charset="utf-8"><h1>정원 사진 기록</h1><img width="700" src="{html.escape(img)}" alt="정원 사진"><p><a href="{html.escape(link.group(2))}">{html.escape(link.group(1))}</a></p>'
-            self.send_response(200); self.send_header('Content-Type', 'text/html; charset=utf-8'); self.end_headers(); self.wfile.write(page.encode()); return
-        if path.startswith('/images/') and re.fullmatch(r'/images/[a-z0-9.-]+', path):
-            file = root / path.lstrip('/')
-            if file.is_file():
-                self.send_response(200); self.send_header('Content-Type', 'image/png'); self.end_headers(); self.wfile.write(file.read_bytes()); return
-        if re.fullmatch(r'/blog/[a-z0-9-]+', path):
-            file = root / 'posts' / (path.removeprefix('/blog/') + '.md')
-            if file.is_file():
-                self.send_response(200); self.send_header('Content-Type', 'text/html; charset=utf-8'); self.end_headers(); self.wfile.write(('<meta charset="utf-8"><h1>' + html.escape(file.read_text(encoding='utf-8').splitlines()[0].lstrip('# ')) + '</h1>').encode()); return
-        self.send_error(404)
-
-print('미리보기: http://127.0.0.1:8000', flush=True)
-ThreadingHTTPServer(('127.0.0.1', 8000), Handler).serve_forever()
-```
-
-수정 전 상태를 Git 기준으로 남기고 검사합니다. 첫 번째 명령은 예제 저장소 안에서만 실행하세요.
-
-```powershell
-git add posts images check.py preview.py
-git commit -m "demo baseline"
-python ./check.py
-$LASTEXITCODE
-```
-
-검사 결과는 `MISSING IMAGE`와 `MISSING POST`, 종료 코드 `1`입니다. `2`는 기대한 형식의 항목을 찾지 못했다는 뜻이므로 경로 수정을 맡기기 전에 원고 형식과 검사 코드를 확인해야 합니다.
-
-별도 PowerShell 창에서 `link-demo`로 이동해 `python ./preview.py`를 실행하고 `http://127.0.0.1:8000/`을 엽니다. 이미지가 깨지고 링크를 누르면 404가 나옵니다. 사용이 끝나면 서버 창에서 Ctrl+C로 종료합니다. 포트가 이미 사용 중이면 `preview.py`의 포트와 주소를 함께 바꿔주세요.
-
-<Image src="/codex-exec-powershell/rewrite-01-before.png" alt="수정 전 원고에서 이미지가 깨져 보이고 오래된 내부 링크가 표시된 미리보기" caption="수정 전에는 이미지 경로와 내부 링크가 실제 파일과 다릅니다." />
-
-<Ads />
-
-## Codex에 수정 요청
-
-실행할 때 현재 위치가 `link-demo`인지 다시 확인하세요. 검사 출력은 파이프를 통해 Codex에 전달하고, 프롬프트는 변경을 원고의 경로로 제한합니다.
-
-```powershell
-python ./check.py | codex exec --sandbox workspace-write "아래 검사 결과를 확인하고 저장소의 실제 이미지 파일과 글을 대조하세요. 대상이 분명한 경우에만 posts/draft.md에서 잘못된 경로 두 개만 고치세요. 그 밖의 파일을 수정하지 말고 모호하면 추측하지 마세요. 마지막에 변경 사항을 한국어로 설명하세요."
-```
-
-[공식 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)에 따르면 `codex exec`는 파이프로 전달된 내용을 프롬프트의 추가 문맥으로 사용합니다. `--sandbox workspace-write`는 작업 공간 수정을 허용하므로 **실제 저장소에서 실행하기 전에는 변경 가능 범위와 파일 내용을 확인**하세요. 접근 권한과 승인 동작은 환경 설정에 따라 달라질 수 있습니다. 후보가 여러 개이거나 링크의 실제 대상이 확실하지 않다면 자동 수정 결과를 정답으로 삼지 말고 대상 글을 직접 확인하세요.
-
-이번 실행에서는 Codex가 파일 목록과 대상 글을 확인한 후 `posts/draft.md`의 이미지 경로 두 곳과 내부 링크 한 곳을 고쳤습니다. 모델의 답변 문구와 수행 명령은 실행마다 달라질 수 있습니다.
-
-## 수정과 통과 확인
-
-Codex가 끝난 뒤 원고만 바뀌었는지 직접 확인하고 같은 검사를 다시 실행합니다.
-
-```powershell
-git status --short
-git diff -- posts/draft.md
-python ./check.py
-$LASTEXITCODE
-```
-
-`PASS: image paths and internal link exist`와 종료 코드 `0`은 이 검사에서 지정한 파일이 존재한다는 뜻입니다. 그림이 실제로 표시되는지, 링크가 의도한 내용을 여는지까지 확인한 것은 아니므로 브라우저를 새로고침해 둘 다 확인합니다.
-
-<Image src="/codex-exec-powershell/rewrite-02-diff.png" alt="동일 검사 통과 결과와 원고의 이미지 및 내부 링크 수정 diff" caption="검사 통과 결과와 실제 원고의 경로 변경 diff입니다." />
-
-<Image src="/codex-exec-powershell/rewrite-03-after.png" alt="수정된 이미지와 정원 관리 안내 링크가 표시된 브라우저 미리보기" caption="수정된 이미지가 보이고 링크 주소가 대상 글과 일치합니다." />
-
-수정된 링크의 대상에서 `정원 관리 안내`가 열리는 것까지 확인했습니다. 실제 블로그에서는 사이트의 개발 서버에서 원고와 목록 썸네일을 확인하고, `git diff`에서 의도하지 않은 변경이 있는지 검토한 뒤 발행 절차를 진행하는 편이 안전합니다. 명령 옵션의 자세한 내용은 [Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference)를 참고하세요.
+<Image src="/codex-exec-powershell/mdx-repair-03-link.png" alt="수정된 내부 링크에서 열린 채채 테크의 ChatGPT 메모리 삭제 안내 글" caption="링크를 눌러 기존 ChatGPT 메모리 삭제 안내가 열리는지 확인했습니다." />
