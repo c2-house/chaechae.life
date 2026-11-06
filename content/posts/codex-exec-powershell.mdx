@@ -1,138 +1,164 @@
 ---
-title: "Codex CLI로 Git 변경 보고서 자동화하기"
-description: "Windows PowerShell에서 codex exec로 Git 변경 내용을 요약하고, 실패했을 때 이전 보고서를 보존하는 예제를 만듭니다."
+title: "Codex CLI로 발행 전 깨진 이미지와 내부 링크 고치기"
+description: "작은 Git 예제에서 이미지 경로와 내부 링크 오류를 검사하고 codex exec로 수정한 뒤 브라우저에서 확인합니다."
 author: mingke
 date: 2026/11/06
 tags: [AI, Tools, Git]
-thumbnail: /codex-exec-powershell/00.png
+thumbnail: /codex-exec-powershell/rewrite-00-thumbnail.png
 ---
 
 ### 목차
 
 ## 들어가며
 
-Codex에게 매번 같은 요청을 입력하지 않고 Git 변경 내용을 보고서로 남기려면 어떻게 해야 할까요? `codex exec`를 PowerShell 스크립트에서 호출하면 대화형 화면을 열지 않고 요청을 실행하고, 마지막 답변을 파일로 저장할 수 있습니다.
+글을 발행하기 전에 이미지 파일 이름이나 내부 글 주소가 바뀌었는데 원고에 예전 경로가 남아 있다면 어떻게 확인할 수 있을까요? 먼저 검사기로 빠진 경로를 찾고, `codex exec`에 실제 파일과 대조해 수정하도록 요청한 다음 같은 검사와 브라우저 화면을 다시 확인할 수 있습니다.
 
-이번에는 별도의 Git 예제 저장소에 작은 변경을 만든 다음, 읽기 전용 Codex로 한국어 보고서를 만들겠습니다. 생성이 실패하면 이전 보고서는 유지하도록 처리합니다. Windows 11, PowerShell 7과 Codex CLI `0.166.0`에서 확인했습니다. 화면은 PowerShell 프로세스의 실제 출력과 종료 코드를 보여주는 별도 실습 콘솔입니다. 앱과 CLI 중 무엇부터 쓸지 고민된다면 [Codex 앱과 CLI 비교](/blog/codex-app-vs-cli)에서 차이도 확인할 수 있습니다.
+Windows 11의 Codex CLI `0.166.0`에서 별도 Git 저장소를 만들어 확인했습니다. 아래 예제는 정해진 형태의 원고 한 파일에서 썸네일, 마크다운 이미지 하나, 내부 링크 하나를 검사합니다. 사이트마다 경로와 렌더링 방식이 다르므로 실제 블로그에 적용하려면 해당 사이트의 규칙에 맞게 검사와 미리보기를 바꿔야 합니다.
 
-## 준비와 작업 범위
+## 실습 준비
 
-Git, PowerShell 7의 `pwsh`, 로그인된 Codex CLI가 필요합니다. PowerShell에서 `git --version`, `pwsh --version`, `codex --version`, `codex login status`로 확인하세요. 설치와 로그인은 [Codex CLI 공식 안내](https://developers.openai.com/codex/cli)를 참고합니다. ChatGPT 로그인은 계정의 사용 한도를 따르고 API 키 사용은 별도 과금될 수 있습니다.
+Git, Python 3.9 이상, Pillow, 로그인된 Codex CLI가 필요합니다. 예제는 Python 3.11에서 확인했습니다. Windows PowerShell에서 `git --version`, `python --version`, `codex --version`, `codex login status`로 확인합니다. Pillow가 없는 별도 Python 환경이라면 `python -m pip install Pillow`로 설치합니다. Codex 설치와 로그인은 [공식 안내](https://developers.openai.com/codex/cli)를 참고하세요. ChatGPT 계정의 사용 한도나 API 이용에 따른 비용이 적용될 수 있습니다.
 
-아래 예제는 **새 빈 폴더**에서만 실행하세요. 예를 들어 PowerShell에서 빈 폴더를 만들고 그 안으로 이동한 다음, 각 코드 블록을 설명된 파일명으로 저장합니다. `setup-demo.ps1`은 같은 위치에 `demo workspace`라는 Git 저장소를 새로 만들고 커밋하므로 기존 프로젝트에 적용하면 안 됩니다. Git 작성자 설정은 이 예제 저장소에만 적용합니다.
+새 빈 작업 폴더에서만 진행합니다. 예제는 그 안에 `link-demo`라는 Git 저장소를 새로 만들고 로컬 Git 작성자 설정을 지정합니다. 이미 같은 이름의 폴더가 있으면 중단하므로 다른 빈 폴더를 사용하세요. 개인 정보나 비밀키는 예제에 넣지 마세요. Codex가 작업에 필요한 파일 내용을 모델 서비스에 전송할 수 있습니다.
 
-Codex는 작업에 필요한 파일 내용을 서비스에 보낼 수 있으므로 비밀키나 공개하면 안 되는 내용은 실습에 넣지 마세요. `read-only`는 Codex가 실행하는 명령의 파일 쓰기 범위를 제한하는 것이지, 결과의 정확성이나 데이터 비공개를 보증하지 않습니다. 스크립트가 보고서 파일을 저장하는 작업은 Codex 밖의 PowerShell이 수행합니다.
+다음 코드를 빈 작업 폴더의 `setup.py`로 저장하고 실행합니다.
 
-## 변경할 샘플 만들기
-
-빈 폴더에 `setup-demo.ps1`을 저장합니다. 첫 줄을 기준 커밋으로 남긴 뒤 두 번째 줄을 추가합니다.
+```python
+from pathlib import Path
+import subprocess
+from PIL import Image, ImageDraw
+root = Path.cwd() / 'link-demo'
+root.mkdir(exist_ok=False)
+(root / 'posts').mkdir(); (root / 'images').mkdir()
+(root / 'posts/draft.md').write_text('---\ntitle: 정원 사진 기록\nthumbnail: /images/garden-phot.png\n---\n\n# 정원 사진 기록\n\n![정원 사진](/images/garden-phot.png)\n\n[정원 관리 안내](/blog/garden-guid-old)\n', encoding='utf-8')
+(root / 'posts/garden-guide.md').write_text('# 정원 관리 안내\n\n물주기와 햇빛을 확인합니다.\n', encoding='utf-8')
+im = Image.new('RGB', (700, 220), '#c9e9fa'); d = ImageDraw.Draw(im)
+d.rectangle((0, 135, 700, 220), fill='#6eaa65'); d.ellipse((535, 20, 605, 90), fill='#ffe083')
+for x in (95, 210, 330, 450, 570):
+    d.line((x, 190, x, 95), fill='#357d4a', width=8)
+    for dx, dy in ((-18, 0), (18, 0), (0, -18), (0, 18)):
+        d.ellipse((x+dx-15, 90+dy-15, x+dx+15, 90+dy+15), fill='#f4a3ac')
+    d.ellipse((x-10, 80, x+10, 100), fill='#f5d865')
+im.save(root / 'images/garden-photo.png')
+for command in (['git', 'init', '-q'], ['git', 'config', '--local', 'user.name', 'Demo'], ['git', 'config', '--local', 'user.email', 'demo@example.invalid']):
+    subprocess.run(command, cwd=root, check=True)
+print('준비 완료:', root)
+```
 
 ```powershell
-[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-$ErrorActionPreference = 'Stop'
-$root = Join-Path $PSScriptRoot 'demo workspace'
-New-Item -ItemType Directory -Force -Path $root | Out-Null
-Set-Location -LiteralPath $root
-git init -q
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-git config --local user.name 'Demo'
-git config --local user.email 'demo@example.invalid'
-[IO.File]::WriteAllText((Join-Path $root 'notes.txt'), "First line`n", [Text.UTF8Encoding]::new($false))
-git add notes.txt
-git commit -qm 'baseline'
-if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-[IO.File]::AppendAllText((Join-Path $root 'notes.txt'), "Second line`n", [Text.UTF8Encoding]::new($false))
+python ./setup.py
+Set-Location ./link-demo
+```
+
+생성된 구조에서 `garden-phot.png`와 `garden-guid-old`는 원고의 잘못된 경로입니다. 실제 파일은 각각 `images`와 `posts`에 있습니다.
+
+```text
+link-demo/
+  images/garden-photo.png
+  posts/draft.md
+  posts/garden-guide.md
+```
+
+## 검사기와 미리보기
+
+`link-demo` 안에 다음 내용을 `check.py`로 저장합니다. 이 코드는 예제의 정해진 경로 패턴과 파일 존재 여부만 확인합니다. 이미지 파일이 실제로 디코딩되는지 또는 대상 글이 의도에 맞는지는 브라우저와 원고에서 별도로 확인해야 합니다.
+
+```python
+from pathlib import Path
+import re, sys
+root = Path(__file__).resolve().parent
+text = (root / "posts/draft.md").read_text(encoding="utf-8")
+images = re.findall(r"(?m)^thumbnail: (/images/[^\s]+)$", text)
+images += re.findall(r"!\[[^\]]*\]\((/images/[^)]+)\)", text)
+links = re.findall(r"(?<!!)\[[^\]]+\]\(/blog/([a-z0-9-]+)\)", text)
+if len(images) != 2 or len(links) != 1:
+    print("ERROR: expected one thumbnail, one image and one internal link")
+    sys.exit(2)
+errors = []
+for path in sorted(set(images)):
+    if not (root / path.lstrip("/")).is_file(): errors.append("MISSING IMAGE: " + path)
+for slug in links:
+    if not (root / "posts" / (slug + ".md")).is_file(): errors.append("MISSING POST: /blog/" + slug)
+if errors:
+    print("\n".join(errors)); sys.exit(1)
+print("PASS: image paths and internal link exist"); sys.exit(0)
+```
+
+같은 폴더에 다음 `preview.py`를 저장하면 예제 원고를 읽어 로컬 브라우저에서 보여줍니다. 이 서버는 예제 형식에 맞춘 간단한 미리보기이며 실제 블로그 엔진의 MDX 렌더러는 아닙니다.
+
+```python
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+import html, re
+
+root = Path(__file__).resolve().parent
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        path = self.path.split('?', 1)[0]
+        if path == '/':
+            text = (root / 'posts/draft.md').read_text(encoding='utf-8')
+            img = re.search(r'!\[[^\]]*\]\((/images/[^)]+)\)', text).group(1)
+            link = re.search(r'(?<!!)\[([^\]]+)\]\((/blog/[^)]+)\)', text)
+            page = f'<meta charset="utf-8"><h1>정원 사진 기록</h1><img width="700" src="{html.escape(img)}" alt="정원 사진"><p><a href="{html.escape(link.group(2))}">{html.escape(link.group(1))}</a></p>'
+            self.send_response(200); self.send_header('Content-Type', 'text/html; charset=utf-8'); self.end_headers(); self.wfile.write(page.encode()); return
+        if path.startswith('/images/') and re.fullmatch(r'/images/[a-z0-9.-]+', path):
+            file = root / path.lstrip('/')
+            if file.is_file():
+                self.send_response(200); self.send_header('Content-Type', 'image/png'); self.end_headers(); self.wfile.write(file.read_bytes()); return
+        if re.fullmatch(r'/blog/[a-z0-9-]+', path):
+            file = root / 'posts' / (path.removeprefix('/blog/') + '.md')
+            if file.is_file():
+                self.send_response(200); self.send_header('Content-Type', 'text/html; charset=utf-8'); self.end_headers(); self.wfile.write(('<meta charset="utf-8"><h1>' + html.escape(file.read_text(encoding='utf-8').splitlines()[0].lstrip('# ')) + '</h1>').encode()); return
+        self.send_error(404)
+
+print('미리보기: http://127.0.0.1:8000', flush=True)
+ThreadingHTTPServer(('127.0.0.1', 8000), Handler).serve_forever()
+```
+
+수정 전 상태를 Git 기준으로 남기고 검사합니다. 첫 번째 명령은 예제 저장소 안에서만 실행하세요.
+
+```powershell
+git add posts images check.py preview.py
+git commit -m "demo baseline"
+python ./check.py
+$LASTEXITCODE
+```
+
+검사 결과는 `MISSING IMAGE`와 `MISSING POST`, 종료 코드 `1`입니다. `2`는 기대한 형식의 항목을 찾지 못했다는 뜻이므로 경로 수정을 맡기기 전에 원고 형식과 검사 코드를 확인해야 합니다.
+
+별도 PowerShell 창에서 `link-demo`로 이동해 `python ./preview.py`를 실행하고 `http://127.0.0.1:8000/`을 엽니다. 이미지가 깨지고 링크를 누르면 404가 나옵니다. 사용이 끝나면 서버 창에서 Ctrl+C로 종료합니다. 포트가 이미 사용 중이면 `preview.py`의 포트와 주소를 함께 바꿔주세요.
+
+<Image src="/codex-exec-powershell/rewrite-01-before.png" alt="수정 전 원고에서 이미지가 깨져 보이고 오래된 내부 링크가 표시된 미리보기" caption="수정 전에는 이미지 경로와 내부 링크가 실제 파일과 다릅니다." />
+
+<Ads />
+
+## Codex에 수정 요청
+
+실행할 때 현재 위치가 `link-demo`인지 다시 확인하세요. 검사 출력은 파이프를 통해 Codex에 전달하고, 프롬프트는 변경을 원고의 경로로 제한합니다.
+
+```powershell
+python ./check.py | codex exec --sandbox workspace-write "아래 검사 결과를 확인하고 저장소의 실제 이미지 파일과 글을 대조하세요. 대상이 분명한 경우에만 posts/draft.md에서 잘못된 경로 두 개만 고치세요. 그 밖의 파일을 수정하지 말고 모호하면 추측하지 마세요. 마지막에 변경 사항을 한국어로 설명하세요."
+```
+
+[공식 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)에 따르면 `codex exec`는 파이프로 전달된 내용을 프롬프트의 추가 문맥으로 사용합니다. `--sandbox workspace-write`는 작업 공간 수정을 허용하므로 **실제 저장소에서 실행하기 전에는 변경 가능 범위와 파일 내용을 확인**하세요. 접근 권한과 승인 동작은 환경 설정에 따라 달라질 수 있습니다. 후보가 여러 개이거나 링크의 실제 대상이 확실하지 않다면 자동 수정 결과를 정답으로 삼지 말고 대상 글을 직접 확인하세요.
+
+이번 실행에서는 Codex가 파일 목록과 대상 글을 확인한 후 `posts/draft.md`의 이미지 경로 두 곳과 내부 링크 한 곳을 고쳤습니다. 모델의 답변 문구와 수행 명령은 실행마다 달라질 수 있습니다.
+
+## 수정과 통과 확인
+
+Codex가 끝난 뒤 원고만 바뀌었는지 직접 확인하고 같은 검사를 다시 실행합니다.
+
+```powershell
 git status --short
-git diff -- notes.txt
+git diff -- posts/draft.md
+python ./check.py
+$LASTEXITCODE
 ```
 
-파일을 저장한 폴더에서 다음 명령을 실행합니다.
+`PASS: image paths and internal link exist`와 종료 코드 `0`은 이 검사에서 지정한 파일이 존재한다는 뜻입니다. 그림이 실제로 표시되는지, 링크가 의도한 내용을 여는지까지 확인한 것은 아니므로 브라우저를 새로고침해 둘 다 확인합니다.
 
-```powershell
-pwsh -NoProfile -File ./setup-demo.ps1
-```
+<Image src="/codex-exec-powershell/rewrite-02-diff.png" alt="동일 검사 통과 결과와 원고의 이미지 및 내부 링크 수정 diff" caption="검사 통과 결과와 실제 원고의 경로 변경 diff입니다." />
 
-<Image src="/codex-exec-powershell/01-sample.png" alt="PowerShell 실습 콘솔에서 notes.txt에 추가된 Second line과 Git diff 출력" caption="PowerShell 실습 콘솔에 표시된 샘플 변경 내용입니다." />
+<Image src="/codex-exec-powershell/rewrite-03-after.png" alt="수정된 이미지와 정원 관리 안내 링크가 표시된 브라우저 미리보기" caption="수정된 이미지가 보이고 링크 주소가 대상 글과 일치합니다." />
 
-`M notes.txt`와 `+Second line`을 확인합니다. 줄바꿈 경고가 나타날 수 있지만 위 화면에서는 준비 명령이 종료 코드 0으로 끝났습니다. 이미 만든 폴더에서 준비 스크립트를 다시 실행하지 말고 새 빈 폴더를 사용하세요.
-
-<Ads />
-
-## 보고서 생성 스크립트
-
-같은 폴더에 `report.ps1`을 저장합니다. 먼저 임시 파일에 Codex의 마지막 답변을 받은 뒤, 실행 성공과 파일 내용을 확인했을 때만 `report.md`로 옮깁니다.
-
-```powershell
-[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-$ErrorActionPreference = 'Stop'
-$repo = Join-Path $PSScriptRoot 'demo workspace'
-$report = Join-Path $PSScriptRoot 'report.md'
-$temp = Join-Path $PSScriptRoot 'report.pending.md'
-if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp }
-$prompt = 'Git 저장소에서 추적 중인 파일의 커밋되지 않은 변경을 확인하고, 파일명과 실제 변경 내용을 한국어 마크다운으로 요약하세요. 파일을 수정하지 마세요.'
-& codex exec --sandbox read-only --cd "$repo" --output-last-message "$temp" "$prompt"
-$code = $LASTEXITCODE
-if ($code -ne 0 -or -not (Test-Path -LiteralPath $temp) -or (Get-Item -LiteralPath $temp).Length -eq 0) {
-    Write-Error "보고서 생성 실패 (종료 코드: $code). 이전 report.md는 변경하지 않았습니다." -ErrorAction Continue
-    if ($code -eq 0) { exit 1 } else { exit $code }
-}
-Move-Item -LiteralPath $temp -Destination $report -Force
-Write-Host "보고서 저장: $report"
-```
-
-실행하고 저장된 내용을 확인합니다.
-
-```powershell
-pwsh -NoProfile -File ./report.ps1
-Get-Content -LiteralPath ./report.md -Raw -Encoding utf8
-```
-
-<Image src="/codex-exec-powershell/02-run.png" alt="PowerShell 실습 콘솔에서 보고서 생성 명령과 종료 코드 0을 표시한 화면" caption="PowerShell 실습 콘솔에서 보고서 생성이 완료된 화면입니다. 개인 로컬 경로는 가렸습니다." />
-
-`--cd`는 Codex의 작업 폴더를 지정하고, `--sandbox read-only`는 명령을 읽기 전용으로 제한합니다. `--output-last-message`는 진행 로그가 아니라 마지막 답변을 지정한 파일에 저장합니다. [공식 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)에서는 진행 상황은 stderr, 마지막 답변은 stdout으로 구분합니다. Codex나 설정에 따라 진행 로그와 답변 문구는 달라질 수 있습니다.
-
-<Image src="/codex-exec-powershell/02-report.png" alt="PowerShell 실습 콘솔에서 report.md의 실제 내용을 출력한 화면" caption="PowerShell 실습 콘솔에서 저장된 보고서를 읽은 결과입니다. notes.txt의 추가 내용과 스테이징 상태가 요약됐습니다." />
-
-화면에서는 보고서 확인을 위해 `Get-Content`를 담은 별도 `show-report.ps1`을 실행했습니다. 독자는 위의 `Get-Content` 명령을 그대로 사용하면 됩니다. 결과가 그럴듯해도 원본 `git diff`와 비교해 빠진 변경이나 잘못된 설명이 없는지 확인하세요. 프롬프트가 지정한 범위는 추적 중인 파일이므로 새로 만든 미추적 파일은 이 예제의 보고 대상이 아닙니다.
-
-<Ads />
-
-## 실패와 이전 보고서 확인
-
-실패 실험은 방금 만든 예제에서만 진행합니다. 다음을 `failure-test.ps1`로 저장하면 예제 저장소를 잠시 다른 이름으로 옮겨 보고서 실행을 실패시키고, `finally`에서 원래 이름으로 복구합니다. 전후 SHA-256 해시가 같으면 이전 보고서의 내용이 유지된 것입니다.
-
-```powershell
-[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-$ErrorActionPreference = 'Stop'
-$root = $PSScriptRoot
-$repo = Join-Path $root 'demo workspace'
-$hidden = Join-Path $root 'demo workspace unavailable'
-$report = Join-Path $root 'report.md'
-$before = (Get-FileHash -Algorithm SHA256 -LiteralPath $report).Hash
-if (Test-Path -LiteralPath $hidden) { throw 'Test path already exists' }
-Move-Item -LiteralPath $repo -Destination $hidden
-try {
-    & pwsh -NoProfile -File (Join-Path $root 'report.ps1')
-    $code = $LASTEXITCODE
-} finally {
-    Move-Item -LiteralPath $hidden -Destination $repo
-}
-$after = (Get-FileHash -Algorithm SHA256 -LiteralPath $report).Hash
-Write-Host "Failure exit code: $code"
-Write-Host "Previous report unchanged: $($before -eq $after)"
-if ($code -eq 0 -or $before -ne $after) { exit 1 }
-```
-
-```powershell
-pwsh -NoProfile -File ./failure-test.ps1
-```
-
-<Image src="/codex-exec-powershell/03-failure.png" alt="PowerShell 실습 콘솔에서 보고서 생성 실패와 이전 보고서 해시 일치를 확인한 화면" caption="PowerShell 실습 콘솔에서 보고서 생성은 종료 코드 1로 실패했고, 실패 확인 스크립트는 이전 보고서가 같음을 확인해 종료 코드 0으로 끝났습니다." />
-
-`Failure exit code: 1`은 내부 보고서 실행의 실패이고, 화면 마지막의 종료 코드 0은 **실패를 예상대로 확인한 테스트 스크립트**의 성공입니다. 테스트가 비정상 종료되어 폴더 이름이 복구되지 않았다면 두 폴더의 상태를 먼저 확인하고 예제 폴더만 원래 이름으로 되돌리세요.
-
-## 반복 실행 시 주의점
-
-`report.ps1`을 다시 실행하면 현재 추적 파일의 변경을 새로 요약해 `report.md`를 교체합니다. 모델 답변은 매번 달라질 수 있고 종료 코드 0과 비어 있지 않은 파일만으로 내용의 정확성까지 확인되지는 않습니다. 실패한 실행에서 임시 파일이 남을 수 있으며 다음 실행 전에 제거합니다.
-
-정기 실행에 연결하려면 먼저 같은 사용자 계정과 작업 경로에서 수동 실행을 확인하고, 스케줄러의 실행 계정·인증·작업 폴더·실패 알림을 별도로 점검하세요. 이 예제는 예약을 만들거나 알림을 보내지는 않습니다. 동시에 여러 번 실행하면 같은 임시 파일과 보고서를 공유하므로 중복 실행을 막거나 실행별 경로를 따로 지정해야 합니다.
+수정된 링크의 대상에서 `정원 관리 안내`가 열리는 것까지 확인했습니다. 실제 블로그에서는 사이트의 개발 서버에서 원고와 목록 썸네일을 확인하고, `git diff`에서 의도하지 않은 변경이 있는지 검토한 뒤 발행 절차를 진행하는 편이 안전합니다. 명령 옵션의 자세한 내용은 [Codex CLI reference](https://learn.chatgpt.com/docs/cli/reference)를 참고하세요.
