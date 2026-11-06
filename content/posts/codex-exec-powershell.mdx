@@ -1,52 +1,52 @@
 ---
-title: "Codex CLI로 MDX 썸네일과 내부 링크 고치기"
-description: "채채 테크의 실제 MDX 원고로 썸네일과 내부 링크 오류를 찾고, Codex CLI로 경로를 고친 뒤 재검사하는 방법입니다."
+title: "다운로드한 PDF 파일명, Codex CLI로 내용에 맞게 정리하기"
+description: "Windows 다운로드 폴더의 기차표·영수증·설명서를 읽어 알아보기 쉬운 이름으로 정리합니다. 실습 PDF와 실행 파일을 받아 이름을 미리 확인하고, 새 파일이 들어오면 같은 명령으로 다시 정리하세요."
 author: mingke
 date: 2026/11/06
-tags: [AI, Tools, Git]
-thumbnail: /codex-exec-powershell/mdx-repair-cover.png
+tags: [AI, Tools]
+thumbnail: /codex-exec-powershell/pdf-organizer-cover.png
 ---
 
 ### 목차
 
-발행할 MDX 원고 한 편을 지정하면 **깨진 썸네일과 내부 링크를 찾고, 실제 파일에 맞춰 경로를 고칠 수 있습니다.** 채채 테크에 올라온 글을 로컬에 복제해 썸네일과 링크에 오타를 넣고, 아래 명령으로 두 경로를 복구했습니다.
+지난주에 받은 기차표를 찾는데 다운로드 폴더에 `document.pdf`, `download (1).pdf`만 보이면 결국 하나씩 열어보게 됩니다. 이번에는 PDF 안의 날짜와 제목을 읽어 **`download (1).pdf`를 `교통/2026-11-04_서울_부산_열차표.pdf`로 정리**해 봤습니다. 영수증과 설명서도 한 번에 이름을 붙이고, 다음에 새 PDF를 받으면 같은 명령을 다시 쓰면 됩니다.
 
-## 원고 한 편을 검사하고 고치기
+## 1. 실습 파일 받아서 준비하기
 
-<a href="/downloads/codex-exec-powershell/check-post.mjs" download="check-post.mjs">check-post.mjs 다운로드</a>에서 받은 파일을 `package.json`이 있는 저장소 루트에 넣으세요. 이 도구는 [채채 테크 저장소](https://github.com/c2-house/chaechae.life)의 MDX와 이미지 경로 규칙에 맞춰 만들었습니다. Node.js 22 환경에서 저장소 의존성을 `npm ci`로 설치하고, Codex CLI에 로그인한 뒤 PowerShell에서 실행하면 됩니다.
+<a href="/downloads/codex-exec-powershell/pdf-organizer.zip" download="pdf-organizer.zip">PDF 정리 실습 파일 다운로드</a>를 눌러 압축을 푸세요. 폴더 안에 실행 파일 `organize-pdfs.py`와 가상의 기차표·영수증·설명서가 들어 있는 `PDF-연습` 폴더가 있습니다. 파일 탐색기에서 압축을 푼 폴더를 열고 주소창에 `powershell`을 입력한 뒤 Enter를 누르세요.
+
+<Image src="/codex-exec-powershell/pdf-organizer-01-before.png" alt="정리하기 전의 가상 영수증, 열차표, 설명서 PDF와 원래 파일 이름" caption="실습 폴더의 PDF 세 장. 문서를 열어봐야 어느 것이 기차표인지 알 수 있습니다." />
+
+Windows에 Python 3.12와 Codex CLI를 준비하세요. 처음이라면 [Python Windows 다운로드](https://www.python.org/downloads/windows/)와 [Codex CLI 설치 안내](https://learn.chatgpt.com/docs/cli)를 참고하세요. PowerShell에서 `codex login`으로 로그인한 뒤 아래 명령으로 PDF 읽기 도구를 설치합니다. 이 설치는 한 번만 하면 됩니다.
 
 ```powershell
-node ./check-post.mjs content/posts/chatgpt-project-memory.mdx --fix
+py -3.12 -m pip install pypdf
 ```
 
-**`content/posts/chatgpt-project-memory.mdx`를 발행할 원고 경로로 바꾸세요.** 오류 목록만 보고 싶다면 `--fix`를 빼면 됩니다. 원고에 깨진 경로가 있으면 `MISSING`을 출력하고 종료 코드 `1`을 반환합니다.
+## 2. 새 이름을 미리 보고 적용하기
 
-## 썸네일과 링크 오타는 어떻게 잡혔을까?
+**이 명령을 실행하면 PDF별로 바뀔 이름과 들어갈 폴더가 먼저 뜹니다.**
 
-실습에 쓴 글은 `ChatGPT 프로젝트 전용 메모리와 기본 메모리의 차이`입니다. 원고의 `thumbnail` 경로에서 `00.png`를 `000.png`로 바꾸고, 본문 링크 주소에는 `memory` 대신 `memroy`를 넣었습니다. 실제 사이트 미리보기에서 대표 이미지가 비었고, 본문 링크를 열면 404가 반환됐습니다.
-
-<Image src="/codex-exec-powershell/mdx-repair-01-before.png" alt="테크 블로그 로컬 미리보기에서 대표 이미지가 비어 있는 ChatGPT 프로젝트 메모리 글" caption="썸네일 경로에 숫자 하나를 더하자 제목 아래 대표 이미지가 비었습니다." />
-
-검사기는 글 상단의 `thumbnail`, 본문에 `<Image src="…">`로 적은 이미지 경로, 마크다운 형식의 `/blog/` 링크를 실제 파일 이름과 대조합니다. 이 사이트에서는 `/chatgpt-project-memory/00.png`가 `public/images/blog/chatgpt-project-memory/00.png`를 가리키고, `/blog/chatgpt-delete-memory`는 `content/posts/chatgpt-delete-memory.mdx`에 대응합니다.
-
-## Codex에 맡길 부분과 직접 볼 부분
-
-**깨진 경로는 스크립트가 찾고, 대체 후보는 `codex exec`가 고릅니다.** `--fix`를 실행하면 Codex는 누락된 경로, 링크 문구, 후보 파일명과 글 제목을 받아 수정안을 반환합니다. 스크립트는 그중 실제로 존재하는 경로만 원고에 반영한 뒤 같은 검사를 다시 돌립니다. [OpenAI 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)
-
-```text
-MISSING [thumbnail] /chatgpt-project-memory/000.png
-MISSING [post] /blog/chatgpt-delete-memroy
-FIX /chatgpt-project-memory/000.png → /chatgpt-project-memory/00.png
-FIX /blog/chatgpt-delete-memroy → /blog/chatgpt-delete-memory
-PASS 같은 검사에서 누락 경로가 0개입니다.
+```powershell
+py -3.12 .\organize-pdfs.py .\PDF-연습
 ```
 
-`PASS`를 받으면 `git diff -- content/posts/chatgpt-project-memory.mdx`로 경로 변경을 확인하세요. `REVIEW`가 남았다면 출력된 경로를 직접 확인해 수정한 뒤 다시 검사하세요. 같은 주제의 글이나 비슷한 사진이 여럿 있을 때는 파일 이름이 맞아도 의도한 대상인지 확인하는 게 좋습니다.
+실습에서 `document.pdf`는 `영수증/2026-11-05_모닝커피_영수증.pdf`로, `file-03.pdf`는 `설명서/민트_미니_커피_그라인더_사용설명서.pdf`로 제안됐습니다. 목록을 보고 맞으면 `y`를 입력하세요. Enter만 누르면 미리보기에서 끝납니다.
 
-## 발행 전 미리보기에서 확인하기
+<Image src="/codex-exec-powershell/pdf-organizer-02-preview.png" alt="PowerShell 실행 결과에서 PDF 세 개의 기존 이름과 정리할 폴더 및 새 이름이 제안된 목록" caption="실제 실행에서 나온 이름 후보입니다. 교통·영수증·설명서 분류와 날짜를 확인한 뒤 적용합니다." />
 
-평소 쓰는 블로그 미리보기에서 해당 원고를 열고, 대표 이미지가 뜨는지 확인한 뒤 수정한 링크를 직접 눌러보세요. 이번 실습에서는 제목 아래 이미지가 다시 보였고, 링크는 `ChatGPT 대화를 삭제해도 기억이 남는 이유` 글로 연결됐습니다.
+## 3. 정리본 확인하기
 
-<Image src="/codex-exec-powershell/mdx-repair-02-after.png" alt="수정 뒤 채채 테크 미리보기에서 제목 아래 대표 이미지가 표시된 화면" caption="썸네일 경로를 고치자 제목 아래 대표 이미지가 다시 표시됐습니다." />
+`PDF-연습` 안에 생긴 `정리된 PDF`를 열면 `교통`, `영수증`, `설명서` 폴더에 새 이름으로 복사된 문서가 있습니다. **기존 파일은 원래 이름으로 남아 있어요.** 같은 이름의 다른 문서가 있으면 정리본에 `_2`처럼 번호가 붙습니다.
 
-<Image src="/codex-exec-powershell/mdx-repair-03-link.png" alt="수정된 내부 링크에서 열린 채채 테크의 ChatGPT 메모리 삭제 안내 글" caption="링크를 눌러 기존 ChatGPT 메모리 삭제 안내가 열리는지 확인했습니다." />
+<Image src="/codex-exec-powershell/pdf-organizer-03-after.png" alt="정리된 PDF 폴더의 교통, 설명서, 영수증에 들어간 세 PDF의 실제 파일 이름" caption="적용 뒤 만들어진 폴더와 파일 이름입니다. 열차표는 교통, 구매 영수증은 영수증 폴더에서 찾을 수 있습니다." />
+
+## 4. 새 PDF가 들어오면 같은 명령 다시 쓰기
+
+`추가-실습`에 있는 `download (2).pdf`를 `PDF-연습`에 복사하고 같은 명령을 다시 실행해 보세요. 이미 정리한 문서는 파일 내용으로 알아보고 건너뜁니다. 실습에서는 **새로 넣은 서점 영수증 한 장만** 이름 후보에 나왔습니다.
+
+<Image src="/codex-exec-powershell/pdf-organizer-04-repeat.png" alt="같은 명령을 다시 실행하자 새로 추가한 서점 영수증 한 장만 정리하는 결과" caption="PDF를 한 장 더 넣고 다시 실행한 결과입니다. 새 영수증만 정리됐습니다." />
+
+자기 문서에 쓰려면 마지막 폴더 이름을 `"$HOME\Downloads\정리할 PDF"`처럼 실제 경로로 바꾸세요. 스크립트는 지정한 폴더 바로 아래의 PDF를 한 번에 최대 20개씩 확인합니다. **이름을 정할 때 각 PDF 앞 두 페이지에서 뽑은 텍스트 일부가 Codex에 전달되니**, 먼저 정리해도 되는 문서만 한 폴더에 모으세요. 이미지로만 된 스캔이나 잠긴 PDF는 `확인 필요`에 표시됩니다.
+
+`codex exec`는 문서별 새 이름과 분류를 반환합니다. 스크립트가 그 목록을 보여주고, 확인한 항목을 새 이름으로 복사합니다. [실행 파일 코드 보기](https://github.com/c2-house/chaechae.life/blob/main/public/downloads/codex-exec-powershell/organize-pdfs.py) · [OpenAI 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode) · [pypdf 텍스트 추출 안내](https://pypdf.readthedocs.io/en/stable/user/extract-text.html)
