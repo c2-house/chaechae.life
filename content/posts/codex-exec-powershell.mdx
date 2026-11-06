@@ -1,0 +1,138 @@
+---
+title: "Codex CLI로 Git 변경 보고서 자동화하기"
+description: "Windows PowerShell에서 codex exec로 Git 변경 내용을 요약하고, 실패했을 때 이전 보고서를 보존하는 예제를 만듭니다."
+author: mingke
+date: 2026/11/06
+tags: [AI, Tools, Git]
+thumbnail: /codex-exec-powershell/00.png
+---
+
+### 목차
+
+## 들어가며
+
+Codex에게 매번 같은 요청을 입력하지 않고 Git 변경 내용을 보고서로 남기려면 어떻게 해야 할까요? `codex exec`를 PowerShell 스크립트에서 호출하면 대화형 화면을 열지 않고 요청을 실행하고, 마지막 답변을 파일로 저장할 수 있습니다.
+
+이번에는 별도의 Git 예제 저장소에 작은 변경을 만든 다음, 읽기 전용 Codex로 한국어 보고서를 만들겠습니다. 생성이 실패하면 이전 보고서는 유지하도록 처리합니다. Windows 11, PowerShell 7과 Codex CLI `0.166.0`에서 확인했습니다. 화면은 PowerShell 프로세스의 실제 출력과 종료 코드를 보여주는 별도 실습 콘솔입니다. 앱과 CLI 중 무엇부터 쓸지 고민된다면 [Codex 앱과 CLI 비교](/blog/codex-app-vs-cli)에서 차이도 확인할 수 있습니다.
+
+## 준비와 작업 범위
+
+Git, PowerShell 7의 `pwsh`, 로그인된 Codex CLI가 필요합니다. PowerShell에서 `git --version`, `pwsh --version`, `codex --version`, `codex login status`로 확인하세요. 설치와 로그인은 [Codex CLI 공식 안내](https://developers.openai.com/codex/cli)를 참고합니다. ChatGPT 로그인은 계정의 사용 한도를 따르고 API 키 사용은 별도 과금될 수 있습니다.
+
+아래 예제는 **새 빈 폴더**에서만 실행하세요. 예를 들어 PowerShell에서 빈 폴더를 만들고 그 안으로 이동한 다음, 각 코드 블록을 설명된 파일명으로 저장합니다. `setup-demo.ps1`은 같은 위치에 `demo workspace`라는 Git 저장소를 새로 만들고 커밋하므로 기존 프로젝트에 적용하면 안 됩니다. Git 작성자 설정은 이 예제 저장소에만 적용합니다.
+
+Codex는 작업에 필요한 파일 내용을 서비스에 보낼 수 있으므로 비밀키나 공개하면 안 되는 내용은 실습에 넣지 마세요. `read-only`는 Codex가 실행하는 명령의 파일 쓰기 범위를 제한하는 것이지, 결과의 정확성이나 데이터 비공개를 보증하지 않습니다. 스크립트가 보고서 파일을 저장하는 작업은 Codex 밖의 PowerShell이 수행합니다.
+
+## 변경할 샘플 만들기
+
+빈 폴더에 `setup-demo.ps1`을 저장합니다. 첫 줄을 기준 커밋으로 남긴 뒤 두 번째 줄을 추가합니다.
+
+```powershell
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+$ErrorActionPreference = 'Stop'
+$root = Join-Path $PSScriptRoot 'demo workspace'
+New-Item -ItemType Directory -Force -Path $root | Out-Null
+Set-Location -LiteralPath $root
+git init -q
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+git config --local user.name 'Demo'
+git config --local user.email 'demo@example.invalid'
+[IO.File]::WriteAllText((Join-Path $root 'notes.txt'), "First line`n", [Text.UTF8Encoding]::new($false))
+git add notes.txt
+git commit -qm 'baseline'
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+[IO.File]::AppendAllText((Join-Path $root 'notes.txt'), "Second line`n", [Text.UTF8Encoding]::new($false))
+git status --short
+git diff -- notes.txt
+```
+
+파일을 저장한 폴더에서 다음 명령을 실행합니다.
+
+```powershell
+pwsh -NoProfile -File ./setup-demo.ps1
+```
+
+<Image src="/codex-exec-powershell/01-sample.png" alt="PowerShell 실습 콘솔에서 notes.txt에 추가된 Second line과 Git diff 출력" caption="PowerShell 실습 콘솔에 표시된 샘플 변경 내용입니다." />
+
+`M notes.txt`와 `+Second line`을 확인합니다. 줄바꿈 경고가 나타날 수 있지만 위 화면에서는 준비 명령이 종료 코드 0으로 끝났습니다. 이미 만든 폴더에서 준비 스크립트를 다시 실행하지 말고 새 빈 폴더를 사용하세요.
+
+<Ads />
+
+## 보고서 생성 스크립트
+
+같은 폴더에 `report.ps1`을 저장합니다. 먼저 임시 파일에 Codex의 마지막 답변을 받은 뒤, 실행 성공과 파일 내용을 확인했을 때만 `report.md`로 옮깁니다.
+
+```powershell
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+$ErrorActionPreference = 'Stop'
+$repo = Join-Path $PSScriptRoot 'demo workspace'
+$report = Join-Path $PSScriptRoot 'report.md'
+$temp = Join-Path $PSScriptRoot 'report.pending.md'
+if (Test-Path -LiteralPath $temp) { Remove-Item -LiteralPath $temp }
+$prompt = 'Git 저장소에서 추적 중인 파일의 커밋되지 않은 변경을 확인하고, 파일명과 실제 변경 내용을 한국어 마크다운으로 요약하세요. 파일을 수정하지 마세요.'
+& codex exec --sandbox read-only --cd "$repo" --output-last-message "$temp" "$prompt"
+$code = $LASTEXITCODE
+if ($code -ne 0 -or -not (Test-Path -LiteralPath $temp) -or (Get-Item -LiteralPath $temp).Length -eq 0) {
+    Write-Error "보고서 생성 실패 (종료 코드: $code). 이전 report.md는 변경하지 않았습니다." -ErrorAction Continue
+    if ($code -eq 0) { exit 1 } else { exit $code }
+}
+Move-Item -LiteralPath $temp -Destination $report -Force
+Write-Host "보고서 저장: $report"
+```
+
+실행하고 저장된 내용을 확인합니다.
+
+```powershell
+pwsh -NoProfile -File ./report.ps1
+Get-Content -LiteralPath ./report.md -Raw -Encoding utf8
+```
+
+<Image src="/codex-exec-powershell/02-run.png" alt="PowerShell 실습 콘솔에서 보고서 생성 명령과 종료 코드 0을 표시한 화면" caption="PowerShell 실습 콘솔에서 보고서 생성이 완료된 화면입니다. 개인 로컬 경로는 가렸습니다." />
+
+`--cd`는 Codex의 작업 폴더를 지정하고, `--sandbox read-only`는 명령을 읽기 전용으로 제한합니다. `--output-last-message`는 진행 로그가 아니라 마지막 답변을 지정한 파일에 저장합니다. [공식 비대화형 실행 안내](https://learn.chatgpt.com/docs/non-interactive-mode)에서는 진행 상황은 stderr, 마지막 답변은 stdout으로 구분합니다. Codex나 설정에 따라 진행 로그와 답변 문구는 달라질 수 있습니다.
+
+<Image src="/codex-exec-powershell/02-report.png" alt="PowerShell 실습 콘솔에서 report.md의 실제 내용을 출력한 화면" caption="PowerShell 실습 콘솔에서 저장된 보고서를 읽은 결과입니다. notes.txt의 추가 내용과 스테이징 상태가 요약됐습니다." />
+
+화면에서는 보고서 확인을 위해 `Get-Content`를 담은 별도 `show-report.ps1`을 실행했습니다. 독자는 위의 `Get-Content` 명령을 그대로 사용하면 됩니다. 결과가 그럴듯해도 원본 `git diff`와 비교해 빠진 변경이나 잘못된 설명이 없는지 확인하세요. 프롬프트가 지정한 범위는 추적 중인 파일이므로 새로 만든 미추적 파일은 이 예제의 보고 대상이 아닙니다.
+
+<Ads />
+
+## 실패와 이전 보고서 확인
+
+실패 실험은 방금 만든 예제에서만 진행합니다. 다음을 `failure-test.ps1`로 저장하면 예제 저장소를 잠시 다른 이름으로 옮겨 보고서 실행을 실패시키고, `finally`에서 원래 이름으로 복구합니다. 전후 SHA-256 해시가 같으면 이전 보고서의 내용이 유지된 것입니다.
+
+```powershell
+[Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+$ErrorActionPreference = 'Stop'
+$root = $PSScriptRoot
+$repo = Join-Path $root 'demo workspace'
+$hidden = Join-Path $root 'demo workspace unavailable'
+$report = Join-Path $root 'report.md'
+$before = (Get-FileHash -Algorithm SHA256 -LiteralPath $report).Hash
+if (Test-Path -LiteralPath $hidden) { throw 'Test path already exists' }
+Move-Item -LiteralPath $repo -Destination $hidden
+try {
+    & pwsh -NoProfile -File (Join-Path $root 'report.ps1')
+    $code = $LASTEXITCODE
+} finally {
+    Move-Item -LiteralPath $hidden -Destination $repo
+}
+$after = (Get-FileHash -Algorithm SHA256 -LiteralPath $report).Hash
+Write-Host "Failure exit code: $code"
+Write-Host "Previous report unchanged: $($before -eq $after)"
+if ($code -eq 0 -or $before -ne $after) { exit 1 }
+```
+
+```powershell
+pwsh -NoProfile -File ./failure-test.ps1
+```
+
+<Image src="/codex-exec-powershell/03-failure.png" alt="PowerShell 실습 콘솔에서 보고서 생성 실패와 이전 보고서 해시 일치를 확인한 화면" caption="PowerShell 실습 콘솔에서 보고서 생성은 종료 코드 1로 실패했고, 실패 확인 스크립트는 이전 보고서가 같음을 확인해 종료 코드 0으로 끝났습니다." />
+
+`Failure exit code: 1`은 내부 보고서 실행의 실패이고, 화면 마지막의 종료 코드 0은 **실패를 예상대로 확인한 테스트 스크립트**의 성공입니다. 테스트가 비정상 종료되어 폴더 이름이 복구되지 않았다면 두 폴더의 상태를 먼저 확인하고 예제 폴더만 원래 이름으로 되돌리세요.
+
+## 반복 실행 시 주의점
+
+`report.ps1`을 다시 실행하면 현재 추적 파일의 변경을 새로 요약해 `report.md`를 교체합니다. 모델 답변은 매번 달라질 수 있고 종료 코드 0과 비어 있지 않은 파일만으로 내용의 정확성까지 확인되지는 않습니다. 실패한 실행에서 임시 파일이 남을 수 있으며 다음 실행 전에 제거합니다.
+
+정기 실행에 연결하려면 먼저 같은 사용자 계정과 작업 경로에서 수동 실행을 확인하고, 스케줄러의 실행 계정·인증·작업 폴더·실패 알림을 별도로 점검하세요. 이 예제는 예약을 만들거나 알림을 보내지는 않습니다. 동시에 여러 번 실행하면 같은 임시 파일과 보고서를 공유하므로 중복 실행을 막거나 실행별 경로를 따로 지정해야 합니다.
