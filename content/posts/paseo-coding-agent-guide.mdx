@@ -1,6 +1,6 @@
 ---
-title: "Paseo 사용법: 코딩 에이전트 작업을 한 화면에서 관리하기"
-description: "Paseo의 작업 공간과 로컬 실행 방식을 살펴보고 Windows에서 Codex에 파일 수정을 요청한 결과를 확인합니다."
+title: "Paseo 사용법: Windows에서 Codex 연결하고 첫 파일 수정하기"
+description: "Paseo에 Codex를 연결하고 연습용 README를 수정하는 과정을 Windows 실제 화면으로 설명합니다. 설치, 프로젝트 등록, 첫 요청, 변경 파일 확인까지 따라 해보세요."
 author: mingke
 date: 2026/11/17
 tags: [AI, Tools]
@@ -9,51 +9,119 @@ thumbnail: /paseo-coding-agent-guide/00.png
 
 ### 목차
 
-## 들어가며
+Codex에 파일 수정을 맡긴 뒤, 작업 대화와 바뀐 파일을 한곳에서 확인하고 싶을 때가 있습니다. **Paseo는 Codex나 Claude Code 같은 코딩 에이전트를 화면에서 실행하고, 여러 작업의 진행 상황과 결과를 살펴보는 앱**입니다.
 
-Codex나 Claude Code를 쓰다 보면 작업마다 터미널을 열고 어느 에이전트가 어떤 파일을 고쳤는지 오가며 확인해야 합니다. Paseo는 이런 코딩 에이전트를 한 화면에서 실행하고 작업 내용을 살펴보는 개발 환경입니다. 모델 자체가 아니라 **기존 에이전트를 관리하는 인터페이스**에 가깝습니다.
+이 글에서는 Windows에서 Paseo에 Codex를 연결하고, 연습용 `README.md`의 목록을 수정해봅니다. 마지막에는 Paseo의 `변경 사항`에서 실제로 추가된 줄을 확인합니다. 화면은 Paseo 0.16.1 기준입니다.
 
-Windows에서 Paseo 0.16.1을 설치하고 별도의 연습 저장소에 Codex를 연결해 README를 수정해봤습니다. 아래 화면은 그 과정에서 직접 캡처한 것입니다. 메뉴와 사용 가능한 모델은 버전과 연결된 계정에 따라 다를 수 있습니다.
+## 대화와 파일을 함께 보는 작업 공간
 
-## Paseo의 작업 방식
+Paseo에서 작업 하나를 열면 에이전트와 나눈 대화, 프로젝트의 파일, 파일 수정 내역을 오가며 볼 수 있습니다. 아래 화면은 여행 준비 목록을 수정한 뒤의 모습입니다. 가운데에는 Codex의 답변이 있고, 오른쪽에는 바뀐 `README.md`와 추가된 줄 수가 표시됩니다.
 
-Paseo는 에이전트를 관리하는 데몬과 여기에 연결하는 데스크톱·모바일·웹·CLI 클라이언트로 구성됩니다. 데몬은 작업을 실제로 수행할 컴퓨터에서 돌아갑니다. 데스크톱 앱에는 데몬이 포함되어 앱 실행 시 자동으로 시작됩니다. 반면 원격 컴퓨터를 사용하려면 해당 기기의 데몬과 연결을 따로 구성해야 합니다.
+<Image src="/paseo-coding-agent-guide/04-overview.png" alt="Paseo 가운데의 Codex 대화와 오른쪽 변경 사항 패널에 표시된 README.md 및 추가된 세 줄" caption="대화 옆에서 변경된 파일을 확인할 수 있습니다. +3은 세 줄이 추가됐다는 뜻입니다." />
 
-프로젝트는 작업할 폴더이고 워크스페이스는 그 프로젝트에서 에이전트와 작업을 이어가는 공간입니다. 화면에서 에이전트 대화, 파일 편집과 변경 내용, 터미널을 살펴볼 수 있습니다. 공식 문서에는 여러 에이전트를 각각 Git worktree에서 병렬 실행하는 흐름도 안내되어 있습니다. Worktree는 하나의 Git 저장소에서 별도의 작업 디렉터리를 만드는 기능입니다. 이번 실습에서는 단순한 **로컬 작업**을 선택했기 때문에 원래 연습 폴더에 변경이 생겼습니다.
+처음에는 다음 세 가지를 구분하면 충분합니다.
+
+| 화면 용어 | 의미 | 이번 실습에서 선택할 것 |
+| --- | --- | --- |
+| 프로젝트 | Paseo에 등록한 작업 폴더 | `paseo-practice` |
+| 워크스페이스 | 그 폴더에서 특정 작업을 진행하는 공간 | README 수정 작업 하나 |
+| 호스트 | 파일과 프로그램을 실행하는 컴퓨터 | 지금 사용하는 Windows PC |
+
+여러 작업을 진행하면 왼쪽 목록에서 작업 공간을 바꿔가며 확인할 수 있습니다. 휴대전화에서 같은 컴퓨터의 작업에 연결하는 기능도 있지만, 먼저 PC에서 파일 수정 한 번을 끝내보는 편이 이해하기 쉽습니다.
+
+## Paseo 설치와 Codex 연결
+
+준비할 것은 **Paseo 데스크톱 앱과 로그인된 Codex CLI**입니다. CLI는 터미널에서 `codex`라는 명령으로 실행하는 프로그램을 뜻합니다. Paseo가 이 프로그램을 찾아 작업을 시작합니다.
+
+1. [Paseo 다운로드 페이지](https://paseo.sh/download)의 Windows 항목에서 PC에 맞는 설치 파일을 받습니다. 일반적인 Intel·AMD PC는 `Intel / x64`, Windows ARM 기기는 `ARM64`를 선택합니다.
+2. 내려받은 설치 파일을 실행하고 Paseo를 엽니다. 운영체제의 설치 경고가 나오면 표시된 출처를 확인한 뒤 진행 여부를 결정하세요.
+3. [Node.js의 LTS 버전](https://nodejs.org/en/download)을 설치합니다. 아래의 `npm` 명령은 Node.js에 포함된 패키지 설치 도구를 사용합니다. 다음 실습의 변경 비교를 위해 [Git for Windows](https://git-scm.com/install/windows)도 준비합니다.
+
+<Image src="/paseo-coding-agent-guide/05-download.png" alt="Paseo 공식 다운로드 페이지의 Windows Intel x64와 ARM64 설치 파일 선택" caption="Windows용 설치 파일은 PC의 프로세서 종류에 맞춰 고릅니다." />
+
+Windows PowerShell을 열고 다음 명령을 실행합니다. 이미 Codex CLI를 설치했다면 `codex --version`으로 버전이 표시되는지 확인하고 로그인 단계로 넘어가면 됩니다.
+
+```powershell
+npm install -g @openai/codex
+codex --version
+codex login
+```
+
+`codex login`을 실행하면 브라우저에서 계정 로그인을 진행합니다. ChatGPT 계정으로 로그인했다면 해당 요금제의 Codex 이용 범위와 한도가 적용됩니다. API 키로 인증한 경우에는 OpenAI Platform의 사용량 과금이 적용됩니다. Paseo 자체는 무료·오픈소스이며, Codex 사용에 별도의 Paseo 요금을 더하지 않습니다. [설치·인증 안내](https://developers.openai.com/codex/cli/), [Paseo의 Codex 연결·비용 설명](https://paseo.sh/docs/codex)
+
+로그인을 마치면 Paseo를 완전히 종료했다가 다시 엽니다. 왼쪽 아래 톱니바퀴에서 `설정 → 호스트 아래의 프로바이더`로 들어가 `Codex` 상태를 확인하세요.
+
+<Image src="/paseo-coding-agent-guide/06-codex-ready.png" alt="Paseo 프로바이더 목록에서 Codex가 초록색 점과 사용 가능 상태로 표시된 화면" caption="Codex에 사용 가능이 표시되면 Paseo가 설치된 프로그램을 찾은 상태입니다." />
+
+Paseo 데스크톱 앱은 작업을 실행하는 백그라운드 프로그램도 함께 시작합니다. 공식 문서에서 말하는 `데몬`이 이 프로그램입니다. 이 PC에서 시작하는 실습은 앱 설치 경로를 따르면 됩니다. 원격 기기는 그 기기에도 실행 환경을 준비해야 합니다. [Paseo 시작 안내](https://paseo.sh/docs)
 
 <Ads />
 
-## 설치와 준비
+## 연습 파일과 프로젝트 등록
 
-[Paseo 다운로드 페이지](https://paseo.sh/download) 또는 [공식 릴리스](https://github.com/getpaseo/paseo/releases)에서 운영체제에 맞는 앱을 받습니다. 이번에는 Windows x64용 0.16.1을 사용했습니다. 해당 설치 파일은 릴리스에 게시된 SHA-256과 일치했지만 Windows 서명 확인에서는 서명이 없었습니다. **해시 일치는 게시자 서명을 대신하지 않습니다.** 설치 여부는 출처와 운영체제의 경고를 확인한 뒤 판단해야 합니다.
+파일 탐색기에서 새 연습 폴더 `paseo-practice`를 만듭니다. 같은 이름의 폴더를 이미 쓰고 있다면 `paseo-practice-2`처럼 다른 이름을 고르세요. 폴더 안에 아래 내용의 `README.md`를 저장합니다. 메모장으로 만들 때는 파일 이름이 `README.md.txt`가 되지 않도록 확인합니다.
 
-Paseo에는 코딩 에이전트가 포함되어 있지 않습니다. 사용할 공급자의 CLI를 별도로 설치하고 해당 공급자의 인증을 마쳐야 합니다. 이번 환경에서는 기존에 로그인된 Codex CLI 0.166.0을 사용했습니다. 계정 연결이나 요금제 가입 과정은 이 실습에서 새로 진행하지 않았습니다.
+```markdown
+# 여행 준비 체크리스트
 
-먼저 기존 프로젝트 대신 시험용 폴더와 Git 저장소를 준비합니다. 아래 예제는 `README.md`에 여행 준비 목록이 있고, 원격 저장소는 연결하지 않은 상태에서 시작했습니다. 실제 프로젝트라면 작업 전에 변경사항과 백업을 확인하세요.
+작은 실습용 프로젝트입니다.
 
-## 워크스페이스와 첫 요청
+## 준비물
 
-Paseo에서 **프로젝트 추가**로 연습 폴더를 선택하고 **새 워크스페이스**를 엽니다. 프로젝트와 실행할 호스트를 확인한 뒤 로컬을 선택합니다. 입력창 아래에서는 에이전트 모델과 권한 설정을 확인할 수 있습니다.
+- 여권 확인
+- 교통편 확인
+- 숙소 주소 저장
+```
 
-<Image src="/paseo-coding-agent-guide/01-workspace.png" alt="Paseo의 새 워크스페이스에서 연습 프로젝트와 로컬 작업을 선택한 화면" caption="연습 프로젝트의 새 워크스페이스 화면입니다. 권한 설정은 요청 전 다시 확인합니다." />
+수정 전후를 비교할 수 있도록 지금 파일을 Git에 한 번 기록합니다. 파일 탐색기에서 이 폴더를 연 다음 `터미널에서 열기`를 선택하고 아래 명령을 순서대로 실행하세요.
 
-위 캡처는 설정을 조정하는 중의 화면입니다. 실제 요청 시에는 Codex의 GPT-6.1-Sol과 **Default permissions**를 선택했습니다. 권한 모드는 에이전트가 파일과 명령에 접근하는 방식에 영향을 주므로 화면의 설명을 확인하고 필요한 범위만 허용하세요. 프롬프트에 제한을 적는 것만으로 보안 경계가 보장되는 것은 아닙니다.
+```powershell
+git init
+git add README.md
+git -c user.name="Paseo Practice" -c user.email="practice@example.invalid" commit -m "Add practice checklist"
+```
 
-다음 요청을 입력하고 전송했습니다.
+마지막 명령이 완료되면 현재 README가 비교 기준으로 저장됩니다. `-c`로 적은 이름과 이메일은 이 실습용 커밋 한 번에만 적용됩니다. 실습은 컴퓨터 안에서 진행하며 GitHub 연결은 필요하지 않습니다.
+
+Paseo 왼쪽 아래의 폴더·더하기 아이콘인 `프로젝트 추가`를 누릅니다. `Browse`를 선택하고 방금 만든 폴더를 엽니다.
+
+<Image src="/paseo-coding-agent-guide/07-project.png" alt="Paseo의 Add project 창에 Search for directory, Browse, Clone from GitHub, New directory가 표시된 화면" caption="이미 만든 연습 폴더를 등록할 때는 Browse를 선택합니다." />
+
+등록 후 왼쪽 프로젝트 목록에 `paseo-practice`가 나타나면 다음 단계로 넘어갑니다. 여기서는 그 폴더의 README를 수정하게 됩니다.
+
+## 첫 작업 공간과 수정 요청
+
+왼쪽 위 `새 워크스페이스`를 누르고 입력창 위의 프로젝트를 `paseo-practice`로 선택합니다. 가운데 컴퓨터 이름은 작업을 실행할 호스트입니다. 지금 파일을 만든 PC가 선택됐는지 확인하세요.
+
+<Image src="/paseo-coding-agent-guide/08-workspace.png" alt="Paseo 새 워크스페이스의 프로젝트, 호스트, 로컬 선택과 Codex 모델 및 Default permissions 입력창" caption="입력창 위에서 프로젝트와 작업 컴퓨터를, 아래에서 모델과 권한을 확인합니다." />
+
+폴더 아이콘 옆의 `로컬`은 **등록한 폴더를 그대로 수정하는 선택**입니다. 이 실습에서는 `로컬`을 사용합니다. `새 워크트리`는 별도 폴더와 Git 브랜치를 만들어 작업할 때 쓰는 선택입니다. 여러 작업을 서로 다른 파일 공간에서 진행하고 싶을 때 사용할 수 있습니다. [작업 공간 설명](https://paseo.sh/docs/workspaces)
+
+<Image src="/paseo-coding-agent-guide/09-local-choice.png" alt="작업 공간의 파일 격리 선택 메뉴에서 로컬에 체크 표시가 있고 아래에 새 워크트리가 보이는 화면" caption="이번 실습에서는 로컬을 선택합니다." fullWidth={false} />
+
+입력창 아래 모델 이름을 눌러 Codex의 사용 가능한 모델을 고릅니다. 캡처에서는 `GPT-6.1-Sol`을 사용했습니다. 계정과 버전에 따라 목록은 달라질 수 있습니다. 권한은 `Default permissions`로 두고, 작업 중 승인을 요청하면 대상 파일과 실행할 명령을 읽고 결정합니다.
+
+다음 문장을 입력하고 오른쪽 전송 버튼을 누릅니다.
 
 ```text
 README.md의 여행 준비물에 출발 전 확인할 항목 3개를 추가하고 변경 내용을 설명해 주세요. 이 저장소 밖은 수정하지 말고 네트워크 접속이나 Git 커밋과 푸시는 하지 마세요.
 ```
 
-<Image src="/paseo-coding-agent-guide/02-request.png" alt="Paseo 입력창에 README 수정을 요청한 한국어 프롬프트" caption="연습 저장소 안에서만 작업하고 커밋과 푸시는 하지 않도록 요청했습니다." />
+<Image src="/paseo-coding-agent-guide/10-request.png" alt="README 여행 준비물에 항목 세 개를 추가해 달라는 요청과 Default permissions가 표시된 Paseo 입력창" caption="바꿀 파일과 원하는 결과를 함께 적어 요청합니다." />
 
-작업 중 승인 요청이 표시된다면 어떤 명령이나 파일 접근을 허용하는지 먼저 살펴보세요. 예상 범위와 다르면 승인하지 말고 요청을 좁히거나 작업을 중단할 수 있습니다.
+이 문장은 README 편집 범위를 정하기 위한 예제입니다. 요청에 넣은 `네트워크 접속` 제한은 작업 중 웹 조회나 다운로드 같은 행동을 뜻합니다. 모델의 답변을 받는 과정에는 서비스와의 통신이 필요합니다. 실제 실행 허용 범위는 에이전트의 권한 설정에서도 확인하세요.
+
+전송 후 작업이 진행되고 응답이 끝나면, 이제 파일에 반영된 내용을 확인할 차례입니다.
 
 <Ads />
 
-## 변경 결과 확인
+## README 변경 내용 확인
 
-응답이 끝나면 대화에서 변경 설명을 읽고 실제 파일의 차이도 확인합니다. 이번 실행에서는 `README.md`의 기존 준비물 세 항목 아래에 다음 세 항목이 추가됐습니다.
+Paseo 오른쪽 위의 `사이드 패널`을 열거나 `Ctrl+E`를 누릅니다. 오른쪽 `변경 사항`에서 `README.md`를 선택하면 `Diff` 탭에 파일의 차이가 표시됩니다. Diff는 수정 전후의 차이를 보여주는 화면입니다.
+
+<Image src="/paseo-coding-agent-guide/11-file-diff.png" alt="Paseo의 실제 README diff에 기존 준비물 세 줄 아래 날씨 확인, 충전 확인, 가스 밸브와 문단속 확인 세 줄이 녹색으로 추가된 화면" caption="녹색 배경과 + 표시가 이번 작업에서 추가된 세 줄입니다." />
+
+이 실행에서는 다음 세 항목이 추가됐습니다. 같은 요청을 다시 실행하면 표현이나 항목이 달라질 수 있습니다.
 
 ```diff
 +- 여행지 날씨 및 기온 확인
@@ -61,16 +129,38 @@ README.md의 여행 준비물에 출발 전 확인할 항목 3개를 추가하�
 +- 출발 전 가스 밸브와 문단속 확인
 ```
 
-<Image src="/paseo-coding-agent-guide/03-result.png" alt="Paseo에서 README 수정 결과를 설명하는 Codex 응답" caption="작업 응답과 별도로 Git diff에서도 추가된 세 줄을 확인했습니다." />
+화면에서 세 가지를 확인하면 됩니다.
 
-독자도 프로젝트 폴더에서 `git diff -- README.md`를 실행하면 저장된 파일의 이전 상태와 현재 상태를 비교할 수 있습니다. 이번 연습 저장소에는 원격이 없었고 초기 커밋 이후 새 커밋 없이 README만 수정된 상태였습니다. 에이전트의 설명만 믿고 끝내기보다 실제 변경 파일과 내용을 검토하는 것이 좋습니다.
+- **파일 이름**이 요청한 `README.md`인지 확인합니다.
+- **기존 내용**인 여권·교통편·숙소 주소 목록이 유지됐는지 읽습니다.
+- **추가된 내용**이 요청한 세 항목인지 확인합니다. `+3 -0`은 세 줄 추가, 삭제된 줄 없음이라는 뜻입니다.
 
-## 원격 연결과 비용
+추가로 터미널에서 확인하려면 연습 폴더 안에서 다음 명령을 실행합니다.
 
-휴대전화나 다른 컴퓨터에서 보려면 작업을 실행하는 호스트에 데몬이 필요합니다. [공식 시작 안내](https://paseo.sh/docs)에 따르면 페어링용 암호화 릴레이를 사용할 수도 있고 직접 연결이나 VPN을 사용할 수도 있습니다. QR 코드와 연결 정보는 외부에 공개하지 마세요. 원격 연결이 곧 클라우드에서 코드가 실행된다는 뜻은 아닙니다. 파일과 명령은 연결된 데몬 호스트의 권한 범위에서 처리됩니다. 이번 실습에서는 원격 연결을 설정하지 않았습니다.
+```powershell
+git diff -- README.md
+```
 
-Paseo와 연결한 에이전트의 과금은 구분해서 봐야 합니다. Codex 사용 가능 여부와 한도는 연결한 OpenAI 계정 및 사용 방식에 따르며 구독에 포함된 사용과 API 사용은 별개입니다. 현재 조건은 [OpenAI Codex 안내](https://openai.com/codex/)와 계정의 사용량 화면에서 확인하세요. Paseo를 설치했다는 이유만으로 모델 사용량이 무제한이 되지는 않습니다.
+여기까지 왔다면 Paseo에서 Codex를 실행하고, 응답과 실제 파일 변경을 확인하는 첫 작업을 끝낸 것입니다. 이 실습은 수정 내용을 살펴보는 데서 마칩니다. 화면의 `커밋` 버튼은 Git에 변경을 새로 기록할 때 사용하는 별도 단계입니다.
 
-여러 작업을 한곳에서 확인하고 변경 내용을 검토하고 싶다면 Paseo가 유용한 선택지입니다. 다만 에이전트의 권한·비용은 여전히 직접 확인해야 하고, 이미 단일 터미널 작업으로 충분하다면 새로운 관리 화면이 꼭 필요하지는 않습니다.
+## Codex 연결 문제 해결
 
-참고: [Paseo 공식 문서](https://paseo.sh/docs), [프로젝트 저장소](https://github.com/getpaseo/paseo). 썸네일의 로고는 [Paseo v0.16.1 공식 원본](https://github.com/getpaseo/paseo/blob/v0.16.1/packages/website/public/logo.svg)을 제품 식별 목적으로 사용했습니다. 프로젝트의 [라이선스 전문](/images/blog/paseo-coding-agent-guide/LICENSE-PASEO.txt)은 별도로 보존했습니다.
+모델 목록에 Codex가 보이지 않거나 `사용 가능` 상태가 나오지 않으면, 먼저 PowerShell에서 다음을 확인합니다.
+
+```powershell
+where.exe codex
+codex --version
+codex login status
+```
+
+첫 명령은 설치 위치를, 두 번째는 실행 가능한 버전을, 마지막은 로그인 상태를 확인합니다. 명령을 찾을 수 없으면 Codex CLI 설치를 확인하고, 로그인이 필요하다고 나오면 `codex login`을 실행합니다. PowerShell에서 `npm.ps1` 실행이 차단됐다는 오류가 나오면 설치 명령을 `npm.cmd install -g @openai/codex`로 실행할 수 있습니다.
+
+설치나 로그인을 마친 뒤 Paseo를 다시 엽니다. `설정 → 프로바이더 → Codex`의 상세 창에서 `새로고침`을 누르면 현재 모델 목록을 다시 확인할 수 있습니다.
+
+<Image src="/paseo-coding-agent-guide/12-codex-refresh.png" alt="Paseo Codex 상세 창의 사용 가능한 모델 목록과 오른쪽 아래 새로고침 버튼" caption="연결을 준비한 뒤 Codex 상세 창에서 모델 목록을 새로고침합니다." />
+
+프로바이더의 사용 가능 표시는 프로그램 감지를 확인하는 단계입니다. 실제 요청에서 인증·사용 한도 오류가 나오면 오류 문구에 따라 계정 상태도 확인해야 합니다. [공식 연결 문제 안내](https://paseo.sh/docs/codex)
+
+첫 파일 수정을 끝낸 다음에는 다른 작업 공간을 열어 별개의 일을 맡겨볼 수 있습니다. PC 밖에서 작업을 확인하고 싶다면 [공식 원격 연결 안내](https://paseo.sh/docs/connectivity)를 이어서 보세요. 원격으로 연결할 때도 파일 수정은 연결된 작업 컴퓨터에서 실행됩니다.
+
+썸네일 로고는 [Paseo 공식 원본](https://github.com/getpaseo/paseo/blob/v0.16.1/packages/website/public/logo.svg)을 사용했습니다. 제품 화면은 Windows의 Paseo 0.16.1 실습 화면이며, [프로젝트 라이선스](/images/blog/paseo-coding-agent-guide/LICENSE-PASEO.txt)를 함께 제공합니다.
