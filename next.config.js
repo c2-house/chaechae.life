@@ -3,6 +3,15 @@ const { withContentlayer } = require('next-contentlayer');
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: '/blog/grok-bot-supabase-used-cars',
+        destination: '/blog/grok-bot-guide',
+        permanent: true,
+      },
+    ];
+  },
   images: {
     minimumCacheTTL: 2678400, // 31 days
     remotePatterns: [
