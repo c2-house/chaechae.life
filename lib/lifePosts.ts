@@ -1,5 +1,5 @@
 import { unstable_cache } from 'next/cache';
-import type { Post } from 'contentlayer/generated';
+import type { Post } from '@/lib/content';
 import { supabase } from './supabase';
 
 export type BlogPost = Post | LifePost;

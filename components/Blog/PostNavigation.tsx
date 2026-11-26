@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { Post } from 'contentlayer/generated';
+import type { Post } from '@/lib/content';
 import { ChevronRightIcon } from '@/public/icons';
 
 interface Props {

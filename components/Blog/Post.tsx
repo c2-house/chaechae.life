@@ -1,11 +1,14 @@
 import Image from 'next/image';
 import dayjs from 'dayjs';
-import { type Post } from 'contentlayer/generated';
-import Mdx from '../Mdx';
+import type { Post } from '@/lib/content';
+import { loadPostBody } from '@/lib/mdx';
+import { mdxComponents } from '@/mdx-components';
 import { Tags } from './Tags';
 import InarticleAds from '../AdSense/InarticleAds';
 
-const Post = ({ post }: { post: Post }) => {
+const Post = async ({ post }: { post: Post }) => {
+  const Body = await loadPostBody(post.source);
+
   return (
     <article className="prose prose-slate mx-auto py-6 lg:prose-lg prose-figcaption:text-sm md:py-10">
       <header>
@@ -28,7 +31,7 @@ const Post = ({ post }: { post: Post }) => {
       />
       <InarticleAds />
       <section>
-        <Mdx code={post.body.code} />
+        <Body components={mdxComponents} />
       </section>
       <InarticleAds />
     </article>

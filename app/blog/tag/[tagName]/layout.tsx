@@ -4,15 +4,14 @@ import { tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
 interface Props {
-  params: {
-    tagName: string;
-  };
+  params: Promise<{ tagName: string }>;
 }
 
 export const generateMetadata = async (
-  { params: { tagName } }: Props,
+  { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
+  const { tagName } = await params;
   const tag = tags.find((tag) => slugify(tag) === decodeURIComponent(tagName));
   const title = `${tag} - ${baseTitle}`;
   const description = (await parent).description || '';

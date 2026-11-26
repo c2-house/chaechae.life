@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { allProjects } from 'contentlayer/generated';
+import { allProjects } from '@/lib/content';
 import ProjectListItem from '@/components/Projects/ProjectListItem';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 import { WebsiteIcon } from '@/public/icons';

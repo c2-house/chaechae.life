@@ -1,14 +1,13 @@
 import { Metadata } from 'next';
-import { allProjects } from 'contentlayer/generated';
+import { allProjects } from '@/lib/content';
 import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
-  params: {
-    name: string;
-  };
+  params: Promise<{ name: string }>;
 }
 
-export const generateMetadata = async ({ params: { name } }: Props): Promise<Metadata> => {
+export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
+  const { name } = await params;
   const project = allProjects.find((project) => project.name === name);
 
   if (!project) return {};

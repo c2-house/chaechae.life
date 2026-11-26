@@ -1,5 +1,6 @@
-import type { Project } from 'contentlayer/generated';
-import Mdx from '@/components/Mdx';
+import type { Project } from '@/lib/content';
+import { loadProjectBody } from '@/lib/mdx';
+import { mdxComponents } from '@/mdx-components';
 import InarticleAds from '@/components/AdSense/InarticleAds';
 import EvCharge from '@/components/Projects/EvCharge';
 import MessageBot from '@/components/Projects/MessageBot';
@@ -19,7 +20,8 @@ const getContent = (name: string) => {
   }[name];
 };
 
-const ProjectDescription = ({ project, name }: Props) => {
+const ProjectDescription = async ({ project, name }: Props) => {
+  const Body = await loadProjectBody(project.source);
   const onGoing = project.name === 'wedding-card';
 
   return (
@@ -37,7 +39,7 @@ const ProjectDescription = ({ project, name }: Props) => {
       <hr className="!my-6" />
       <InarticleAds />
       <section>
-        <Mdx code={project.body.code} />
+        <Body components={mdxComponents} />
         {getContent(name)}
       </section>
       <InarticleAds />
