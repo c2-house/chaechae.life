@@ -18,7 +18,7 @@ const date = z
       [year, month.padStart(2, '0'), day.padStart(2, '0')].join('-'),
     ),
   )
-  .pipe(z.union([z.string().date(), z.string().datetime({ offset: true })]))
+  .pipe(z.union([z.iso.date(), z.iso.datetime({ offset: true })]))
   .transform((value) => new Date(value).toISOString());
 
 const base = z.object({
@@ -39,7 +39,7 @@ const projectFields = base.extend({
   mockupType: z.enum(['mobile', 'desktop']).optional(),
 });
 
-function readCollection<S extends z.ZodTypeAny>(
+function readCollection<S extends z.ZodType>(
   directory: string,
   context: MetadataContext,
   schema: S,
