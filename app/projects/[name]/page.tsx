@@ -1,19 +1,18 @@
 import { notFound } from 'next/navigation';
-import { allProjects } from 'contentlayer/generated';
+import { allProjects } from '@/lib/content';
 import ProjectDescription from '@/components/Projects/ProjectDescription';
 import SideStickyAds from '@/components/AdSense/SideStickyAds';
 
 interface Props {
-  params: {
-    name: string;
-  };
+  params: Promise<{ name: string }>;
 }
 
 export const generateStaticParams = async () => {
   return allProjects.map((project) => ({ name: project.name }));
 };
 
-const Page = ({ params: { name } }: Props) => {
+const Page = async ({ params }: Props) => {
+  const { name } = await params;
   const project = allProjects.find((project) => project.name === name);
 
   if (!project) return notFound();

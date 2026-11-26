@@ -1,6 +1,8 @@
 import RSS, { FeedOptions } from 'rss';
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import { title, description } from '@/app/shared-metadata';
+
+export const dynamic = 'force-static';
 
 const host =
   process.env.NODE_ENV === 'production' ? 'https://chaechae.life' : 'http://localhost:3000';
@@ -17,7 +19,7 @@ export async function GET() {
 
   const feed = new RSS(feedOptions);
 
-  allPosts.map((post) => {
+  for (const post of allPosts) {
     feed.item({
       title: post.title,
       description: post.description,
@@ -26,7 +28,7 @@ export async function GET() {
       categories: post.tags,
       author: post.author,
     });
-  });
+  }
 
   return new Response(feed.xml({ indent: true }), {
     headers: {

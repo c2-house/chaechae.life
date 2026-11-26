@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import Post from '@/components/Blog/Post';
 import PostNavigation from '@/components/Blog/PostNavigation';
 import Comments from '@/components/Blog/Comments';
@@ -7,21 +7,20 @@ import Sidebar from '@/components/Layout/Sidebar';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
 
 interface Props {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export const generateStaticParams = async () => {
   return allPosts.map((post) => ({ slug: post.slug }));
 };
 
-const PostPage = ({ params: { slug } }: Props) => {
-  const currentIndex = allPosts
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .findIndex((post) => post.slug === slug);
-
-  const post = allPosts[currentIndex];
+const PostPage = async ({ params }: Props) => {
+  const { slug } = await params;
+  const posts = [...allPosts].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+  const currentIndex = posts.findIndex((post) => post.slug === slug);
+  const post = posts[currentIndex];
 
   if (!post) notFound();
 
@@ -31,7 +30,7 @@ const PostPage = ({ params: { slug } }: Props) => {
       <main className="min-h-screen flex-1">
         <section className="py-5">
           <Post post={post} />
-          <PostNavigation allPosts={allPosts} currentIndex={currentIndex} />
+          <PostNavigation allPosts={posts} currentIndex={currentIndex} />
           <Comments />
         </section>
         <ResponsiveAds />

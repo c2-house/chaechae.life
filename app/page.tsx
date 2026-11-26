@@ -1,4 +1,4 @@
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import { getLifePosts } from '@/lib/lifePosts';
 
 import Hero from '@/components/Home/Hero';

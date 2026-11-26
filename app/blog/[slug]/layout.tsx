@@ -1,19 +1,18 @@
 import { Metadata } from 'next';
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import { title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
-  params: {
-    slug: string;
-  };
+  params: Promise<{ slug: string }>;
 }
 
 export const generateMetadata = async ({ params }: Props): Promise<Metadata> => {
-  const post = allPosts.find((post) => post.slug === params.slug);
+  const { slug } = await params;
+  const post = allPosts.find((post) => post.slug === slug);
 
   if (!post) return {};
 
-  const { title, description, slug, date, author, tags, image } = post;
+  const { title, description, date, author, tags, image } = post;
 
   return {
     title,

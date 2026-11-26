@@ -1,4 +1,4 @@
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import Sidebar from '@/components/Layout/Sidebar';
 import PostList from '@/components/Blog/PostList';
 import ResponsiveAds from '@/components/AdSense/ResponsiveAds';
@@ -6,13 +6,12 @@ import CollectionHeading from '@/components/Layout/CollectionHeading';
 import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
-  searchParams: {
-    query?: string;
-    page?: string;
-  };
+  searchParams: Promise<{ query?: string | string[]; page?: string }>;
 }
 
-const SearchResultPage = async ({ searchParams: { query = '', page } }: Props) => {
+const SearchResultPage = async ({ searchParams }: Props) => {
+  const { query: search = '', page } = await searchParams;
+  const query = Array.isArray(search) ? search[0] : search;
   const posts = allPosts
     .filter((post) => post.title.toLowerCase().includes(query.toLowerCase()))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

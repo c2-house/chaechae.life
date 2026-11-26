@@ -2,15 +2,14 @@ import { Metadata, ResolvingMetadata } from 'next';
 import { openGraph, title as baseTitle } from '@/app/shared-metadata';
 
 interface Props {
-  params: {
-    authorName: string;
-  };
+  params: Promise<{ authorName: string }>;
 }
 
 export const generateMetadata = async (
-  { params: { authorName } }: Props,
+  { params }: Props,
   parent: ResolvingMetadata,
 ): Promise<Metadata> => {
+  const { authorName } = await params;
   const title = `${authorName} - ${baseTitle}`;
   const description = (await parent).description || '';
 

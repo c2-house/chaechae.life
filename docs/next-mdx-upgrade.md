@@ -2,6 +2,14 @@
 
 2026년 11월 26일, 커밋 `6e16e7e` 기준.
 
+## 브랜치에서 확인한 결과
+
+`upgrade/next16-mdx`에서 Next.js 16.4.6, React 19.3.1, MDX 3.1.1을 적용했다. 글 261개와 프로젝트 5개의 원본 파일을 기준 커밋과 바이트 단위로 대조했다. Node 22에서 두 버전을 각각 빌드한 뒤 상세 페이지 266개를 양쪽 서버에 요청했고, 532개 응답 모두 HTTP 200이었다.
+
+두 빌드의 본문 텍스트(연속 공백 정규화), 코드 블록의 정확한 문자열·줄 수, 제목·목차 앵커, 링크, 이미지 경로·대체 텍스트·캡션, 게시일이 일치했다. RSS 261개 항목의 내용과 사이트맵 URL 311개도 일치했다. 코드 블록의 공백과 복사 결과를 보존하기 위해 기존 강조기인 `rehype-pretty-code@0.10.2`와 `shiki@0.14.7`을 유지했다. MDX 3에서 한글 조사 앞의 굵은 기울임꼴이 풀리던 기존 글 한 편은 변환 단계에서 처리했다. [컴파일 설정](../next.config.js) · [한글 강조 처리](../lib/content/remark-korean-emphasis.mjs)
+
+브라우저에서 `/blog/python-uv`의 한글 목차 링크가 해당 제목으로 이동하는지, 이미지와 링크 카드가 로드되는지, 복사 버튼이 표시된 코드와 같은 문자열을 전달하는지도 확인했다. 이후 새 글은 같은 위치에 MDX 파일로 추가하면 된다. [작성 예시](../content/posts/python-uv.mdx)
+
 **추천하는 방법은 글과 프로젝트를 지금처럼 MDX와 YAML로 작성하고, 본문은 공식 `@next/mdx`로 빌드하는 것이다.** Contentlayer가 만들던 글 목록과 메타데이터는 빌드 시 원본 파일에서 추출한다. 이 블로그는 콘텐츠 종류가 두 개이고, 컴파일한 본문을 직접 사용하는 곳도 글 상세와 프로젝트 상세 두 곳이다. [Next.js MDX 가이드](https://nextjs.org/docs/app/guides/mdx) · [글 상세](https://github.com/c2-house/chaechae.life/blob/6e16e7ec3d312dfeb350b5c79facc2ab61862c20/components/Blog/Post.tsx) · [프로젝트 상세](https://github.com/c2-house/chaechae.life/blob/6e16e7ec3d312dfeb350b5c79facc2ab61862c20/components/Projects/ProjectDescription.tsx)
 
 ## 이슈의 진단과 실제 검증 결과

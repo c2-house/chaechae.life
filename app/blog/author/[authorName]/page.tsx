@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import { authors } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
@@ -7,19 +7,17 @@ import CollectionHeading from '@/components/Layout/CollectionHeading';
 import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
-  params: {
-    authorName: string;
-  };
-  searchParams: {
-    page: string;
-  };
+  params: Promise<{ authorName: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 // export const generateStaticParams = async () => {
 //   return authors.map((author) => ({ authorName: slugify(author) }));
 // };
 
-const AuthorPage = ({ params: { authorName }, searchParams: { page } }: Props) => {
+const AuthorPage = async ({ params, searchParams }: Props) => {
+  const { authorName } = await params;
+  const { page } = await searchParams;
   const posts = allPosts
     .filter((post) => slugify(post.author) === authorName)
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

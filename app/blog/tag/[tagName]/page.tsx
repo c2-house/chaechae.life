@@ -1,4 +1,4 @@
-import { allPosts } from 'contentlayer/generated';
+import { allPosts } from '@/lib/content';
 import { tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 import PostList from '@/components/Blog/PostList';
@@ -8,19 +8,17 @@ import CollectionHeading from '@/components/Layout/CollectionHeading';
 import styles from '@/components/Layout/CollectionPage.module.css';
 
 interface Props {
-  params: {
-    tagName: string;
-  };
-  searchParams: {
-    page: string;
-  };
+  params: Promise<{ tagName: string }>;
+  searchParams: Promise<{ page?: string }>;
 }
 
 // export const generateStaticParams = async () => {
 //   return tags.map((tag) => ({ tagName: slugify(tag) }));
 // };
 
-const TagPage = ({ params: { tagName }, searchParams: { page } }: Props) => {
+const TagPage = async ({ params, searchParams }: Props) => {
+  const { tagName } = await params;
+  const { page } = await searchParams;
   const posts = allPosts
     .filter((post) =>
       post.tags.find((tag) => slugify(tag) === slugify(decodeURIComponent(tagName))),

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { Project } from 'contentlayer/generated';
+import type { Project } from '@/lib/content';
 import styles from './Projects.module.css';
 
 const ProjectListItem = ({ project }: { project: Project }) => {

@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { allPosts, allProjects } from 'contentlayer/generated';
+import { allPosts, allProjects } from '@/lib/content';
 import { authors, navLinks, tags } from '@/constants/pages';
 import { slugify } from '@/components/Blog/utils';
 
