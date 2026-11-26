@@ -2,6 +2,7 @@
 'use client';
 
 import useSWR from 'swr';
+import { useState } from 'react';
 import { GlobeIcon, LoadingIcon } from '@/public/icons';
 
 interface LinkData {
@@ -11,10 +12,15 @@ interface LinkData {
   favicon?: string;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+async function fetcher(url: string): Promise<LinkData | null> {
+  const response = await fetch(url);
+  return response.ok ? response.json() : null;
+}
 
 const LinkPreview = ({ url }: { url: string }) => {
-  const { data, error, isLoading } = useSWR<LinkData>(
+  const [failedImage, setFailedImage] = useState<string>();
+  const [failedFavicon, setFailedFavicon] = useState<string>();
+  const { data, error, isLoading } = useSWR<LinkData | null>(
     `/api/og?url=${encodeURIComponent(url)}`,
     fetcher,
     {
@@ -46,18 +52,30 @@ const LinkPreview = ({ url }: { url: string }) => {
           {data.description}
         </div>
         <div className="flex items-center">
-          {data.favicon ? (
-            <img src={data.favicon} alt="logo" className="!m-0 h-4 w-4" />
+          {data.favicon && data.favicon !== failedFavicon ? (
+            <img
+              src={data.favicon}
+              alt="logo"
+              className="!m-0 h-4 w-4"
+              referrerPolicy="no-referrer"
+              onError={() => setFailedFavicon(data.favicon)}
+            />
           ) : (
             <GlobeIcon className="h-4 w-4 fill-slate-400" />
           )}
           <div className="ml-1.5 line-clamp-1 flex-1 text-xs text-slate-700">{url}</div>
         </div>
       </div>
-      {data.image && (
+      {data.image && data.image !== failedImage && (
         <div className="relative w-[120px] border-l border-slate-200 sm:w-[200px]">
           <div className="absolute inset-0">
-            <img src={data.image} alt={data.title} className="!m-0 h-full w-full object-cover" />
+            <img
+              src={data.image}
+              alt={data.title}
+              className="!m-0 h-full w-full object-cover"
+              referrerPolicy="no-referrer"
+              onError={() => setFailedImage(data.image)}
+            />
           </div>
         </div>
       )}
